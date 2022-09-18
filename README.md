@@ -1,8 +1,8 @@
-# Hooks-Admin 🚀
+# quick-forum-admin 🚀
 
 ### 介绍 📖
 
-🚀🚀🚀 Hooks Admin，基于 React18、React-Router v6、React-Hooks、Redux && Redux-Toolkit、TypeScript、Vite2、Ant-Design 开源的一套后台管理框架。
+🚀🚀🚀 quick-forum-admin，基于 React18、React-Router v6、React-Hooks、Redux && Redux-Toolkit、TypeScript、Vite2、Ant-Design、hook admin 的一套后台博客管理系统。
 
 🌈 Redux-Toolkit 版本请切换到 Redux-Toolkit 分支上
 
@@ -16,9 +16,7 @@
 
 ### 二、Git 仓库地址 (欢迎 Star⭐)
 
-- Gitee：https://gitee.com/laramie/Hooks-Admin
-
-- GitHub：https://github.com/HalseySpicy/Hooks-Admin
+- GitHub：https://github.com/panStart/quick-forum-admin
 
 ### 三、🔨🔨🔨 项目功能
 
@@ -42,7 +40,7 @@
 # Gitee
 git clone https://gitee.com/laramie/Hooks-Admin.git
 # GitHub
-git clone https://github.com/HalseySpicy/Hooks-Admin.git
+git clone https://github.com/panStart/quick-forum-admin.git
 ```
 
 - **Install：**
@@ -170,27 +168,5 @@ Hooks-Admin
 
 ### 八、项目后台接口 🧩
 
-> 项目后台接口完全采用 Mock 数据，感谢以下 Mock 平台支持
-
 - FastMock： https://www.fastmock.site/
 - EasyMock：https://mock.mengxuegu.com/
-
-### 九、微信交流群
-
-> 微信群已超过 200 人，需要加我好友，拉大家进群 🤪
-
-|                                            微信二维码                                             |
-| :-----------------------------------------------------------------------------------------------: |
-| <img src="https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/img/20220914145852.png" width=200> |
-
-### 十、捐赠 🍵
-
-> **如果你正在使用这个项目或者喜欢这个项目的，可以通过以下方式支持我**
-
-- **Star、Fork、Watch** 一键三连 🚀🚀
-
-- 通过 **微信、支付宝** 一次性捐款，够维护访问地址就行 🤣🤣
-
-|                                                         微信                                                          |                                                        支付宝                                                         |
-| :-------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
-| <img src="https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/img/20220610144145.png" alt="Wechat QRcode" width=170> | <img src="https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/img/20220610144200.png" alt="Alipay QRcode" width=170> |
