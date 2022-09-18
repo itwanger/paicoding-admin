@@ -8,7 +8,7 @@ const LayoutFooter = (props: any) => {
 			{!themeConfig.footer && (
 				<div className="footer">
 					<a href="http://www.spicyboy.cn/" target="_blank" rel="noreferrer">
-						2022 © Hooks-Admin By Hooks Technology.
+						2022 © quick-forum-admin By Hooks Technology.
 					</a>
 				</div>
 			)}

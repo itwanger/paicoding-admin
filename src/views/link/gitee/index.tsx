@@ -3,8 +3,8 @@ const Gitee = () => {
 		<div className="card content-box">
 			<span className="text">
 				Gitee 仓库：
-				<a href="https://gitee.com/laramie/Hooks-Admin" target="_blank" rel="noreferrer">
-					https://gitee.com/laramie/Hooks-Admin
+				<a href="https://github.com/panStart/quick-forum-admin" target="_blank" rel="noreferrer">
+					https://github.com/panStart/quick-forum-admin
 				</a>{" "}
 				🍒🍉🍊
 			</span>

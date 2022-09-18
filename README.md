@@ -37,8 +37,6 @@
 - **Clone：**
 
 ```text
-# Gitee
-git clone https://gitee.com/laramie/Hooks-Admin.git
 # GitHub
 git clone https://github.com/panStart/quick-forum-admin.git
 ```
@@ -110,7 +108,7 @@ npm run commit
 ### 六、文件资源目录 📚
 
 ```text
-Hooks-Admin
+quick-forum-admin
 ├─ .vscode                # vscode推荐配置
 ├─ public                 # 静态资源文件（忽略打包）
 ├─ src
