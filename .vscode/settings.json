@@ -1,0 +1,49 @@
+{
+	// 保存自动格式化代码
+	"editor.formatOnSave": true,
+	"stylelint.enable": true,
+	// 开启stylelint自动修复
+	"editor.codeActionsOnSave": {
+		"source.fixAll.stylelint": true
+	},
+	// 配置stylelint检查的文件类型范围
+	"stylelint.validate": ["css", "less", "postcss", "scss", "sass"],
+	"files.eol": "\n",
+	"cSpell.words": [
+		"antd",
+		"anticon",
+		"Appstore",
+		"Biao",
+		"bqddxxwqmfncffacvbpkuxvwvqrhln",
+		"breakline",
+		"browserslist",
+		"cnpm",
+		"commitlint",
+		"contentright",
+		"doclock",
+		"easymock",
+		"esbuild",
+		"fangda",
+		"fastmock",
+		"Geeker",
+		"Gitee",
+		"iconfont",
+		"immer",
+		"juejin",
+		"loglevel",
+		"malefemale",
+		"nprogress",
+		"persistor",
+		"Prefixs",
+		"screenfull",
+		"Sider",
+		"styl",
+		"stylelint",
+		"stylelintignore",
+		"stylelintrc",
+		"suoxiao",
+		"truetype",
+		"zhongyingwen",
+		"zhuti"
+	]
+}
