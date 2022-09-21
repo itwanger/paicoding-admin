@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Menu, Spin } from "antd";
-import { findAllBreadcrumb, getOpenKeys, handleRouter, searchRoute } from "@/utils/util";
-import { setMenuList } from "@/redux/modules/menu/action";
-import { setBreadcrumbList } from "@/redux/modules/breadcrumb/action";
-import { setAuthRouter } from "@/redux/modules/auth/action";
-import { getMenuList } from "@/api/modules/login";
 import { connect } from "react-redux";
-import type { MenuProps } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
 import * as Icons from "@ant-design/icons";
-import Logo from "./components/Logo";
-import "./index.less";
+import type { MenuProps } from "antd";
+import { Menu, Spin } from "antd";
+
+import { getMenuList } from "@/api/modules/login";
+import { setAuthRouter } from "@/redux/modules/auth/action";
+import { setBreadcrumbList } from "@/redux/modules/breadcrumb/action";
+import { setMenuList } from "@/redux/modules/menu/action";
 import { routerArray } from "@/routers";
-import { menuListTest } from "@/routers/route";
+import { currentMenuList } from "@/routers/route";
+import { findAllBreadcrumb, getOpenKeys, handleRouter, searchRoute } from "@/utils/util";
+import Logo from "./components/Logo";
+
+import "./index.less";
 
 const LayoutMenu = (props: any) => {
 	const { pathname } = useLocation();
@@ -113,7 +115,7 @@ const LayoutMenu = (props: any) => {
 					openKeys={openKeys}
 					selectedKeys={selectedKeys}
 					// items={menuList}
-					items={menuListTest}
+					items={currentMenuList}
 					onClick={clickMenu}
 					onOpenChange={onOpenChange}
 				></Menu>

@@ -23,7 +23,7 @@ module.exports = {
 			jsx: true
 		}
 	},
-	plugins: ["react", "@typescript-eslint", "react-hooks", "prettier"],
+	plugins: ["react", "@typescript-eslint", "react-hooks", "prettier", "simple-import-sort"],
 	/* 继承某些已有的规则 */
 	extends: [
 		"eslint:recommended",
@@ -64,6 +64,28 @@ module.exports = {
 
 		// react (https://github.com/jsx-eslint/eslint-plugin-react)
 		"react-hooks/rules-of-hooks": "off",
-		"react-hooks/exhaustive-deps": "off"
-	}
+		"react-hooks/exhaustive-deps": "off",
+		"simple-import-sort/imports": "error",
+		"simple-import-sort/exports": "error"
+	},
+	overrides: [
+		{
+			files: ["*.js", "*.jsx", "*.ts", "*.tsx"],
+			rules: {
+				"simple-import-sort/imports": [
+					"error",
+					{
+						groups: [
+							// Packages `react` related packages come first.
+							["^react", "^@?\\w"],
+							// Other relative imports. Put same-folder imports and `.` last.
+							["^(@|components)(/.*|$)", "^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
+							// Style imports.
+							["^.+\\.?(css)$"]
+						]
+					}
+				]
+			}
+		}
+	]
 };
