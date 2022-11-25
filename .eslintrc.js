@@ -61,19 +61,19 @@ module.exports = {
 		"@typescript-eslint/ban-ts-comment": "off", // 禁止 @ts-<directive> 使用注释或要求在指令后进行描述
 		"@typescript-eslint/no-non-null-assertion": "off", // 不允许使用后缀运算符的非空断言(!)
 		"@typescript-eslint/explicit-module-boundary-types": "off", // 要求导出函数和类的公共类方法的显式返回和参数类型
-
+		"@typescript-eslint/no-empty-interface": "off",
 		// react (https://github.com/jsx-eslint/eslint-plugin-react)
 		"react-hooks/rules-of-hooks": "off",
 		"react-hooks/exhaustive-deps": "off",
-		"simple-import-sort/imports": "error",
-		"simple-import-sort/exports": "error"
+		"simple-import-sort/imports": "off",
+		"simple-import-sort/exports": "off"
 	},
 	overrides: [
 		{
 			files: ["*.js", "*.jsx", "*.ts", "*.tsx"],
 			rules: {
 				"simple-import-sort/imports": [
-					"error",
+					"off",
 					{
 						groups: [
 							// Packages `react` related packages come first.

@@ -12,6 +12,8 @@ import enUS from "antd/lib/locale/en_US";
 import i18n from "i18next";
 import "moment/dist/locale/zh-cn";
 
+import "./index.scss";
+
 const App = (props: any) => {
 	const { language, assemblySize, themeConfig, setLanguage } = props;
 	const [i18nLocale, setI18nLocale] = useState(zhCN);

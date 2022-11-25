@@ -1,3 +1,6 @@
+/**
+ * 菜单控制
+ */
 import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -61,48 +64,50 @@ const LayoutMenu = (props: any) => {
 	};
 
 	// 处理后台返回菜单 key 值为 antd 菜单需要的 key 值
-	const deepLoopFloat = (menuList: Menu.MenuOptions[], newArr: MenuItem[] = []) => {
-		menuList.forEach((item: Menu.MenuOptions) => {
-			// 下面判断代码解释 *** !item?.children?.length   ==>   (!item.children || item.children.length === 0)
-			if (!item?.children?.length) return newArr.push(getItem(item.title, item.path, addIcon(item.icon!)));
-			newArr.push(getItem(item.title, item.path, addIcon(item.icon!), deepLoopFloat(item.children)));
-		});
-		return newArr;
-	};
+	// const deepLoopFloat = (menuList: Menu.MenuOptions[], newArr: MenuItem[] = []) => {
+	// 	menuList.forEach((item: Menu.MenuOptions) => {
+	// 		// 下面判断代码解释 *** !item?.children?.length   ==>   (!item.children || item.children.length === 0)
+	// 		if (!item?.children?.length) return newArr.push(getItem(item.title, item.path, addIcon(item.icon!)));
+	// 		newArr.push(getItem(item.title, item.path, addIcon(item.icon!), deepLoopFloat(item.children)));
+	// 	});
+	// 	return newArr;
+	// };
 
 	// 获取菜单列表并处理成 antd menu 需要的格式
-	const [menuList, setMenuList] = useState<MenuItem[]>([]);
+	// const [menuList, setMenuList] = useState<MenuItem[]>([]);
 	const [loading, setLoading] = useState(false);
-	const getMenuData = async () => {
-		setLoading(true);
-		try {
-			const { data } = await getMenuList();
-			if (!data) return;
-			setMenuList(deepLoopFloat(data));
-			// 存储处理过后的所有面包屑导航栏到 redux 中
-			setBreadcrumbList(findAllBreadcrumb(data));
-			// 把路由菜单处理成一维数组，存储到 redux 中，做菜单权限判断
-			const dynamicRouter = handleRouter(data);
-			setAuthRouter(dynamicRouter);
-			setMenuListAction(data);
-		} finally {
-			setLoading(false);
-		}
-	};
-	useEffect(() => {
-		getMenuData();
-	}, []);
+	// const getMenuData = async () => {
+	// 	// setLoading(true);
+	// 	try {
+	// 		// const { data } = await getMenuList();
+	// 		// if (!data) return;
+	// 		setMenuList(deepLoopFloat(currentMenuList));
+	// 		// 存储处理过后的所有面包屑导航栏到 redux 中
+	// 		setBreadcrumbList(findAllBreadcrumb(currentMenuList));
+	// 		// 把路由菜单处理成一维数组，存储到 redux 中，做菜单权限判断
+	// 		const dynamicRouter = handleRouter(currentMenuList);
+	// 		setAuthRouter(dynamicRouter);
+	// 		setMenuListAction(currentMenuList);
+	// 	} finally {
+	// 		setLoading(false);
+	// 	}
+	// };
+	// useEffect(() => {
+	// 	getMenuData();
+	// }, []);
 
 	// 点击当前菜单跳转页面
 	const navigate = useNavigate();
 	const clickMenu: MenuProps["onClick"] = ({ key }: { key: string }) => {
 		const route = searchRoute(key, props.menuList);
-		console.log({ route: key });
+		console.log({ route, props });
 
 		if (route.isLink) window.open(route.isLink, "_blank");
+		console.log({ key });
+
 		navigate(key);
 	};
-	console.log({ menuList });
+	console.log({ currentMenuList, openKeys, selectedKeys });
 
 	return (
 		<div className="menu">

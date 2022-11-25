@@ -1,14 +1,15 @@
-import { legacy_createStore as createStore, combineReducers, Store, compose } from "redux";
-import { persistStore, persistReducer } from "redux-persist";
+import { combineReducers, compose, legacy_createStore as createStore, Store } from "redux";
 import { applyMiddleware } from "redux";
+import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import reduxThunk from "redux-thunk";
 import reduxPromise from "redux-promise";
+import reduxThunk from "redux-thunk";
+
+import auth from "./modules/auth/reducer";
+import breadcrumb from "./modules/breadcrumb/reducer";
 import global from "./modules/global/reducer";
 import menu from "./modules/menu/reducer";
 import tabs from "./modules/tabs/reducer";
-import auth from "./modules/auth/reducer";
-import breadcrumb from "./modules/breadcrumb/reducer";
 
 // 创建reducer(拆分reducer)
 const reducer = combineReducers({
@@ -38,4 +39,4 @@ const store: Store = createStore(persistReducerConfig, composeEnhancers(middleWa
 // 创建持久化 store
 const persistor = persistStore(store);
 
-export { store, persistor };
+export { persistor, store };

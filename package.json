@@ -18,6 +18,7 @@
 		"commit": "git pull && git add -A && git-cz && git push"
 	},
 	"dependencies": {
+		"@ant-design/icons": "^4.7.0",
 		"antd": "^4.22.2",
 		"axios": "^0.27.2",
 		"driver.js": "^0.9.8",
@@ -68,6 +69,7 @@
 		"postcss": "^8.4.14",
 		"prettier": "^2.6.2",
 		"rollup-plugin-visualizer": "^5.6.0",
+		"sass": "^1.55.0",
 		"standard-version": "^9.5.0",
 		"stylelint": "^14.9.1",
 		"stylelint-config-prettier": "^9.0.3",
