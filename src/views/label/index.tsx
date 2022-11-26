@@ -28,7 +28,7 @@ const defaultInitForm = {
 	id: ""
 };
 
-const Sort: FC<IProps> = props => {
+const Label: FC<IProps> = props => {
 	// 搜索
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
 	// 弹窗
@@ -160,7 +160,7 @@ const Sort: FC<IProps> = props => {
 	);
 
 	return (
-		<div className="sort">
+		<div className="banner">
 			<ContentWrap>
 				{/* 搜索 */}
 				<Search handleChange={handleChange} />
@@ -177,4 +177,4 @@ const Sort: FC<IProps> = props => {
 	);
 };
 
-export default Sort;
+export default Label;

@@ -1,22 +1,22 @@
 import { LayoutIndex } from "@/routers/constant";
 import { RouteObject } from "@/routers/interface";
-import Sort from "@/views/sort";
+import Article from "@/views/article";
 
-const sortRouter: Array<RouteObject> = [
+const articleRouter: Array<RouteObject> = [
 	{
 		element: <LayoutIndex />,
 		children: [
 			{
-				path: "/sort/index",
-				element: <Sort />,
+				path: "/article/index",
+				element: <Article />,
 				meta: {
 					// requiresAuth: true,
-					title: "分类",
-					key: "sort"
+					title: "文章",
+					key: "article"
 				}
 			}
 		]
 	}
 ];
 
-export default sortRouter;
+export default articleRouter;

@@ -1,22 +1,22 @@
 import { LayoutIndex } from "@/routers/constant";
 import { RouteObject } from "@/routers/interface";
-import Sort from "@/views/sort";
+import Column from "@/views/column";
 
-const sortRouter: Array<RouteObject> = [
+const columnRouter: Array<RouteObject> = [
 	{
 		element: <LayoutIndex />,
 		children: [
 			{
-				path: "/sort/index",
-				element: <Sort />,
+				path: "/column/index",
+				element: <Column />,
 				meta: {
 					// requiresAuth: true,
-					title: "分类",
-					key: "sort"
+					title: "专题",
+					key: "column"
 				}
 			}
 		]
 	}
 ];
 
-export default sortRouter;
+export default columnRouter;

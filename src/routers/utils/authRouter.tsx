@@ -1,9 +1,12 @@
-import { useLocation, Navigate } from "react-router-dom";
+// 路由权限控制
+
+import { Navigate, useLocation } from "react-router-dom";
+
 import { AxiosCanceler } from "@/api/helper/axiosCancel";
-import { searchRoute } from "@/utils/util";
-import { rootRouter } from "@/routers/index";
 import { HOME_URL } from "@/config/config";
 import { store } from "@/redux/index";
+import { rootRouter } from "@/routers/index";
+import { searchRoute } from "@/utils/util";
 
 const axiosCanceler = new AxiosCanceler();
 
@@ -13,8 +16,11 @@ const axiosCanceler = new AxiosCanceler();
 const AuthRouter = (props: { children: JSX.Element }) => {
 	const { pathname } = useLocation();
 	const route = searchRoute(pathname, rootRouter);
+	console.log({ route });
+
 	// * 在跳转路由之前，清除所有的请求
 	axiosCanceler.removeAllPending();
+	console.log({ props });
 
 	// * 判断当前路由是否需要访问权限(不需要权限直接放行)
 	if (!route.meta?.requiresAuth) return props.children;

@@ -14,7 +14,6 @@ Object.keys(metaRouters).forEach(item => {
 	});
 });
 console.log({ routerArray });
-
 export const rootRouter: RouteObject[] = [
 	{
 		path: "/",
@@ -24,7 +23,6 @@ export const rootRouter: RouteObject[] = [
 		path: "/login",
 		element: <Login />,
 		meta: {
-			requiresAuth: false,
 			title: "登录页",
 			key: "login"
 		}
@@ -38,6 +36,8 @@ export const rootRouter: RouteObject[] = [
 
 const Router = () => {
 	const routes = useRoutes(rootRouter);
+	console.log({ routes });
+
 	return routes;
 };
 

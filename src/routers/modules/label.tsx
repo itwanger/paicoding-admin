@@ -1,22 +1,22 @@
 import { LayoutIndex } from "@/routers/constant";
 import { RouteObject } from "@/routers/interface";
-import Sort from "@/views/sort";
+import Label from "@/views/label";
 
-const sortRouter: Array<RouteObject> = [
+const labelRouter: Array<RouteObject> = [
 	{
 		element: <LayoutIndex />,
 		children: [
 			{
-				path: "/sort/index",
-				element: <Sort />,
+				path: "/label/index",
+				element: <Label />,
 				meta: {
 					// requiresAuth: true,
-					title: "分类",
-					key: "sort"
+					title: "标签",
+					key: "label"
 				}
 			}
 		]
 	}
 ];
 
-export default sortRouter;
+export default labelRouter;

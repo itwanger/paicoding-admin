@@ -107,7 +107,6 @@ const LayoutMenu = (props: any) => {
 
 		navigate(key);
 	};
-	console.log({ currentMenuList, openKeys, selectedKeys });
 
 	return (
 		<div className="menu">
