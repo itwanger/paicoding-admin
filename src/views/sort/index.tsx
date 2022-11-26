@@ -1,9 +1,7 @@
+import React, { useState } from "react";
 import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Modal, Select, Space, Table, Tag } from "antd";
-
 import type { ColumnsType } from "antd/es/table";
-
-import React, { useState } from "react";
 
 import "./index.scss";
 

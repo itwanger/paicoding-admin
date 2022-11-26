@@ -1,13 +1,13 @@
-import { AnyAction } from "redux";
-import { GlobalState } from "@/redux/interface";
 import produce from "immer";
+import { AnyAction } from "redux";
+
+import { GlobalState } from "@/redux/interface";
 import * as types from "@/redux/mutation-types";
 
 const globalState: GlobalState = {
 	token: "",
 	userInfo: "",
 	assemblySize: "middle",
-	language: "",
 	themeConfig: {
 		// 默认 primary 主题颜色
 		primary: "#1890ff",
@@ -33,9 +33,6 @@ const global = (state: GlobalState = globalState, action: AnyAction) =>
 				break;
 			case types.SET_ASSEMBLY_SIZE:
 				draftState.assemblySize = action.assemblySize;
-				break;
-			case types.SET_LANGUAGE:
-				draftState.language = action.language;
 				break;
 			case types.SET_THEME_CONFIG:
 				draftState.themeConfig = action.themeConfig;

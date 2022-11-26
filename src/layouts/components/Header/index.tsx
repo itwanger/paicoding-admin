@@ -1,11 +1,12 @@
 import { Layout } from "antd";
-import AvatarIcon from "./components/AvatarIcon";
-import CollapseIcon from "./components/CollapseIcon";
-import BreadcrumbNav from "./components/BreadcrumbNav";
+
 import AssemblySize from "./components/AssemblySize";
-import Language from "./components/Language";
-import Theme from "./components/Theme";
+import AvatarIcon from "./components/AvatarIcon";
+import BreadcrumbNav from "./components/BreadcrumbNav";
+import CollapseIcon from "./components/CollapseIcon";
 import Fullscreen from "./components/Fullscreen";
+import Theme from "./components/Theme";
+
 import "./index.less";
 
 const LayoutHeader = () => {
@@ -19,7 +20,6 @@ const LayoutHeader = () => {
 			</div>
 			<div className="header-ri">
 				<AssemblySize />
-				<Language />
 				<Theme />
 				<Fullscreen />
 				<span className="username">Hooks</span>

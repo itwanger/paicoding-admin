@@ -65,15 +65,15 @@ module.exports = {
 		// react (https://github.com/jsx-eslint/eslint-plugin-react)
 		"react-hooks/rules-of-hooks": "off",
 		"react-hooks/exhaustive-deps": "off",
-		"simple-import-sort/imports": "off",
-		"simple-import-sort/exports": "off"
+		"simple-import-sort/imports": "warn",
+		"simple-import-sort/exports": "warn"
 	},
 	overrides: [
 		{
 			files: ["*.js", "*.jsx", "*.ts", "*.tsx"],
 			rules: {
 				"simple-import-sort/imports": [
-					"off",
+					"warn",
 					{
 						groups: [
 							// Packages `react` related packages come first.
