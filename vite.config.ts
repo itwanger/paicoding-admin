@@ -1,12 +1,13 @@
-import { defineConfig, loadEnv, ConfigEnv, UserConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
-import { wrapperEnv } from "./src/utils/getEnv";
 import { visualizer } from "rollup-plugin-visualizer";
-import { createHtmlPlugin } from "vite-plugin-html";
+import { ConfigEnv, defineConfig, loadEnv, UserConfig } from "vite";
 import viteCompression from "vite-plugin-compression";
 import eslintPlugin from "vite-plugin-eslint";
+import { createHtmlPlugin } from "vite-plugin-html";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
+
+import { wrapperEnv } from "./src/utils/getEnv";
 
 // @see: https://vitejs.dev/config/
 export default defineConfig((mode: ConfigEnv): UserConfig => {
@@ -25,9 +26,6 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 		css: {
 			preprocessorOptions: {
 				less: {
-					// modifyVars: {
-					// 	"primary-color": "#1DA57A",
-					// },
 					javascriptEnabled: true,
 					additionalData: `@import "@/styles/var.less";`
 				}
@@ -38,18 +36,17 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 			host: "0.0.0.0", // 服务器主机名，如果允许外部访问，可设置为"0.0.0.0"
 			port: viteEnv.VITE_PORT,
 			open: viteEnv.VITE_OPEN,
-			cors: true,
+			// cors: true,
 			// https: false,
 			// 代理跨域（mock 不需要配置，这里只是个事列）
 			proxy: {
 				"/api": {
-					target: "https://mock.mengxuegu.com/mock/62abda3212c1416424630a45", // easymock
+					target: "http://127.0.0.1:8080",
 					changeOrigin: true,
 					rewrite: path => path.replace(/^\/api/, "")
 				}
 			}
 		},
-		// plugins
 		plugins: [
 			react(),
 			createHtmlPlugin({

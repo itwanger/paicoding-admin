@@ -1,25 +1,19 @@
 import { useEffect } from "react";
+import { connect } from "react-redux";
 import { Outlet } from "react-router-dom";
 import { Layout } from "antd";
-import { setAuthButtons } from "@/redux/modules/auth/action";
+
 import { updateCollapse } from "@/redux/modules/menu/action";
-import { getAuthorButtons } from "@/api/modules/login";
-import { connect } from "react-redux";
-import LayoutMenu from "./components/Menu";
-import LayoutHeader from "./components/Header";
-import LayoutTabs from "./components/Tabs";
 import LayoutFooter from "./components/Footer";
+import LayoutHeader from "./components/Header";
+import LayoutMenu from "./components/Menu";
+import LayoutTabs from "./components/Tabs";
+
 import "./index.less";
 
 const LayoutIndex = (props: any) => {
 	const { Sider, Content } = Layout;
 	const { isCollapse, updateCollapse, setAuthButtons } = props;
-
-	// 获取按钮权限列表
-	const getAuthButtonsList = async () => {
-		const { data } = await getAuthorButtons();
-		setAuthButtons(data);
-	};
 
 	// 监听窗口大小变化
 	const listeningWindow = () => {
@@ -34,7 +28,6 @@ const LayoutIndex = (props: any) => {
 
 	useEffect(() => {
 		listeningWindow();
-		getAuthButtonsList();
 	}, []);
 
 	return (
@@ -56,5 +49,5 @@ const LayoutIndex = (props: any) => {
 };
 
 const mapStateToProps = (state: any) => state.menu;
-const mapDispatchToProps = { setAuthButtons, updateCollapse };
+const mapDispatchToProps = { updateCollapse };
 export default connect(mapStateToProps, mapDispatchToProps)(LayoutIndex);

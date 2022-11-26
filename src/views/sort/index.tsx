@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
+
+import { getSortListApi } from "@/api/modules/sort";
 
 import "./index.scss";
 
@@ -54,6 +56,17 @@ const Sort: FC<IProps> = props => {
 	const handleChange = item => {
 		setForm({ ...form, ...item });
 	};
+	// 数据请求
+
+	useEffect(() => {
+		const getSortList = async () => {
+			const res = await getSortListApi();
+			console.log({ res });
+		};
+		console.log("132");
+
+		getSortList();
+	}, []);
 
 	// 表头设置
 	const columns: ColumnsType<DataType> = [

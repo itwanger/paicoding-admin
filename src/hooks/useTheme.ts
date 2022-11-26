@@ -1,6 +1,6 @@
-import defaultTheme from "@/styles/theme/theme-default.less";
-import darkTheme from "@/styles/theme/theme-dark.less";
 import { ThemeConfigProp } from "@/redux/interface";
+import darkTheme from "@/styles/theme/theme-dark.less";
+import defaultTheme from "@/styles/theme/theme-default.less";
 
 /**
  * @description 全局主题设置

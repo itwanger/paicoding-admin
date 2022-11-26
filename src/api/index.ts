@@ -1,15 +1,17 @@
-import NProgress from "@/config/nprogress";
-import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
-import { showFullScreenLoading, tryHideFullScreenLoading } from "@/config/serviceLoading";
-import { ResultData } from "@/api/interface";
-import { ResultEnum } from "@/enums/httpEnum";
-import { checkStatus } from "./helper/checkStatus";
-import { AxiosCanceler } from "./helper/axiosCancel";
-import { setToken } from "@/redux/modules/global/action";
 import { message } from "antd";
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+
+import { ResultData } from "@/api/interface";
+import NProgress from "@/config/nprogress";
+import { showFullScreenLoading, tryHideFullScreenLoading } from "@/config/serviceLoading";
+import { ResultEnum } from "@/enums/httpEnum";
 import { store } from "@/redux";
+import { setToken } from "@/redux/modules/global/action";
+import { AxiosCanceler } from "./helper/axiosCancel";
+import { checkStatus } from "./helper/checkStatus";
 
 const axiosCanceler = new AxiosCanceler();
+console.log("ddd", import.meta.env);
 
 const config = {
 	// 默认地址请求地址，可在 .env 开头文件中修改
@@ -39,6 +41,8 @@ class RequestHttp {
 				// * 如果当前请求不需要显示 loading,在api服务中通过指定的第三个参数: { headers: { noLoading: true } }来控制不显示loading，参见loginApi
 				config.headers!.noLoading || showFullScreenLoading();
 				const token: string = store.getState().global.token;
+				console.log("ddd", { ...config, headers: { ...config.headers, "x-access-token": token } });
+
 				return { ...config, headers: { ...config.headers, "x-access-token": token } };
 			},
 			(error: AxiosError) => {
