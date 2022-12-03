@@ -3,7 +3,7 @@ import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/i
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delSortApi, getSortListApi } from "@/api/modules/sort";
+import { delCategoryApi, getCategoryListApi } from "@/api/modules/category";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
@@ -55,7 +55,8 @@ const Sort: FC<IProps> = props => {
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			const { status, result } = await getSortListApi();
+			// @ts-ignore
+			const { status, result } = await getCategoryListApi();
 			const { code } = status || {};
 			const { list } = result || {};
 			if (code === 0) {
@@ -74,7 +75,8 @@ const Sort: FC<IProps> = props => {
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				const { status } = await delSortApi(categoryId);
+				// @ts-ignore
+				const { status } = await delCategoryApi(categoryId);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -88,7 +90,7 @@ const Sort: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "ID",
+			title: "分类 ID",
 			dataIndex: "categoryId",
 			key: "categoryId"
 		},
@@ -113,6 +115,7 @@ const Sort: FC<IProps> = props => {
 			key: "key",
 			width: 400,
 			render: (_, item) => {
+				// @ts-ignore
 				const { categoryId } = item;
 				return (
 					<div className="operation-btn">
@@ -160,7 +163,7 @@ const Sort: FC<IProps> = props => {
 	);
 
 	return (
-		<div className="sort">
+		<div className="category">
 			<ContentWrap>
 				{/* 搜索 */}
 				<Search handleChange={handleChange} />

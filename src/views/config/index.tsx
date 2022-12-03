@@ -3,7 +3,7 @@ import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/i
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delSortApi, getSortListApi } from "@/api/modules/sort";
+import { delSortApi, getConfigListApi } from "@/api/modules/config";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
@@ -54,8 +54,9 @@ const Banner: FC<IProps> = props => {
 
 	// 数据请求
 	useEffect(() => {
-		const getSortList = async () => {
-			const { status, result } = await getSortListApi();
+		const getConfigList = async () => {
+			// @ts-ignore
+			const { status, result } = await getConfigListApi();
 			const { code } = status || {};
 			const { list } = result || {};
 			if (code === 0) {
@@ -63,7 +64,7 @@ const Banner: FC<IProps> = props => {
 				setTableData(newList);
 			}
 		};
-		getSortList();
+		getConfigList();
 	}, [query]);
 
 	// 删除
@@ -74,6 +75,7 @@ const Banner: FC<IProps> = props => {
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
+				// @ts-ignore
 				const { status } = await delSortApi(categoryId);
 				const { code } = status || {};
 				console.log();
@@ -89,13 +91,33 @@ const Banner: FC<IProps> = props => {
 	const columns: ColumnsType<DataType> = [
 		{
 			title: "ID",
-			dataIndex: "categoryId",
-			key: "categoryId"
+			dataIndex: "id",
+			key: "id"
+		},
+		{
+			title: "类型",
+			dataIndex: "type",
+			key: "type"
 		},
 		{
 			title: "名称",
-			dataIndex: "category",
-			key: "category"
+			dataIndex: "name",
+			key: "name"
+		},
+		{
+			title: "内容",
+			dataIndex: "content",
+			key: "content"
+		},
+		{
+			title: "跳转URL",
+			dataIndex: "jumpUrl",
+			key: "jumpUrl"
+		},
+		{
+			title: "标签",
+			dataIndex: "tags",
+			key: "tags"
 		},
 		{
 			title: "状态",
@@ -103,17 +125,23 @@ const Banner: FC<IProps> = props => {
 			key: "status"
 		},
 		{
+			title: "排序",
+			dataIndex: "rank",
+			key: "rank"
+		},
+		{
 			title: "创建时间",
 			dataIndex: "createTime",
 			key: "createTime",
-			render: createTime => createTime || "-"
+			render: createTime => createTime || ""
 		},
 		{
 			title: "操作",
 			key: "key",
 			width: 400,
 			render: (_, item) => {
-				const { categoryId } = item;
+				// @ts-ignore
+				const { id } = item;
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
@@ -122,7 +150,7 @@ const Banner: FC<IProps> = props => {
 						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
 							上线
 						</Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(categoryId)}>
+						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(id)}>
 							删除
 						</Button>
 					</div>

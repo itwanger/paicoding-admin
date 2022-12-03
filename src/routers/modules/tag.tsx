@@ -1,22 +1,22 @@
 import { LayoutIndex } from "@/routers/constant";
 import { RouteObject } from "@/routers/interface";
-import Banner from "@/views/banner";
+import Label from "@/views/label";
 
-const bannerRouter: Array<RouteObject> = [
+const labelRouter: Array<RouteObject> = [
 	{
 		element: <LayoutIndex />,
 		children: [
 			{
-				path: "/banner/index",
-				element: <Banner />,
+				path: "/tag/index",
+				element: <Label />,
 				meta: {
 					// requiresAuth: true,
-					title: "Banner",
-					key: "banner"
+					title: "标签",
+					key: "label"
 				}
 			}
 		]
 	}
 ];
 
-export default bannerRouter;
+export default labelRouter;

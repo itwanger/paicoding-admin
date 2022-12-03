@@ -1,13 +1,13 @@
 import { LayoutIndex } from "@/routers/constant";
 import { RouteObject } from "@/routers/interface";
-import Sort from "@/views/sort";
+import Sort from "@/views/category";
 
 const sortRouter: Array<RouteObject> = [
 	{
 		element: <LayoutIndex />,
 		children: [
 			{
-				path: "/sort/index",
+				path: "/category/index",
 				element: <Sort />,
 				meta: {
 					// requiresAuth: true,

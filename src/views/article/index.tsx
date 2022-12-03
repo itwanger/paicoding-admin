@@ -3,7 +3,7 @@ import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/i
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delSortApi, getSortListApi } from "@/api/modules/sort";
+import { delArticleApi, getArticleListApi } from "@/api/modules/article";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
@@ -55,7 +55,7 @@ const Article: FC<IProps> = props => {
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			const { status, result } = await getSortListApi();
+			const { status, result } = await getArticleListApi();
 			const { code } = status || {};
 			const { list } = result || {};
 			if (code === 0) {
@@ -74,7 +74,7 @@ const Article: FC<IProps> = props => {
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				const { status } = await delSortApi(categoryId);
+				const { status } = await delArticleApi(categoryId);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -88,25 +88,24 @@ const Article: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "ID",
-			dataIndex: "categoryId",
-			key: "categoryId"
+			title: "文章 ID",
+			dataIndex: "articleId",
+			key: "articleId"
 		},
 		{
-			title: "名称",
-			dataIndex: "category",
-			key: "category"
+			title: "标题",
+			dataIndex: "title",
+			key: "title"
+		},
+		{
+			title: "作者",
+			dataIndex: "authorName",
+			key: "authorName"
 		},
 		{
 			title: "状态",
 			dataIndex: "status",
 			key: "status"
-		},
-		{
-			title: "创建时间",
-			dataIndex: "createTime",
-			key: "createTime",
-			render: createTime => createTime || "-"
 		},
 		{
 			title: "操作",
@@ -117,13 +116,13 @@ const Article: FC<IProps> = props => {
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
-							修改
+							官方
 						</Button>
 						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
-							上线
+							置顶
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(categoryId)}>
-							删除
+							加精
 						</Button>
 					</div>
 				);

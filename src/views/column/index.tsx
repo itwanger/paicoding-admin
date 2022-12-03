@@ -3,7 +3,7 @@ import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/i
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delSortApi, getSortListApi } from "@/api/modules/sort";
+import { delColumnApi, getColumnListApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
@@ -55,7 +55,7 @@ const Column: FC<IProps> = props => {
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			const { status, result } = await getSortListApi();
+			const { status, result } = await getColumnListApi();
 			const { code } = status || {};
 			const { list } = result || {};
 			if (code === 0) {
@@ -74,7 +74,7 @@ const Column: FC<IProps> = props => {
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				const { status } = await delSortApi(categoryId);
+				const { status } = await delColumnApi(categoryId);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -88,19 +88,40 @@ const Column: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "ID",
+			title: "专栏 ID",
 			dataIndex: "categoryId",
 			key: "categoryId"
 		},
 		{
-			title: "名称",
-			dataIndex: "category",
-			key: "category"
+			title: "专栏名",
+			dataIndex: "column",
+			key: "column"
+		},
+		{
+			title: "简介",
+			dataIndex: "introduction",
+			key: "introduction"
+		},
+		{
+			title: "作者",
+			dataIndex: "authorName",
+			key: "authorName"
+		},
+		{
+			title: "封面",
+			dataIndex: "cover",
+			key: "cover"
 		},
 		{
 			title: "状态",
-			dataIndex: "status",
-			key: "status"
+			dataIndex: "state",
+			key: "state"
+		},
+		{
+			title: "发布时间",
+			dataIndex: "publishTime",
+			key: "publishTime",
+			render: publishTime => publishTime || "-"
 		},
 		{
 			title: "创建时间",
@@ -118,9 +139,6 @@ const Column: FC<IProps> = props => {
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
 							修改
-						</Button>
-						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
-							上线
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(categoryId)}>
 							删除

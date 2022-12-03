@@ -3,7 +3,7 @@ import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/i
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delSortApi, getSortListApi } from "@/api/modules/sort";
+import { delTagListApi, getTagListApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
@@ -55,7 +55,8 @@ const Label: FC<IProps> = props => {
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			const { status, result } = await getSortListApi();
+			// @ts-ignore
+			const { status, result } = await getTagListApi();
 			const { code } = status || {};
 			const { list } = result || {};
 			if (code === 0) {
@@ -74,7 +75,8 @@ const Label: FC<IProps> = props => {
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				const { status } = await delSortApi(categoryId);
+				// @ts-ignore
+				const { status } = await delTagListApi(categoryId);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -88,14 +90,19 @@ const Label: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "ID",
-			dataIndex: "categoryId",
-			key: "categoryId"
+			title: "标签 ID",
+			dataIndex: "tagId",
+			key: "tagId"
 		},
 		{
-			title: "名称",
-			dataIndex: "category",
-			key: "category"
+			title: "标签",
+			dataIndex: "tag",
+			key: "tag"
+		},
+		{
+			title: "分类",
+			dataIndex: "categoryName",
+			key: "categoryName"
 		},
 		{
 			title: "状态",
@@ -103,16 +110,11 @@ const Label: FC<IProps> = props => {
 			key: "status"
 		},
 		{
-			title: "创建时间",
-			dataIndex: "createTime",
-			key: "createTime",
-			render: createTime => createTime || "-"
-		},
-		{
 			title: "操作",
 			key: "key",
 			width: 400,
 			render: (_, item) => {
+				// @ts-ignore
 				const { categoryId } = item;
 				return (
 					<div className="operation-btn">

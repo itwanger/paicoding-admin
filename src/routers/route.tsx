@@ -11,9 +11,9 @@ import {
 
 export const currentMenuList = [
 	{ key: "/home/index", icon: <HomeOutlined />, children: undefined, label: "首页" },
-	{ key: "/banner/index", icon: <LinkOutlined />, children: undefined, label: "Banner" },
-	{ key: "/sort/index", icon: <MenuOutlined />, children: undefined, label: "分类" },
-	{ key: "/label/index", icon: <TagOutlined />, children: undefined, label: "标签" },
+	{ key: "/config/index", icon: <LinkOutlined />, children: undefined, label: "配置" },
+	{ key: "/category/index", icon: <MenuOutlined />, children: undefined, label: "分类" },
+	{ key: "/tag/index", icon: <TagOutlined />, children: undefined, label: "标签" },
 	{ key: "/article/index", icon: <FileOutlined />, children: undefined, label: "文章" },
 	{ key: "/column/index", icon: <BookOutlined />, children: undefined, label: "专栏" },
 	{ key: "/statistics/index", icon: <FundProjectionScreenOutlined />, children: undefined, label: "数据统计" }
