@@ -1,6 +1,6 @@
 import { LayoutIndex } from "@/routers/constant";
 import { RouteObject } from "@/routers/interface";
-import Banner from "@/views/sort";
+import Banner from "@/views/banner";
 
 const bannerRouter: Array<RouteObject> = [
 	{
