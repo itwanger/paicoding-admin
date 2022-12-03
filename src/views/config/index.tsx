@@ -3,7 +3,7 @@ import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/i
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delSortApi, getConfigListApi } from "@/api/modules/config";
+import { delConfigApi, getConfigListApi } from "@/api/modules/config";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
@@ -68,15 +68,15 @@ const Banner: FC<IProps> = props => {
 	}, [query]);
 
 	// 删除
-	const handleDel = (categoryId: number) => {
+	const handleDel = (configId: number) => {
 		Modal.warning({
-			title: "确认删除此分类吗",
-			content: "删除此分类后无法恢复，请谨慎操作！",
+			title: "确认删除此配置吗",
+			content: "删除此配置后无法恢复，请谨慎操作！",
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
 				// @ts-ignore
-				const { status } = await delSortApi(categoryId);
+				const { status } = await delConfigApi(configId);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {

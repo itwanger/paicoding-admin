@@ -68,7 +68,7 @@ const Label: FC<IProps> = props => {
 	}, [query]);
 
 	// 删除
-	const handleDel = (categoryId: number) => {
+	const handleDel = (tagId: number) => {
 		Modal.warning({
 			title: "确认删除此分类吗",
 			content: "删除此分类后无法恢复，请谨慎操作！",
@@ -76,7 +76,7 @@ const Label: FC<IProps> = props => {
 			closable: true,
 			onOk: async () => {
 				// @ts-ignore
-				const { status } = await delTagListApi(categoryId);
+				const { status } = await delTagListApi(tagId);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -115,7 +115,7 @@ const Label: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { categoryId } = item;
+				const { tagId } = item;
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
@@ -124,7 +124,7 @@ const Label: FC<IProps> = props => {
 						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
 							上线
 						</Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(categoryId)}>
+						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(tagId)}>
 							删除
 						</Button>
 					</div>

@@ -14,6 +14,6 @@ export const getArticleListApi = () => {
 };
 
 // 删除操作
-export const delArticleApi = (categoryId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/article/delete`, { categoryId });
+export const delArticleApi = (articleId: number) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/article/delete`, { articleId });
 };

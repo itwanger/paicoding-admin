@@ -14,6 +14,6 @@ export const getColumnListApi = () => {
 };
 
 // 删除操作
-export const delColumnApi = (categoryId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumn`, { categoryId });
+export const delColumnApi = (colunmId: number) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumn`, { colunmId });
 };

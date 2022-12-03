@@ -14,6 +14,6 @@ export const getTagListApi = () => {
 };
 
 // 删除操作
-export const delTagListApi = (categoryId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/tag/delete`, { categoryId });
+export const delTagListApi = (tagId: number) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/tag/delete`, { tagId });
 };

@@ -11,8 +11,8 @@ const configRouter: Array<RouteObject> = [
 				element: <Banner />,
 				meta: {
 					// requiresAuth: true,
-					title: "Banner",
-					key: "banner"
+					title: "配置",
+					key: "config"
 				}
 			}
 		]

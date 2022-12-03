@@ -14,6 +14,6 @@ export const getConfigListApi = () => {
 };
 
 // 删除操作
-export const delSortApi = (categoryId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/category/delete`, { categoryId });
+export const delConfigApi = (configId: number) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/config/delete`, { configId });
 };

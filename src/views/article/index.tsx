@@ -55,6 +55,7 @@ const Article: FC<IProps> = props => {
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
+			// @ts-ignore
 			const { status, result } = await getArticleListApi();
 			const { code } = status || {};
 			const { list } = result || {};
@@ -67,14 +68,15 @@ const Article: FC<IProps> = props => {
 	}, [query]);
 
 	// 删除
-	const handleDel = (categoryId: number) => {
+	const handleDel = (articleId: number) => {
 		Modal.warning({
 			title: "确认删除此分类吗",
 			content: "删除此分类后无法恢复，请谨慎操作！",
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				const { status } = await delArticleApi(categoryId);
+				// @ts-ignore
+				const { status } = await delArticleApi(articleId);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -112,7 +114,8 @@ const Article: FC<IProps> = props => {
 			key: "key",
 			width: 400,
 			render: (_, item) => {
-				const { categoryId } = item;
+				// @ts-ignore
+				const { articleId } = item;
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
@@ -121,7 +124,7 @@ const Article: FC<IProps> = props => {
 						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
 							置顶
 						</Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(categoryId)}>
+						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
 							加精
 						</Button>
 					</div>

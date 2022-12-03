@@ -11,7 +11,7 @@ const statisticsRouter: Array<RouteObject> = [
 				element: <Statistics />,
 				meta: {
 					// requiresAuth: true,
-					title: "数据权限",
+					title: "数据统计",
 					key: "statistics"
 				}
 			}

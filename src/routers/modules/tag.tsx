@@ -1,6 +1,6 @@
 import { LayoutIndex } from "@/routers/constant";
 import { RouteObject } from "@/routers/interface";
-import Label from "@/views/label";
+import Label from "@/views/tag";
 
 const labelRouter: Array<RouteObject> = [
 	{
@@ -12,7 +12,7 @@ const labelRouter: Array<RouteObject> = [
 				meta: {
 					// requiresAuth: true,
 					title: "标签",
-					key: "label"
+					key: "tag"
 				}
 			}
 		]

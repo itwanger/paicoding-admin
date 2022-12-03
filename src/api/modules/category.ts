@@ -17,13 +17,3 @@ export const getCategoryListApi = () => {
 export const delCategoryApi = (categoryId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/category/delete`, { categoryId });
 };
-
-// 获取列表
-export const getSortListApi = () => {
-	return http.get(`${PORT1}/category/list`);
-};
-
-// 删除操作
-export const delSortApi = (categoryId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/category/delete`, { categoryId });
-};
