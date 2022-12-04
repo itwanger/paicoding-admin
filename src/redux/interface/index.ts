@@ -1,5 +1,7 @@
 import type { SizeType } from "antd/lib/config-provider/SizeContext";
 
+import { MapItem } from "@/typings/common";
+
 /* themeConfigProp */
 export interface ThemeConfigProp {
 	primary: string;
@@ -43,4 +45,9 @@ export interface AuthState {
 		[propName: string]: any;
 	};
 	authRouter: string[];
+}
+
+/**discState */
+export interface DiscState {
+	disc: MapItem[];
 }

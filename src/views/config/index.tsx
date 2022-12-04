@@ -1,10 +1,13 @@
 import { FC, useCallback, useEffect, useState } from "react";
-import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
+import { connect } from "react-redux";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import TextArea from "antd/lib/input/TextArea";
 
-import { delConfigApi, getConfigListApi } from "@/api/modules/config";
+import { delConfigApi, getConfigListApi, updateConfigApi } from "@/api/modules/config";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
+import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -20,17 +23,31 @@ interface DataType {
 
 interface IProps {}
 
-interface IInitForm {
-	id: string;
+export interface IFormType {
+	configId: number; // 为0时，是保存，非0是更新
+	type: number; // ConfigType
+	name: string; // 图片 url
+	// bannerUrl: string; // 图片链接
+	jumpUrl: string; // 跳转链接
+	content: string; // 内容
+	rank: number; // 排序
+	tags: number; // 标签
 }
 
-const defaultInitForm = {
-	id: ""
+const defaultInitForm: IFormType = {
+	configId: -1,
+	type: -1,
+	name: "",
+	jumpUrl: "",
+	content: "",
+	rank: -1,
+	tags: -1
 };
 
 const Banner: FC<IProps> = props => {
+	const [formRef] = Form.useForm();
 	// 搜索
-	const [form, setForm] = useState<IInitForm>(defaultInitForm);
+	const [form, setForm] = useState<IFormType>(defaultInitForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	// 列表数据
@@ -38,14 +55,17 @@ const Banner: FC<IProps> = props => {
 	// 刷新函数
 	const [query, setQuery] = useState<number>(0);
 
+	//当前的状态
+	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
+	// 获取字典值
+	console.log({ props });
 
-	// 重置表单
-	const resetBarFrom = () => {
-		setForm(defaultInitForm);
-	};
+	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
+	const { configId, type, name, jumpUrl, content, rank, tags } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -97,7 +117,10 @@ const Banner: FC<IProps> = props => {
 		{
 			title: "类型",
 			dataIndex: "type",
-			key: "type"
+			key: "type",
+			render(type) {
+				return ConfigType[type];
+			}
 		},
 		{
 			title: "名称",
@@ -117,12 +140,18 @@ const Banner: FC<IProps> = props => {
 		{
 			title: "标签",
 			dataIndex: "tags",
-			key: "tags"
+			key: "tags",
+			render(tag) {
+				return ArticleTag[tag];
+			}
 		},
 		{
 			title: "状态",
 			dataIndex: "status",
-			key: "status"
+			key: "status",
+			render(status) {
+				return PushStatus[status];
+			}
 		},
 		{
 			title: "排序",
@@ -135,14 +164,28 @@ const Banner: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { id } = item;
+				const { id, type, rank, status } = item;
+				const noUp = status === 0;
 				return (
 					<div className="operation-btn">
-						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
+						<Button
+							type="primary"
+							icon={<RedoOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								setIsModalOpen(true);
+								setStatus(UpdateEnum.Edit);
+								formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
+							}}
+						>
 							编辑
 						</Button>
-						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
-							上线
+						<Button
+							type={noUp ? "primary" : "default"}
+							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+							style={{ marginRight: "10px" }}
+						>
+							{noUp ? "上线" : "下线"}
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(id)}>
 							删除
@@ -153,30 +196,75 @@ const Banner: FC<IProps> = props => {
 		}
 	];
 
-	// 数据提交
-	const handleOk = () => {
-		console.log("提交");
+	const handleSubmit = async () => {
+		try {
+			const values = await formRef.validateFields();
+			const newValues = { ...values, configId: status };
+			const { status: successStatus } = (await updateConfigApi(newValues)) || {};
+			const { code } = successStatus || {};
+			if (code === 0) {
+				setIsModalOpen(false);
+				onSure();
+			}
+		} catch (errorInfo) {
+			console.log("Failed:", errorInfo);
+		}
 	};
 
 	// 编辑表单
 	const reviseModalContent = (
-		<Form
-			name="basic"
-			labelCol={{ span: 4 }}
-			wrapperCol={{ span: 16 }}
-			initialValues={{ remember: true }}
-			// onFinish={onFinish}
-			// onFinishFailed={onFinishFailed}
-			autoComplete="off"
-		>
-			<Form.Item label="ID" name="id" rules={[{ required: true, message: "Please input ID!" }]}>
-				<Input />
+		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+			<Form.Item label="类型" name="type" rules={[{ required: true, message: "请选择类型!" }]}>
+				<Select
+					allowClear
+					onChange={value => {
+						handleChange({ type: value });
+					}}
+					options={ConfigTypeList}
+				/>
+			</Form.Item>
+			<Form.Item label="名称" name="name" rules={[{ required: true, message: "请输入名称!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ name: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="内容" name="content" rules={[{ required: true, message: "请输入内容!" }]}>
+				<Input.TextArea
+					allowClear
+					onChange={e => {
+						handleChange({ content: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="跳转URL" name="jumpUrl" rules={[{ required: true, message: "请输入跳转URL!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ jumpUrl: e.target.value });
+					}}
+				/>
 			</Form.Item>
 
-			<Form.Item wrapperCol={{ offset: 4, span: 16 }}>
-				<Button type="primary" htmlType="submit">
-					Submit
-				</Button>
+			<Form.Item label="标签" name="tags" rules={[{ required: true, message: "请选择标签!" }]}>
+				<Select
+					allowClear
+					onChange={value => {
+						handleChange({ tags: value });
+					}}
+					options={ArticleTagList}
+				/>
+			</Form.Item>
+			<Form.Item label="排序" name="rank" rules={[{ required: true, message: "请输入排序!" }]}>
+				<Input
+					type="number"
+					allowClear
+					onChange={e => {
+						handleChange({ rank: e.target.value });
+					}}
+				/>
 			</Form.Item>
 		</Form>
 	);
@@ -185,18 +273,20 @@ const Banner: FC<IProps> = props => {
 		<div className="banner">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} />
+				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
-			<Modal title="Basic Modal" visible={isModalOpen} onOk={handleOk} onCancel={() => setIsModalOpen(false)}>
+			<Modal title="添加" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>
 		</div>
 	);
 };
 
-export default Banner;
+const mapStateToProps = (state: any) => state.disc.disc;
+const mapDispatchToProps = {};
+export default connect(mapStateToProps, mapDispatchToProps)(Banner);

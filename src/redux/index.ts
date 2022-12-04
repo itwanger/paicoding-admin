@@ -7,6 +7,7 @@ import reduxThunk from "redux-thunk";
 
 import auth from "./modules/auth/reducer";
 import breadcrumb from "./modules/breadcrumb/reducer";
+import disc from "./modules/disc/reducer";
 import global from "./modules/global/reducer";
 import menu from "./modules/menu/reducer";
 import tabs from "./modules/tabs/reducer";
@@ -17,7 +18,8 @@ const reducer = combineReducers({
 	menu,
 	tabs,
 	auth,
-	breadcrumb
+	breadcrumb,
+	disc
 });
 
 // redux 持久化配置

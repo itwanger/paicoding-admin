@@ -1,13 +1,15 @@
-import { Tabs, message } from "antd";
-import { HomeFilled } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { HOME_URL } from "@/config/config";
 import { connect } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import { HomeFilled } from "@ant-design/icons";
+import { message, Tabs } from "antd";
+
+import { HOME_URL } from "@/config/config";
 import { setTabsList } from "@/redux/modules/tabs/action";
 import { routerArray } from "@/routers";
 import { searchRoute } from "@/utils/util";
 import MoreButton from "./components/MoreButton";
+
 import "./index.less";
 
 const LayoutTabs = (props: any) => {

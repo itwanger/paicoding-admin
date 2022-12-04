@@ -18,3 +18,5 @@ export const SET_TOKEN = "SET_TOKEN";
 export const SET_ASSEMBLY_SIZE = "SET_ASSEMBLY_SIZE";
 // 设置 setThemeConfig
 export const SET_THEME_CONFIG = "SET_THEME_CONFIG";
+// 设置字典值
+export const UPDATE_DISC = "UPDATE_DISC";

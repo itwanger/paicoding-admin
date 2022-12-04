@@ -1,6 +1,7 @@
-import { AnyAction } from "redux";
-import { MenuState } from "@/redux/interface";
 import produce from "immer";
+import { AnyAction } from "redux";
+
+import { MenuState } from "@/redux/interface";
 import * as types from "@/redux/mutation-types";
 
 const menuState: MenuState = {
