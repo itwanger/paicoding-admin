@@ -11,12 +11,12 @@ import {
 
 export const currentMenuList = [
 	{ key: "/home/index", icon: <HomeOutlined />, children: undefined, label: "首页" },
-	{ key: "/config/index", icon: <LinkOutlined />, children: undefined, label: "配置" },
-	{ key: "/category/index", icon: <MenuOutlined />, children: undefined, label: "分类" },
-	{ key: "/tag/index", icon: <TagOutlined />, children: undefined, label: "标签" },
-	{ key: "/article/index", icon: <FileOutlined />, children: undefined, label: "文章" },
-	{ key: "/column/index", icon: <BookOutlined />, children: undefined, label: "专栏" },
-	{ key: "/statistics/index", icon: <FundProjectionScreenOutlined />, children: undefined, label: "数据统计" }
+	{ key: "/statistics/index", icon: <FundProjectionScreenOutlined />, children: undefined, label: "数据统计" },
+	{ key: "/config/index", icon: <LinkOutlined />, children: undefined, label: "运营配置" },
+	{ key: "/category/index", icon: <MenuOutlined />, children: undefined, label: "分类管理" },
+	{ key: "/tag/index", icon: <TagOutlined />, children: undefined, label: "标签管理" },
+	{ key: "/article/index", icon: <FileOutlined />, children: undefined, label: "文章管理" },
+	{ key: "/column/index", icon: <BookOutlined />, children: undefined, label: "教程管理" }
 
 	// {
 	// 	key: "/proTable",

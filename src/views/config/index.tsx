@@ -130,12 +130,6 @@ const Banner: FC<IProps> = props => {
 			key: "rank"
 		},
 		{
-			title: "创建时间",
-			dataIndex: "createTime",
-			key: "createTime",
-			render: createTime => createTime || ""
-		},
-		{
 			title: "操作",
 			key: "key",
 			width: 400,
@@ -145,7 +139,7 @@ const Banner: FC<IProps> = props => {
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
-							修改
+							编辑
 						</Button>
 						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
 							上线
@@ -164,7 +158,7 @@ const Banner: FC<IProps> = props => {
 		console.log("提交");
 	};
 
-	// 修改表单
+	// 编辑表单
 	const reviseModalContent = (
 		<Form
 			name="basic"

@@ -6,7 +6,7 @@ const Logo = (props: any) => {
 	return (
 		<div className="logo-box">
 			<img src={logo} alt="logo" className="logo-img" />
-			{!isCollapse ? <h2 className="logo-text">四剑客</h2> : null}
+			{!isCollapse ? <h2 className="logo-text">技术派</h2> : null}
 		</div>
 	);
 };

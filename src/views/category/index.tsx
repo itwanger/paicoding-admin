@@ -90,25 +90,19 @@ const Sort: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "分类 ID",
+			title: "ID",
 			dataIndex: "categoryId",
 			key: "categoryId"
 		},
 		{
-			title: "名称",
+			title: "分类",
 			dataIndex: "category",
 			key: "category"
 		},
 		{
-			title: "状态",
-			dataIndex: "status",
-			key: "status"
-		},
-		{
-			title: "创建时间",
-			dataIndex: "createTime",
-			key: "createTime",
-			render: createTime => createTime || "-"
+			title: "排序",
+			dataIndex: "rank",
+			key: "rank"
 		},
 		{
 			title: "操作",
@@ -120,7 +114,7 @@ const Sort: FC<IProps> = props => {
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
-							修改
+							编辑
 						</Button>
 						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
 							上线
@@ -139,7 +133,7 @@ const Sort: FC<IProps> = props => {
 		console.log("提交");
 	};
 
-	// 修改表单
+	// 编辑表单
 	const reviseModalContent = (
 		<Form
 			name="basic"

@@ -70,8 +70,8 @@ const Article: FC<IProps> = props => {
 	// 删除
 	const handleDel = (articleId: number) => {
 		Modal.warning({
-			title: "确认删除此分类吗",
-			content: "删除此分类后无法恢复，请谨慎操作！",
+			title: "确认删除此文章吗",
+			content: "删除此文章后无法恢复，请谨慎操作！",
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
@@ -90,7 +90,7 @@ const Article: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "文章 ID",
+			title: "ID",
 			dataIndex: "articleId",
 			key: "articleId"
 		},
@@ -105,11 +105,6 @@ const Article: FC<IProps> = props => {
 			key: "authorName"
 		},
 		{
-			title: "状态",
-			dataIndex: "status",
-			key: "status"
-		},
-		{
 			title: "操作",
 			key: "key",
 			width: 400,
@@ -118,14 +113,11 @@ const Article: FC<IProps> = props => {
 				const { articleId } = item;
 				return (
 					<div className="operation-btn">
-						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
-							官方
-						</Button>
 						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
-							置顶
+							推荐
 						</Button>
-						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
-							加精
+						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(articleId)}>
+							删除
 						</Button>
 					</div>
 				);
@@ -138,7 +130,7 @@ const Article: FC<IProps> = props => {
 		console.log("提交");
 	};
 
-	// 修改表单
+	// 编辑表单
 	const reviseModalContent = (
 		<Form
 			name="basic"
