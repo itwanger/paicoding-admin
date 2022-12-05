@@ -43,6 +43,7 @@ const Article: FC<IProps> = props => {
 		setQuery(prev => prev + 1);
 	}, []);
 
+	// @ts-ignore
 	const { PushStatus } = props || {};
 
 	// 重置表单

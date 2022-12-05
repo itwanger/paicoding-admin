@@ -23,3 +23,8 @@ export const delConfigApi = (configId: number) => {
 export const updateConfigApi = (form: IFormType) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/config/save`, form);
 };
+
+// 上线/下线操作
+export const operateConfigApi = (configId: number, pushStatus: number) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/config/operate`, { configId, pushStatus});
+};

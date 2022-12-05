@@ -5,7 +5,7 @@ import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
 
-import { delConfigApi, getConfigListApi, updateConfigApi } from "@/api/modules/config";
+import { delConfigApi, getConfigListApi, updateConfigApi, operateConfigApi} from "@/api/modules/config";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -64,6 +64,7 @@ const Banner: FC<IProps> = props => {
 	// 获取字典值
 	console.log({ props });
 
+	// @ts-ignore
 	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
 	const { configId, type, name, jumpUrl, content, rank, tags } = form;
 
@@ -97,6 +98,26 @@ const Banner: FC<IProps> = props => {
 			onOk: async () => {
 				// @ts-ignore
 				const { status } = await delConfigApi(configId);
+				const { code } = status || {};
+				console.log();
+				if (code === 0) {
+					message.success("删除成功");
+					onSure();
+				}
+			}
+		});
+	};
+
+	// 上线/下线
+	const handleOperate = (configId: number, pushStatus: number) => {
+		Modal.warning({
+			title: "确认操作此配置吗",
+			content: "删除此配置后无法恢复，请谨慎操作！",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				// @ts-ignore
+				const { status } = await operateConfigApi(configId, pushStatus);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -166,6 +187,7 @@ const Banner: FC<IProps> = props => {
 				// @ts-ignore
 				const { id, type, rank, status } = item;
 				const noUp = status === 0;
+				const pushStatus = status === 0 ? 1 : 0;
 				return (
 					<div className="operation-btn">
 						<Button
@@ -184,6 +206,7 @@ const Banner: FC<IProps> = props => {
 							type={noUp ? "primary" : "default"}
 							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
 							style={{ marginRight: "10px" }}
+							onClick={() => handleOperate(id, pushStatus)}
 						>
 							{noUp ? "上线" : "下线"}
 						</Button>
@@ -200,6 +223,7 @@ const Banner: FC<IProps> = props => {
 		try {
 			const values = await formRef.validateFields();
 			const newValues = { ...values, configId: status };
+			// @ts-ignore
 			const { status: successStatus } = (await updateConfigApi(newValues)) || {};
 			const { code } = successStatus || {};
 			if (code === 0) {

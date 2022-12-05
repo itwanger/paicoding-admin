@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
@@ -46,6 +46,7 @@ const Category: FC<IProps> = props => {
 	// 获取字典值
 	console.log({ props });
 
+	// @ts-ignore
 	const { PushStatus } = props || {};
 
 	// 重置表单
@@ -124,14 +125,19 @@ const Category: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { categoryId } = item;
+				const { categoryId, status } = item;
+				const noUp = status === 0;
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
 							编辑
 						</Button>
-						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
-							上线
+						<Button
+							type={noUp ? "primary" : "default"}
+							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+							style={{ marginRight: "10px" }}
+						>
+							{noUp ? "上线" : "下线"}
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(categoryId)}>
 							删除

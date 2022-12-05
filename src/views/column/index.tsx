@@ -43,6 +43,7 @@ const Column: FC<IProps> = props => {
 		setQuery(prev => prev + 1);
 	}, []);
 
+	// @ts-ignore
 	const { ConfigType, ConfigTypeList, ColumnStatus, ArticleTag, ArticleTagList } = props || {};
 
 	// 重置表单
