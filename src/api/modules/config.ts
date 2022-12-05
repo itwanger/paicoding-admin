@@ -18,7 +18,13 @@ export const getConfigListApi = () => {
 export const delConfigApi = (configId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/config/delete`, { configId });
 };
+
 // 保存操作
 export const updateConfigApi = (form: IFormType) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/config/save`, form);
+};
+
+// 上线/下线操作
+export const operateConfigApi = (configId: number, pushStatus: number) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/config/operate`, { configId, pushStatus});
 };

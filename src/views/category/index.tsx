@@ -1,5 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
-import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
+import { connect } from "react-redux";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
@@ -28,7 +29,7 @@ const defaultInitForm = {
 	id: ""
 };
 
-const Sort: FC<IProps> = props => {
+const Category: FC<IProps> = props => {
 	// 搜索
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
 	// 弹窗
@@ -41,6 +42,12 @@ const Sort: FC<IProps> = props => {
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
+
+	// 获取字典值
+	console.log({ props });
+
+	// @ts-ignore
+	const { PushStatus } = props || {};
 
 	// 重置表单
 	const resetBarFrom = () => {
@@ -105,19 +112,32 @@ const Sort: FC<IProps> = props => {
 			key: "rank"
 		},
 		{
+			title: "状态",
+			dataIndex: "status",
+			key: "status",
+			render(status) {
+				return PushStatus[status];
+			}
+		},
+		{
 			title: "操作",
 			key: "key",
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { categoryId } = item;
+				const { categoryId, status } = item;
+				const noUp = status === 0;
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
 							编辑
 						</Button>
-						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
-							上线
+						<Button
+							type={noUp ? "primary" : "default"}
+							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+							style={{ marginRight: "10px" }}
+						>
+							{noUp ? "上线" : "下线"}
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(categoryId)}>
 							删除
@@ -174,4 +194,6 @@ const Sort: FC<IProps> = props => {
 	);
 };
 
-export default Sort;
+const mapStateToProps = (state: any) => state.disc.disc;
+const mapDispatchToProps = {};
+export default connect(mapStateToProps, mapDispatchToProps)(Category);
