@@ -118,7 +118,7 @@ const Banner: FC<IProps> = props => {
 			closable: true,
 			onOk: async () => {
 				// @ts-ignore
-				const { status } = await operateConfigApi(configId, pushStatus);
+				const { status } = await operateConfigApi({ configId, pushStatus });
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
