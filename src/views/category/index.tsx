@@ -1,4 +1,5 @@
 import { FC, useCallback, useEffect, useState } from "react";
+import { connect } from "react-redux";
 import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -28,7 +29,7 @@ const defaultInitForm = {
 	id: ""
 };
 
-const Sort: FC<IProps> = props => {
+const Category: FC<IProps> = props => {
 	// 搜索
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
 	// 弹窗
@@ -41,6 +42,11 @@ const Sort: FC<IProps> = props => {
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
+
+	// 获取字典值
+	console.log({ props });
+
+	const { PushStatus } = props || {};
 
 	// 重置表单
 	const resetBarFrom = () => {
@@ -103,6 +109,14 @@ const Sort: FC<IProps> = props => {
 			title: "排序",
 			dataIndex: "rank",
 			key: "rank"
+		},
+		{
+			title: "状态",
+			dataIndex: "status",
+			key: "status",
+			render(status) {
+				return PushStatus[status];
+			}
 		},
 		{
 			title: "操作",
@@ -174,4 +188,6 @@ const Sort: FC<IProps> = props => {
 	);
 };
 
-export default Sort;
+const mapStateToProps = (state: any) => state.disc.disc;
+const mapDispatchToProps = {};
+export default connect(mapStateToProps, mapDispatchToProps)(Category);

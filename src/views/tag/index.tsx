@@ -1,4 +1,5 @@
 import { FC, useCallback, useEffect, useState } from "react";
+import { connect } from "react-redux";
 import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -41,6 +42,8 @@ const Label: FC<IProps> = props => {
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
+
+	const { PushStatus } = props || {};
 
 	// 重置表单
 	const resetBarFrom = () => {
@@ -103,6 +106,14 @@ const Label: FC<IProps> = props => {
 			title: "分类",
 			dataIndex: "categoryName",
 			key: "categoryName"
+		},
+		{
+			title: "状态",
+			dataIndex: "status",
+			key: "status",
+			render(status) {
+				return PushStatus[status];
+			}
 		},
 		{
 			title: "操作",
@@ -174,4 +185,6 @@ const Label: FC<IProps> = props => {
 	);
 };
 
-export default Label;
+const mapStateToProps = (state: any) => state.disc.disc;
+const mapDispatchToProps = {};
+export default connect(mapStateToProps, mapDispatchToProps)(Label);

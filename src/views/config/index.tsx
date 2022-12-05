@@ -248,7 +248,7 @@ const Banner: FC<IProps> = props => {
 				/>
 			</Form.Item>
 
-			<Form.Item label="标签" name="tags" rules={[{ required: true, message: "请选择标签!" }]}>
+			<Form.Item label="标签" name="tags" rules={[{ required: false, message: "请选择标签!" }]}>
 				<Select
 					allowClear
 					onChange={value => {

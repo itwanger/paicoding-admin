@@ -18,6 +18,7 @@ export const getConfigListApi = () => {
 export const delConfigApi = (configId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/config/delete`, { configId });
 };
+
 // 保存操作
 export const updateConfigApi = (form: IFormType) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/config/save`, form);
