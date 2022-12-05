@@ -46,7 +46,7 @@ const defaultInitForm: IFormType = {
 
 const Banner: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
-	// 搜索
+	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -65,6 +65,7 @@ const Banner: FC<IProps> = props => {
 	console.log({ props });
 
 	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
+
 	const { configId, type, name, jumpUrl, content, rank, tags } = form;
 
 	// 值改变
@@ -175,6 +176,7 @@ const Banner: FC<IProps> = props => {
 							onClick={() => {
 								setIsModalOpen(true);
 								setStatus(UpdateEnum.Edit);
+								handleChange({ configId: id });
 								formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
 							}}
 						>
@@ -199,7 +201,7 @@ const Banner: FC<IProps> = props => {
 	const handleSubmit = async () => {
 		try {
 			const values = await formRef.validateFields();
-			const newValues = { ...values, configId: status };
+			const newValues = { ...values, configId: status === UpdateEnum.Save ? UpdateEnum.Save : configId };
 			const { status: successStatus } = (await updateConfigApi(newValues)) || {};
 			const { code } = successStatus || {};
 			if (code === 0) {
