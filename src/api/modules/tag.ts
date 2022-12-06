@@ -17,3 +17,8 @@ export const getTagListApi = () => {
 export const delTagListApi = (tagId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/tag/delete`, { tagId });
 };
+
+// 上线/下线操作
+export const operateTagApi = (params: object | undefined) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/tag/operate`, params);
+};

@@ -1,10 +1,10 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, DeleteOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delArticleApi, getArticleListApi } from "@/api/modules/article";
+import { delArticleApi, getArticleListApi, operateArticleApi } from "@/api/modules/article";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
@@ -44,7 +44,7 @@ const Article: FC<IProps> = props => {
 	}, []);
 
 	// @ts-ignore
-	const { PushStatus } = props || {};
+	const { PushStatus, ToppingStatus } = props || {};
 
 	// 重置表单
 	const resetBarFrom = () => {
@@ -91,6 +91,27 @@ const Article: FC<IProps> = props => {
 		});
 	};
 
+	// 上线/下线
+	const handleOperate = (articleId: number, operateType: number) => {
+		const operateDesc = operateType === 0 ? "不推荐" : "推荐";
+		Modal.warning({
+			title: "确认" + operateDesc + "此配置吗",
+			content: "对线上会有影响，请谨慎操作！",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				// @ts-ignore
+				const { status } = await operateArticleApi({ articleId, operateType });
+				const { code } = status || {};
+				console.log();
+				if (code === 0) {
+					message.success("操作成功");
+					onSure();
+				}
+			}
+		});
+	};
+
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
@@ -117,16 +138,31 @@ const Article: FC<IProps> = props => {
 			}
 		},
 		{
+			title: "推荐",
+			dataIndex: "toppingStat",
+			key: "toppingStat",
+			render(toppingStat) {
+				return ToppingStatus[toppingStat];
+			}
+		},
+		{
 			title: "操作",
 			key: "key",
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { articleId } = item;
+				const { articleId, toppingStat } = item;
+				const noUp = toppingStat === 0;
+				const topStatus = toppingStat === 0 ? 3 : 4; // 3-推荐；4-取消推荐
 				return (
 					<div className="operation-btn">
-						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
-							推荐
+						<Button
+							type={noUp ? "primary" : "default"}
+							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => handleOperate(articleId, topStatus)}
+						>
+							{noUp ? "推荐" : "不推"}
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(articleId)}>
 							删除

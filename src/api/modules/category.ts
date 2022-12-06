@@ -17,3 +17,13 @@ export const getCategoryListApi = () => {
 export const delCategoryApi = (categoryId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/category/delete`, { categoryId });
 };
+
+// // 保存操作
+// export const updateCategoryApi = (form: IFormType) => {
+// 	return http.post<Login.ResAuthButtons>(`${PORT1}/category/save`, form);
+// };
+
+// 上线/下线操作
+export const operateCategoryApi = (params: object | undefined) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/category/operate`, params);
+};

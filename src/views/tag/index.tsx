@@ -1,10 +1,10 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, DeleteOutlined, CloseCircleOutlined, RedoOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delTagListApi, getTagListApi } from "@/api/modules/tag";
+import { delTagListApi, getTagListApi, operateTagApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
@@ -91,6 +91,27 @@ const Label: FC<IProps> = props => {
 		});
 	};
 
+	// 上线/下线
+	const handleOperate = (tagId: number, pushStatus: number) => {
+		const operateDesc = pushStatus === 0 ? "下线" : "上线";
+		Modal.warning({
+			title: "确认" + operateDesc + "此配置吗",
+			content: "对线上会有影响，请谨慎操作！",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				// @ts-ignore
+				const { status } = await operateTagApi({ tagId, pushStatus });
+				const { code } = status || {};
+				console.log();
+				if (code === 0) {
+					message.success("操作成功");
+					onSure();
+				}
+			}
+		});
+	};
+
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
@@ -122,14 +143,21 @@ const Label: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { tagId } = item;
+				const { tagId, status } = item;
+				const noUp = status === 0;
+				const pushStatus = status === 0 ? 1 : 0;
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
 							编辑
 						</Button>
-						<Button type="primary" icon={<CheckCircleOutlined />} style={{ marginRight: "10px" }}>
-							上线
+						<Button
+							type={noUp ? "primary" : "default"}
+							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => handleOperate(tagId, pushStatus)}
+						>
+							{noUp ? "上线" : "下线"}
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(tagId)}>
 							删除

@@ -4,7 +4,7 @@ import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, RedoOutlined 
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delCategoryApi, getCategoryListApi } from "@/api/modules/category";
+import { delCategoryApi, getCategoryListApi, operateCategoryApi } from "@/api/modules/category";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
@@ -94,6 +94,27 @@ const Category: FC<IProps> = props => {
 		});
 	};
 
+	// 上线/下线
+	const handleOperate = (categoryId: number, pushStatus: number) => {
+		const operateDesc = pushStatus === 0 ? "下线" : "上线";
+		Modal.warning({
+			title: "确认" + operateDesc + "此配置吗",
+			content: "对线上会有影响，请谨慎操作！",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				// @ts-ignore
+				const { status } = await operateCategoryApi({ categoryId, pushStatus });
+				const { code } = status || {};
+				console.log();
+				if (code === 0) {
+					message.success("操作成功");
+					onSure();
+				}
+			}
+		});
+	};
+
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
@@ -120,6 +141,14 @@ const Category: FC<IProps> = props => {
 			}
 		},
 		{
+			title: "状态",
+			dataIndex: "status",
+			key: "status",
+			render(status) {
+				return PushStatus[status];
+			}
+		},
+		{
 			title: "操作",
 			key: "key",
 			width: 400,
@@ -127,6 +156,7 @@ const Category: FC<IProps> = props => {
 				// @ts-ignore
 				const { categoryId, status } = item;
 				const noUp = status === 0;
+				const pushStatus = status === 0 ? 1 : 0;
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
@@ -136,6 +166,7 @@ const Category: FC<IProps> = props => {
 							type={noUp ? "primary" : "default"}
 							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
 							style={{ marginRight: "10px" }}
+							onClick={() => handleOperate(categoryId, pushStatus)}
 						>
 							{noUp ? "上线" : "下线"}
 						</Button>
