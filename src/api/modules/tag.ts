@@ -3,6 +3,7 @@ import qs from "qs";
 import http from "@/api";
 import { PORT1 } from "@/api/config/servicePort";
 import { Login } from "@/api/interface/index";
+import { IFormType } from "@/views/tag";
 
 /**
  * @name 标签模块
@@ -16,6 +17,11 @@ export const getTagListApi = () => {
 // 删除操作
 export const delTagListApi = (tagId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/tag/delete`, { tagId });
+};
+
+// 保存操作
+export const updateTagApi = (form: IFormType) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/tag/save`, form);
 };
 
 // 上线/下线操作

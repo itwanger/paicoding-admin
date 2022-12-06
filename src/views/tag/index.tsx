@@ -4,8 +4,9 @@ import { CheckCircleOutlined, DeleteOutlined, CloseCircleOutlined, RedoOutlined 
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delTagListApi, getTagListApi, operateTagApi } from "@/api/modules/tag";
+import { delTagListApi, getTagListApi, operateTagApi, updateTagApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
+import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -21,17 +22,22 @@ interface DataType {
 
 interface IProps {}
 
-interface IInitForm {
-	id: string;
+export interface IFormType {
+	tagId: number; // 为0时，是保存，非0是更新
+	tag: string; // 标签名
+	categoryId: number; // 分类ID
 }
 
-const defaultInitForm = {
-	id: ""
+const defaultInitForm: IFormType = {
+	tagId: -1,
+	tag: "",
+	categoryId: -1
 };
 
 const Label: FC<IProps> = props => {
-	// 搜索
-	const [form, setForm] = useState<IInitForm>(defaultInitForm);
+	const [formRef] = Form.useForm();
+	// form值
+	const [form, setForm] = useState<IFormType>(defaultInitForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	// 列表数据
@@ -39,12 +45,20 @@ const Label: FC<IProps> = props => {
 	// 刷新函数
 	const [query, setQuery] = useState<number>(0);
 
+	//当前的状态
+	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
 
+	// 获取字典值
+	console.log({ props });
+
 	// @ts-ignore
-	const { PushStatus } = props || {};
+	const { PushStatus, CategoryType } = props || {};
+
+	const { tagId } = form;
 
 	// 重置表单
 	const resetBarFrom = () => {
@@ -64,7 +78,7 @@ const Label: FC<IProps> = props => {
 			const { code } = status || {};
 			const { list } = result || {};
 			if (code === 0) {
-				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
+				const newList = list.map((item: MapItem) => ({ ...item, key: item?.tagId }));
 				setTableData(newList);
 			}
 		};
@@ -126,8 +140,11 @@ const Label: FC<IProps> = props => {
 		},
 		{
 			title: "分类",
-			dataIndex: "categoryName",
-			key: "categoryName"
+			dataIndex: "categoryId",
+			key: "categoryId",
+			render(tag) {
+				return CategoryType[tag];
+			}
 		},
 		{
 			title: "状态",
@@ -148,7 +165,17 @@ const Label: FC<IProps> = props => {
 				const pushStatus = status === 0 ? 1 : 0;
 				return (
 					<div className="operation-btn">
-						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
+						<Button
+							type="primary"
+							icon={<RedoOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								setIsModalOpen(true);
+								setStatus(UpdateEnum.Edit);
+								handleChange({ tagId: tagId });
+								formRef.setFieldsValue({ ...item });
+							}}
+						>
 							编辑
 						</Button>
 						<Button
@@ -168,30 +195,41 @@ const Label: FC<IProps> = props => {
 		}
 	];
 
-	// 数据提交
-	const handleOk = () => {
-		console.log("提交");
+	const handleSubmit = async () => {
+		try {
+			const values = await formRef.validateFields();
+			const newValues = { ...values, tagId: status === UpdateEnum.Save ? UpdateEnum.Save : tagId };
+			// @ts-ignore
+			const { status: successStatus } = (await updateTagApi(newValues)) || {};
+			const { code } = successStatus || {};
+			if (code === 0) {
+				setIsModalOpen(false);
+				onSure();
+			}
+		} catch (errorInfo) {
+			console.log("Failed:", errorInfo);
+		}
 	};
 
 	// 编辑表单
 	const reviseModalContent = (
-		<Form
-			name="basic"
-			labelCol={{ span: 4 }}
-			wrapperCol={{ span: 16 }}
-			initialValues={{ remember: true }}
-			// onFinish={onFinish}
-			// onFinishFailed={onFinishFailed}
-			autoComplete="off"
-		>
-			<Form.Item label="ID" name="id" rules={[{ required: true, message: "Please input ID!" }]}>
-				<Input />
+		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+			<Form.Item label="标签" name="tag" rules={[{ required: true, message: "请输入名称!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ tag: e.target.value });
+					}}
+				/>
 			</Form.Item>
-
-			<Form.Item wrapperCol={{ offset: 4, span: 16 }}>
-				<Button type="primary" htmlType="submit">
-					Submit
-				</Button>
+			<Form.Item label="分类" name="categoryId" rules={[{ required: true, message: "请选择分类!" }]}>
+				<Select
+					allowClear
+					onChange={value => {
+						handleChange({ categoryId: value });
+					}}
+					options={CategoryType}
+				/>
 			</Form.Item>
 		</Form>
 	);
@@ -200,14 +238,14 @@ const Label: FC<IProps> = props => {
 		<div className="banner">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} />
+				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
-			<Modal title="Basic Modal" visible={isModalOpen} onOk={handleOk} onCancel={() => setIsModalOpen(false)}>
+			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>
 		</div>

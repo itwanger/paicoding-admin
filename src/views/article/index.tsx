@@ -129,14 +129,6 @@ const Article: FC<IProps> = props => {
 			dataIndex: "authorName",
 			key: "authorName"
 		},
-		// {
-		// 	title: "状态",
-		// 	dataIndex: "status",
-		// 	key: "status",
-		// 	render(status) {
-		// 		return PushStatus[status];
-		// 	}
-		// },
 		{
 			title: "推荐",
 			dataIndex: "toppingStat",
