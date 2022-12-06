@@ -152,14 +152,6 @@ const Category: FC<IProps> = props => {
 			}
 		},
 		{
-			title: "状态",
-			dataIndex: "status",
-			key: "status",
-			render(status) {
-				return PushStatus[status];
-			}
-		},
-		{
 			title: "操作",
 			key: "key",
 			width: 400,
@@ -170,7 +162,17 @@ const Category: FC<IProps> = props => {
 				const pushStatus = status === 0 ? 1 : 0;
 				return (
 					<div className="operation-btn">
-						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
+						<Button
+							type="primary"
+							icon={<RedoOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								setIsModalOpen(true);
+								setStatus(UpdateEnum.Edit);
+								handleChange({ categoryId: categoryId });
+								formRef.setFieldsValue({ ...item });
+							}}
+						>
 							编辑
 						</Button>
 						<Button

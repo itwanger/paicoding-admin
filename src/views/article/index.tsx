@@ -93,7 +93,7 @@ const Article: FC<IProps> = props => {
 
 	// 上线/下线
 	const handleOperate = (articleId: number, operateType: number) => {
-		const operateDesc = operateType === 0 ? "不推荐" : "推荐";
+		const operateDesc = operateType === 4 ? "取消" : "推荐";
 		Modal.warning({
 			title: "确认" + operateDesc + "此配置吗",
 			content: "对线上会有影响，请谨慎操作！",
@@ -129,14 +129,14 @@ const Article: FC<IProps> = props => {
 			dataIndex: "authorName",
 			key: "authorName"
 		},
-		{
-			title: "状态",
-			dataIndex: "status",
-			key: "status",
-			render(status) {
-				return PushStatus[status];
-			}
-		},
+		// {
+		// 	title: "状态",
+		// 	dataIndex: "status",
+		// 	key: "status",
+		// 	render(status) {
+		// 		return PushStatus[status];
+		// 	}
+		// },
 		{
 			title: "推荐",
 			dataIndex: "toppingStat",
@@ -162,7 +162,7 @@ const Article: FC<IProps> = props => {
 							style={{ marginRight: "10px" }}
 							onClick={() => handleOperate(articleId, topStatus)}
 						>
-							{noUp ? "推荐" : "不推"}
+							{noUp ? "推荐" : "取消"}
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(articleId)}>
 							删除

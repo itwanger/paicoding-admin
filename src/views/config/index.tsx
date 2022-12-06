@@ -111,7 +111,7 @@ const Banner: FC<IProps> = props => {
 	};
 
 	// 上线/下线
-	const handleOperate = (id: number, pushStatus: number) => {
+	const handleOperate = (configId: number, pushStatus: number) => {
 		const operateDesc = pushStatus === 0 ? "下线" : "上线";
 		Modal.warning({
 			title: "确认" + operateDesc + "此配置吗",
@@ -120,7 +120,7 @@ const Banner: FC<IProps> = props => {
 			closable: true,
 			onOk: async () => {
 				// @ts-ignore
-				const { status } = await operateConfigApi({ id, pushStatus });
+				const { status } = await operateConfigApi({ configId, pushStatus });
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
