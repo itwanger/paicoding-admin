@@ -25,6 +25,6 @@ export const updateConfigApi = (form: IFormType) => {
 };
 
 // 上线/下线操作
-export const operateConfigApi = params => {
+export const operateConfigApi = (params: object | undefined) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/config/operate`, params);
 };

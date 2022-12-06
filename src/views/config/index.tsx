@@ -110,19 +110,20 @@ const Banner: FC<IProps> = props => {
 	};
 
 	// 上线/下线
-	const handleOperate = (configId: number, pushStatus: number) => {
+	const handleOperate = (id: number, pushStatus: number) => {
+		const operateDesc = pushStatus === 0 ? "下线" : "上线";
 		Modal.warning({
-			title: "确认操作此配置吗",
-			content: "删除此配置后无法恢复，请谨慎操作！",
+			title: "确认" + operateDesc + "此配置吗",
+			content: "对线上会有影响，请谨慎操作！",
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
 				// @ts-ignore
-				const { status } = await operateConfigApi({ configId, pushStatus });
+				const { status } = await operateConfigApi({ id, pushStatus });
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
-					message.success("删除成功");
+					message.success("操作成功");
 					onSure();
 				}
 			}
@@ -225,6 +226,7 @@ const Banner: FC<IProps> = props => {
 		try {
 			const values = await formRef.validateFields();
 			const newValues = { ...values, configId: status === UpdateEnum.Save ? UpdateEnum.Save : configId };
+			// @ts-ignore
 			const { status: successStatus } = (await updateConfigApi(newValues)) || {};
 			const { code } = successStatus || {};
 			if (code === 0) {
