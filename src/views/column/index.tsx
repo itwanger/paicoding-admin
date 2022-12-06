@@ -4,8 +4,9 @@ import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/i
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delColumnApi, getColumnListApi } from "@/api/modules/column";
+import { getColumnListApi , updateColumnApi, delColumnApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
+import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -21,17 +22,28 @@ interface DataType {
 
 interface IProps {}
 
-interface IInitForm {
-	id: string;
+export interface IFormType {
+	columnId: number; // 为0时，是保存，非0是更新
+	columnName: string; // 专栏名
+	userId: number; // 作者ID
+	introduction: string; // 简介
+	cover: string; // 封面 URL
+	state: number; // 状态
 }
 
-const defaultInitForm = {
-	id: ""
+const defaultInitForm: IFormType = {
+	columnId: -1,
+	columnName: "",
+	userId: -1,
+	introduction: "",
+	cover: "",
+	state: -1
 };
 
 const Column: FC<IProps> = props => {
-	// 搜索
-	const [form, setForm] = useState<IInitForm>(defaultInitForm);
+	const [formRef] = Form.useForm();
+	// form值
+	const [form, setForm] = useState<IFormType>(defaultInitForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	// 列表数据
@@ -39,17 +51,20 @@ const Column: FC<IProps> = props => {
 	// 刷新函数
 	const [query, setQuery] = useState<number>(0);
 
+	//当前的状态
+	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
 
+	// 获取字典值
+	console.log({ props });
+
 	// @ts-ignore
 	const { ConfigType, ConfigTypeList, ColumnStatus, ArticleTag, ArticleTagList } = props || {};
 
-	// 重置表单
-	const resetBarFrom = () => {
-		setForm(defaultInitForm);
-	};
+	const { columnId } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -140,22 +155,25 @@ const Column: FC<IProps> = props => {
 		}
 	];
 
-	// 数据提交
-	const handleOk = () => {
-		console.log("提交");
+	const handleSubmit = async () => {
+		try {
+			const values = await formRef.validateFields();
+			const newValues = { ...values, columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId };
+			// @ts-ignore
+			const { status: successStatus } = (await updateColumnApi(newValues)) || {};
+			const { code } = successStatus || {};
+			if (code === 0) {
+				setIsModalOpen(false);
+				onSure();
+			}
+		} catch (errorInfo) {
+			console.log("Failed:", errorInfo);
+		}
 	};
 
 	// 编辑表单
 	const reviseModalContent = (
-		<Form
-			name="basic"
-			labelCol={{ span: 4 }}
-			wrapperCol={{ span: 16 }}
-			initialValues={{ remember: true }}
-			// onFinish={onFinish}
-			// onFinishFailed={onFinishFailed}
-			autoComplete="off"
-		>
+		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
 			<Form.Item label="ID" name="id" rules={[{ required: true, message: "Please input ID!" }]}>
 				<Input />
 			</Form.Item>
@@ -179,7 +197,7 @@ const Column: FC<IProps> = props => {
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
-			<Modal title="Basic Modal" visible={isModalOpen} onOk={handleOk} onCancel={() => setIsModalOpen(false)}>
+			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>
 		</div>
