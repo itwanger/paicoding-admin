@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
@@ -167,7 +167,7 @@ const Label: FC<IProps> = props => {
 					<div className="operation-btn">
 						<Button
 							type="primary"
-							icon={<RedoOutlined />}
+							icon={<EditOutlined />}
 							style={{ marginRight: "10px" }}
 							onClick={() => {
 								setIsModalOpen(true);
@@ -246,6 +246,9 @@ const Label: FC<IProps> = props => {
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
+			<Modal title="详情" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
+				{reviseModalContent}
+			</Modal>
 			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>

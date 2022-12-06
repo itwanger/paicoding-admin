@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
@@ -50,6 +50,8 @@ const Banner: FC<IProps> = props => {
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+	// 弹窗
+	const [isModalOpenShow, setIsModalOpenShow] = useState<boolean>(false);
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
 	// 刷新函数
@@ -152,16 +154,16 @@ const Banner: FC<IProps> = props => {
 			dataIndex: "name",
 			key: "name"
 		},
-		{
-			title: "内容",
-			dataIndex: "content",
-			key: "content"
-		},
-		{
-			title: "跳转URL",
-			dataIndex: "jumpUrl",
-			key: "jumpUrl"
-		},
+		// {
+		// 	title: "内容",
+		// 	dataIndex: "content",
+		// 	key: "content"
+		// },
+		// {
+		// 	title: "跳转URL",
+		// 	dataIndex: "jumpUrl",
+		// 	key: "jumpUrl"
+		// },
 		{
 			title: "标签",
 			dataIndex: "tags",
@@ -196,7 +198,20 @@ const Banner: FC<IProps> = props => {
 					<div className="operation-btn">
 						<Button
 							type="primary"
-							icon={<RedoOutlined />}
+							icon={<EyeOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								setIsModalOpenShow(true);
+								setStatus(UpdateEnum.Edit);
+								handleChange({ configId: id });
+								formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
+							}}
+						>
+							详情
+						</Button>
+						<Button
+							type="primary"
+							icon={<EditOutlined />}
 							style={{ marginRight: "10px" }}
 							onClick={() => {
 								setIsModalOpen(true);
@@ -239,6 +254,64 @@ const Banner: FC<IProps> = props => {
 			console.log("Failed:", errorInfo);
 		}
 	};
+
+	// 表单详情
+	const reviseModalContentShow = (
+		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+			<Form.Item label="类型" name="type" rules={[{ required: true, message: "请选择类型!" }]}>
+				<Select
+					allowClear
+					onChange={value => {
+						handleChange({ type: value });
+					}}
+					options={ConfigTypeList}
+				/>
+			</Form.Item>
+			<Form.Item label="名称" name="name" rules={[{ required: true, message: "请输入名称!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ name: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="内容" name="content" rules={[{ required: true, message: "请输入内容!" }]}>
+				<Input.TextArea
+					allowClear
+					onChange={e => {
+						handleChange({ content: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="跳转URL" name="jumpUrl" rules={[{ required: true, message: "请输入跳转URL!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ jumpUrl: e.target.value });
+					}}
+				/>
+			</Form.Item>
+
+			<Form.Item label="标签" name="tags" rules={[{ required: false, message: "请选择标签!" }]}>
+				<Select
+					allowClear
+					onChange={value => {
+						handleChange({ tags: value });
+					}}
+					options={ArticleTagList}
+				/>
+			</Form.Item>
+			<Form.Item label="排序" name="rank" rules={[{ required: true, message: "请输入排序!" }]}>
+				<Input
+					type="number"
+					allowClear
+					onChange={e => {
+						handleChange({ rank: e.target.value });
+					}}
+				/>
+			</Form.Item>
+		</Form>
+	);
 
 	// 编辑表单
 	const reviseModalContent = (
@@ -309,6 +382,9 @@ const Banner: FC<IProps> = props => {
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
+			<Modal title="详情" visible={isModalOpenShow} onCancel={() => setIsModalOpenShow(false)}>
+				{reviseModalContentShow}
+			</Modal>
 			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>

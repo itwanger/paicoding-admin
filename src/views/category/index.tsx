@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
@@ -138,18 +138,18 @@ const Category: FC<IProps> = props => {
 			dataIndex: "category",
 			key: "category"
 		},
+		// 		{
+		// 	title: "状态",
+		// 	dataIndex: "status",
+		// 	key: "status",
+		// 	render(status) {
+		// 		return PushStatus[status];
+		// 	}
+		// },
 		{
 			title: "排序",
 			dataIndex: "rank",
 			key: "rank"
-		},
-		{
-			title: "状态",
-			dataIndex: "status",
-			key: "status",
-			render(status) {
-				return PushStatus[status];
-			}
 		},
 		{
 			title: "操作",
@@ -164,7 +164,7 @@ const Category: FC<IProps> = props => {
 					<div className="operation-btn">
 						<Button
 							type="primary"
-							icon={<RedoOutlined />}
+							icon={<EditOutlined />}
 							style={{ marginRight: "10px" }}
 							onClick={() => {
 								setIsModalOpen(true);

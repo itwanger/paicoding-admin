@@ -1,21 +1,21 @@
 import React, { FC } from "react";
 import {
 	BookOutlined,
-	FileOutlined,
-	FundProjectionScreenOutlined,
+	LineChartOutlined,
+	CalendarOutlined,
 	HomeOutlined,
-	LinkOutlined,
-	MenuOutlined,
-	TagOutlined
+	BarsOutlined,
+	FileDoneOutlined,
+	TagsOutlined
 } from "@ant-design/icons";
 
 export const currentMenuList = [
 	{ key: "/home/index", icon: <HomeOutlined />, children: undefined, label: "首页" },
-	{ key: "/statistics/index", icon: <FundProjectionScreenOutlined />, children: undefined, label: "数据统计" },
-	{ key: "/config/index", icon: <LinkOutlined />, children: undefined, label: "运营配置" },
-	{ key: "/category/index", icon: <MenuOutlined />, children: undefined, label: "分类管理" },
-	{ key: "/tag/index", icon: <TagOutlined />, children: undefined, label: "标签管理" },
-	{ key: "/article/index", icon: <FileOutlined />, children: undefined, label: "文章管理" },
+	{ key: "/statistics/index", icon: <LineChartOutlined />, children: undefined, label: "数据统计" },
+	{ key: "/config/index", icon: <CalendarOutlined />, children: undefined, label: "运营配置" },
+	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },
+	{ key: "/tag/index", icon: <TagsOutlined />, children: undefined, label: "标签管理" },
+	{ key: "/article/index", icon: <FileDoneOutlined />, children: undefined, label: "文章管理" },
 	{ key: "/column/index", icon: <BookOutlined />, children: undefined, label: "教程管理" }
 
 	// {

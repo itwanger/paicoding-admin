@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
@@ -140,10 +140,10 @@ const Column: FC<IProps> = props => {
 				const { columnId } = item;
 				return (
 					<div className="operation-btn">
-						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
+						<Button type="primary" icon={<EyeOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
 							详情
 						</Button>
-						<Button type="primary" icon={<RedoOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
+						<Button type="primary" icon={<EditOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
 							编辑
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}>
