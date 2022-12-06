@@ -197,7 +197,7 @@ const Article: FC<IProps> = props => {
 		<div className="banner">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} />
+				{/*<Search handleChange={handleChange} />*/}
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} />
