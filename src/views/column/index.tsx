@@ -4,7 +4,7 @@ import { CheckCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/i
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { getColumnListApi , updateColumnApi, delColumnApi } from "@/api/modules/column";
+import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";

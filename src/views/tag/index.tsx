@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, CloseCircleOutlined, RedoOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, RedoOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
@@ -56,7 +56,7 @@ const Label: FC<IProps> = props => {
 	console.log({ props });
 
 	// @ts-ignore
-	const { PushStatus, CategoryType } = props || {};
+	const { PushStatus, CategoryType, CategoryTypeList } = props || {};
 
 	const { tagId } = form;
 
@@ -210,6 +210,7 @@ const Label: FC<IProps> = props => {
 			console.log("Failed:", errorInfo);
 		}
 	};
+	console.log({ CategoryType });
 
 	// 编辑表单
 	const reviseModalContent = (
@@ -228,7 +229,7 @@ const Label: FC<IProps> = props => {
 					onChange={value => {
 						handleChange({ categoryId: value });
 					}}
-					options={CategoryType}
+					options={CategoryTypeList}
 				/>
 			</Form.Item>
 		</Form>

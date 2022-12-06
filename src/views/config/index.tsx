@@ -67,6 +67,7 @@ const Banner: FC<IProps> = props => {
 
 	// @ts-ignore
 	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
+	console.log({ props });
 
 	const { configId, type, name, jumpUrl, content, rank, tags } = form;
 
