@@ -4,8 +4,9 @@ import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, RedoOutlined 
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delCategoryApi, getCategoryListApi, operateCategoryApi } from "@/api/modules/category";
+import { delCategoryApi, getCategoryListApi, operateCategoryApi, updateCategoryApi } from "@/api/modules/category";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
+import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -21,23 +22,31 @@ interface DataType {
 
 interface IProps {}
 
-interface IInitForm {
-	id: string;
+interface IFormType {
+	categoryId: number; // 为0时，是保存，非0是更新
+	category: string; // 分类名
+	rank: number; // 排名
 }
 
-const defaultInitForm = {
-	id: ""
+const defaultInitForm: IFormType = {
+	categoryId: -1,
+	category: "",
+	rank: -1
 };
 
 const Category: FC<IProps> = props => {
-	// 搜索
-	const [form, setForm] = useState<IInitForm>(defaultInitForm);
+	const [formRef] = Form.useForm();
+	// form值
+	const [form, setForm] = useState<IFormType>(defaultInitForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
 	// 刷新函数
 	const [query, setQuery] = useState<number>(0);
+
+	//当前的状态
+	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
 
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
@@ -48,6 +57,8 @@ const Category: FC<IProps> = props => {
 
 	// @ts-ignore
 	const { PushStatus } = props || {};
+
+	const { categoryId } = form;
 
 	// 重置表单
 	const resetBarFrom = () => {
@@ -179,30 +190,41 @@ const Category: FC<IProps> = props => {
 		}
 	];
 
-	// 数据提交
-	const handleOk = () => {
-		console.log("提交");
+	const handleSubmit = async () => {
+		try {
+			const values = await formRef.validateFields();
+			const newValues = { ...values, categoryId: status === UpdateEnum.Save ? UpdateEnum.Save : categoryId };
+			// @ts-ignore
+			const { status: successStatus } = (await updateCategoryApi(newValues)) || {};
+			const { code } = successStatus || {};
+			if (code === 0) {
+				setIsModalOpen(false);
+				onSure();
+			}
+		} catch (errorInfo) {
+			console.log("Failed:", errorInfo);
+		}
 	};
 
 	// 编辑表单
 	const reviseModalContent = (
-		<Form
-			name="basic"
-			labelCol={{ span: 4 }}
-			wrapperCol={{ span: 16 }}
-			initialValues={{ remember: true }}
-			// onFinish={onFinish}
-			// onFinishFailed={onFinishFailed}
-			autoComplete="off"
-		>
-			<Form.Item label="ID" name="id" rules={[{ required: true, message: "Please input ID!" }]}>
-				<Input />
+		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+			<Form.Item label="分类" name="category" rules={[{ required: true, message: "请输入分类!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ category: e.target.value });
+					}}
+				/>
 			</Form.Item>
-
-			<Form.Item wrapperCol={{ offset: 4, span: 16 }}>
-				<Button type="primary" htmlType="submit">
-					Submit
-				</Button>
+			<Form.Item label="排序" name="rank" rules={[{ required: true, message: "请输入排序!" }]}>
+				<Input
+					type="number"
+					allowClear
+					onChange={e => {
+						handleChange({ rank: e.target.value });
+					}}
+				/>
 			</Form.Item>
 		</Form>
 	);
@@ -211,14 +233,14 @@ const Category: FC<IProps> = props => {
 		<div className="category">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} />
+				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
-			<Modal title="Basic Modal" visible={isModalOpen} onOk={handleOk} onCancel={() => setIsModalOpen(false)}>
+			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>
 		</div>

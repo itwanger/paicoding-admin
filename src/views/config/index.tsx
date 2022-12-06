@@ -61,6 +61,7 @@ const Banner: FC<IProps> = props => {
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
+
 	// 获取字典值
 	console.log({ props });
 
@@ -307,7 +308,7 @@ const Banner: FC<IProps> = props => {
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
-			<Modal title="添加" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
+			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>
 		</div>
