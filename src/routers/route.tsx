@@ -1,12 +1,14 @@
 import React, { FC } from "react";
 import {
-	BookOutlined,
 	LineChartOutlined,
 	CalendarOutlined,
 	HomeOutlined,
 	BarsOutlined,
-	FileDoneOutlined,
-	TagsOutlined
+	TagsOutlined,
+	FileAddOutlined,
+	FilePptOutlined,
+	FileTextOutlined,
+	ReadOutlined
 } from "@ant-design/icons";
 
 export const currentMenuList = [
@@ -15,16 +17,16 @@ export const currentMenuList = [
 	{ key: "/config/index", icon: <CalendarOutlined />, children: undefined, label: "运营配置" },
 	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },
 	{ key: "/tag/index", icon: <TagsOutlined />, children: undefined, label: "标签管理" },
-	{ key: "/article/index", icon: <FileDoneOutlined />, children: undefined, label: "文章管理" },
-	{ key: "/column/index", icon: <BookOutlined />, children: undefined, label: "教程管理" }
-
-	// {
-	// 	key: "/proTable",
-	// 	icon: <MailOutlined />,
-	// 	children: [
-	// 		{ key: "/proTable/useHooks", icon: <MailOutlined />, children: undefined, label: "二级菜单" },
-	// 		{ key: "/proTable/useComponent", icon: <MailOutlined />, children: undefined, label: "二级菜单" }
-	// 	],
-	// 	label: "一级菜单"
-	// }
+	{ key: "/article/index", icon: <FileTextOutlined />, children: undefined, label: "文章管理" },
+	// { key: "/column/index", icon: <BookOutlined />, children: undefined, label: "教程配置" },
+	// { key: "/columnArticle/index", icon: <BookOutlined />, children: undefined, label: "教程文章" }
+	{
+		key: "/proTable",
+		icon: <ReadOutlined />,
+		children: [
+			{ key: "/column/index", icon: <FilePptOutlined />, children: undefined, label: "教程配置" },
+			{ key: "/columnArticle/index", icon: <FileAddOutlined />, children: undefined, label: "教程文章" }
+		],
+		label: "教程管理"
+	}
 ];

@@ -1,10 +1,10 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delTagListApi, getTagListApi, operateTagApi, updateTagApi } from "@/api/modules/tag";
+import { delColumnArticleApi, getColumnArticleListApi, updateColumnArticleApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -23,18 +23,22 @@ interface DataType {
 interface IProps {}
 
 export interface IFormType {
-	tagId: number; // 为0时，是保存，非0是更新
-	tag: string; // 标签名
-	categoryId: number; // 分类ID
+	id: number; // 文章ID
+	title: string; // 文章标题
+	columnId: number; // 专栏ID
+	column: string; // 专栏名
+	sort: number; // 排序
 }
 
 const defaultInitForm: IFormType = {
-	tagId: -1,
-	tag: "",
-	categoryId: -1
+	id: -1,
+	title: "",
+	columnId: -1,
+	column: "",
+	sort: -1
 };
 
-const Label: FC<IProps> = props => {
+const ColumnArticle: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
@@ -56,9 +60,9 @@ const Label: FC<IProps> = props => {
 	console.log({ props });
 
 	// @ts-ignore
-	const { PushStatus, CategoryType, CategoryTypeList } = props || {};
+	const { ConfigType, ConfigTypeList, ColumnStatus, ColumnStatusList, ArticleTag, ArticleTagList } = props || {};
 
-	const { tagId } = form;
+	const { columnId } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -69,11 +73,11 @@ const Label: FC<IProps> = props => {
 	useEffect(() => {
 		const getSortList = async () => {
 			// @ts-ignore
-			const { status, result } = await getTagListApi();
+			const { status, result } = await getColumnArticleListApi(-1); // TODO: 需要传教程ID
 			const { code } = status || {};
 			const { list } = result || {};
 			if (code === 0) {
-				const newList = list.map((item: MapItem) => ({ ...item, key: item?.tagId }));
+				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
 				setTableData(newList);
 			}
 		};
@@ -81,15 +85,15 @@ const Label: FC<IProps> = props => {
 	}, [query]);
 
 	// 删除
-	const handleDel = (tagId: number) => {
+	const handleDel = (categoryId: number) => {
 		Modal.warning({
-			title: "确认删除此分类吗",
-			content: "删除此分类后无法恢复，请谨慎操作！",
+			title: "确认删除此教程文章吗",
+			content: "删除此教程文章后无法恢复，请谨慎操作！",
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
 				// @ts-ignore
-				const { status } = await delTagListApi(tagId);
+				const { status } = await delColumnArticleApi(categoryId);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -100,54 +104,27 @@ const Label: FC<IProps> = props => {
 		});
 	};
 
-	// 上线/下线
-	const handleOperate = (tagId: number, pushStatus: number) => {
-		const operateDesc = pushStatus === 0 ? "下线" : "上线";
-		Modal.warning({
-			title: "确认" + operateDesc + "此配置吗",
-			content: "对线上会有影响，请谨慎操作！",
-			maskClosable: true,
-			closable: true,
-			onOk: async () => {
-				// @ts-ignore
-				const { status } = await operateTagApi({ tagId, pushStatus });
-				const { code } = status || {};
-				console.log();
-				if (code === 0) {
-					message.success("操作成功");
-					onSure();
-				}
-			}
-		});
-	};
-
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "ID",
-			dataIndex: "tagId",
-			key: "tagId"
+			title: "文章ID",
+			dataIndex: "id",
+			key: "id"
 		},
 		{
-			title: "标签",
-			dataIndex: "tag",
-			key: "tag"
+			title: "文章标题",
+			dataIndex: "title",
+			key: "title"
 		},
 		{
-			title: "分类",
-			dataIndex: "categoryId",
-			key: "categoryId",
-			render(tag) {
-				return CategoryType[tag];
-			}
+			title: "专栏名",
+			dataIndex: "column",
+			key: "column"
 		},
 		{
-			title: "状态",
-			dataIndex: "status",
-			key: "status",
-			render(status) {
-				return PushStatus[status];
-			}
+			title: "排序",
+			dataIndex: "sort",
+			key: "sort"
 		},
 		{
 			title: "操作",
@@ -155,33 +132,16 @@ const Label: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { tagId, status } = item;
-				const noUp = status === 0;
-				const pushStatus = status === 0 ? 1 : 0;
+				const { columnId } = item;
 				return (
 					<div className="operation-btn">
-						<Button
-							type="primary"
-							icon={<EditOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {
-								setIsModalOpen(true);
-								setStatus(UpdateEnum.Edit);
-								handleChange({ tagId: tagId });
-								formRef.setFieldsValue({ ...item });
-							}}
-						>
+						<Button type="primary" icon={<EyeOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
+							详情
+						</Button>
+						<Button type="primary" icon={<EditOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
 							编辑
 						</Button>
-						<Button
-							type={noUp ? "primary" : "default"}
-							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => handleOperate(tagId, pushStatus)}
-						>
-							{noUp ? "上线" : "下线"}
-						</Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(tagId)}>
+						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}>
 							删除
 						</Button>
 					</div>
@@ -193,9 +153,9 @@ const Label: FC<IProps> = props => {
 	const handleSubmit = async () => {
 		try {
 			const values = await formRef.validateFields();
-			const newValues = { ...values, tagId: status === UpdateEnum.Save ? UpdateEnum.Save : tagId };
+			const newValues = { ...values, columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId };
 			// @ts-ignore
-			const { status: successStatus } = (await updateTagApi(newValues)) || {};
+			const { status: successStatus } = (await updateColumnArticleApi(newValues)) || {};
 			const { code } = successStatus || {};
 			if (code === 0) {
 				setIsModalOpen(false);
@@ -205,33 +165,57 @@ const Label: FC<IProps> = props => {
 			console.log("Failed:", errorInfo);
 		}
 	};
-	console.log({ CategoryType });
 
 	// 编辑表单
 	const reviseModalContent = (
 		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="标签" name="tag" rules={[{ required: true, message: "请输入名称!" }]}>
+			<Form.Item label="专栏名" name="column" rules={[{ required: true, message: "请输入专栏名!" }]}>
 				<Input
 					allowClear
 					onChange={e => {
-						handleChange({ tag: e.target.value });
+						handleChange({ column: e.target.value });
 					}}
 				/>
 			</Form.Item>
-			<Form.Item label="分类" name="categoryId" rules={[{ required: true, message: "请选择分类!" }]}>
+			<Form.Item label="作者ID" name="author" rules={[{ required: true, message: "请输入作者ID!" }]}>
+				<Input
+					type="number"
+					allowClear
+					onChange={e => {
+						handleChange({ author: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="封面URL" name="cover" rules={[{ required: true, message: "请输入跳转URL!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ cover: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="简介" name="introduction" rules={[{ required: true, message: "请输入简介!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ introduction: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="状态" name="state" rules={[{ required: true, message: "请选择状态!" }]}>
 				<Select
 					allowClear
 					onChange={value => {
-						handleChange({ categoryId: value });
+						handleChange({ state: value });
 					}}
-					options={CategoryTypeList}
+					options={ColumnStatusList}
 				/>
 			</Form.Item>
 		</Form>
 	);
 
 	return (
-		<div className="banner">
+		<div className="ColumnArticle">
 			<ContentWrap>
 				{/* 搜索 */}
 				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
@@ -241,9 +225,6 @@ const Label: FC<IProps> = props => {
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
-			<Modal title="详情" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
-				{reviseModalContent}
-			</Modal>
 			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>
@@ -253,4 +234,4 @@ const Label: FC<IProps> = props => {
 
 const mapStateToProps = (state: any) => state.disc.disc;
 const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(Label);
+export default connect(mapStateToProps, mapDispatchToProps)(ColumnArticle);

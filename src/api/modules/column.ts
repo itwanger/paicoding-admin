@@ -23,3 +23,18 @@ export const updateColumnApi = (form: IFormType) => {
 export const delColumnApi = (columnId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumn`, { columnId });
 };
+
+// 获取列表
+export const getColumnArticleListApi = (columnId: number) => {
+	return http.get(`${PORT1}/column/listColumnArticle`, { columnId });
+};
+
+// 保存操作
+export const updateColumnArticleApi = (form: IFormType) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/column/saveColumnArticle`, form);
+};
+
+// 删除操作
+export const delColumnArticleApi = (columnId: number) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumnArticle`, { columnId });
+};

@@ -87,15 +87,15 @@ const Column: FC<IProps> = props => {
 	}, [query]);
 
 	// 删除
-	const handleDel = (categoryId: number) => {
+	const handleDel = (columnId: number) => {
 		Modal.warning({
-			title: "确认删除此分类吗",
-			content: "删除此分类后无法恢复，请谨慎操作！",
+			title: "确认删除此教程吗",
+			content: "删除此教程后无法恢复，请谨慎操作！",
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
 				// @ts-ignore
-				const { status } = await delColumnApi(categoryId);
+				const { status } = await delColumnApi(columnId);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -109,12 +109,12 @@ const Column: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "ID",
+			title: "教程ID",
 			dataIndex: "columnId",
 			key: "columnId"
 		},
 		{
-			title: "专栏名",
+			title: "教程名",
 			dataIndex: "column",
 			key: "column"
 		},
@@ -174,7 +174,7 @@ const Column: FC<IProps> = props => {
 	// 编辑表单
 	const reviseModalContent = (
 		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="专栏名" name="column" rules={[{ required: true, message: "请输入专栏名!" }]}>
+			<Form.Item label="教程名" name="column" rules={[{ required: true, message: "请输入教程名!" }]}>
 				<Input
 					allowClear
 					onChange={e => {
@@ -182,12 +182,11 @@ const Column: FC<IProps> = props => {
 					}}
 				/>
 			</Form.Item>
-			<Form.Item label="作者ID" name="author" rules={[{ required: true, message: "请输入作者ID!" }]}>
+			<Form.Item label="简介" name="introduction" rules={[{ required: true, message: "请输入简介!" }]}>
 				<Input
-					type="number"
 					allowClear
 					onChange={e => {
-						handleChange({ author: e.target.value });
+						handleChange({ introduction: e.target.value });
 					}}
 				/>
 			</Form.Item>
@@ -199,11 +198,12 @@ const Column: FC<IProps> = props => {
 					}}
 				/>
 			</Form.Item>
-			<Form.Item label="简介" name="introduction" rules={[{ required: true, message: "请输入简介!" }]}>
+			<Form.Item label="作者ID" name="author" rules={[{ required: true, message: "请输入作者ID!" }]}>
 				<Input
+					type="number"
 					allowClear
 					onChange={e => {
-						handleChange({ introduction: e.target.value });
+						handleChange({ author: e.target.value });
 					}}
 				/>
 			</Form.Item>
@@ -220,7 +220,7 @@ const Column: FC<IProps> = props => {
 	);
 
 	return (
-		<div className="banner">
+		<div className="Column">
 			<ContentWrap>
 				{/* 搜索 */}
 				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
