@@ -24,8 +24,8 @@ interface IProps {}
 
 export interface IFormType {
 	columnId: number; // 为0时，是保存，非0是更新
-	columnName: string; // 专栏名
-	userId: number; // 作者ID
+	column: string; // 专栏名
+	author: number; // 作者ID
 	introduction: string; // 简介
 	cover: string; // 封面 URL
 	state: number; // 状态
@@ -33,8 +33,8 @@ export interface IFormType {
 
 const defaultInitForm: IFormType = {
 	columnId: -1,
-	columnName: "",
-	userId: -1,
+	column: "",
+	author: -1,
 	introduction: "",
 	cover: "",
 	state: -1
@@ -62,7 +62,7 @@ const Column: FC<IProps> = props => {
 	console.log({ props });
 
 	// @ts-ignore
-	const { ConfigType, ConfigTypeList, ColumnStatus, ArticleTag, ArticleTagList } = props || {};
+	const { ConfigType, ConfigTypeList, ColumnStatus, ColumnStatusList, ArticleTag, ArticleTagList } = props || {};
 
 	const { columnId } = form;
 
@@ -174,14 +174,47 @@ const Column: FC<IProps> = props => {
 	// 编辑表单
 	const reviseModalContent = (
 		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="ID" name="id" rules={[{ required: true, message: "Please input ID!" }]}>
-				<Input />
+			<Form.Item label="专栏名" name="column" rules={[{ required: true, message: "请输入专栏名!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ column: e.target.value });
+					}}
+				/>
 			</Form.Item>
-
-			<Form.Item wrapperCol={{ offset: 4, span: 16 }}>
-				<Button type="primary" htmlType="submit">
-					Submit
-				</Button>
+			<Form.Item label="作者ID" name="author" rules={[{ required: true, message: "请输入作者ID!" }]}>
+				<Input
+					type="number"
+					allowClear
+					onChange={e => {
+						handleChange({ author: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="封面URL" name="cover" rules={[{ required: true, message: "请输入跳转URL!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ cover: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="简介" name="introduction" rules={[{ required: true, message: "请输入简介!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ introduction: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="状态" name="state" rules={[{ required: true, message: "请选择状态!" }]}>
+				<Select
+					allowClear
+					onChange={value => {
+						handleChange({ state: value });
+					}}
+					options={ColumnStatusList}
+				/>
 			</Form.Item>
 		</Form>
 	);
@@ -190,7 +223,7 @@ const Column: FC<IProps> = props => {
 		<div className="banner">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} />
+				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} />

@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
@@ -24,12 +24,9 @@ interface DataType {
 interface IProps {}
 
 export interface IFormType {
-	configId: number; // 为0时，是保存，非0是更新
-	type: number; // ConfigType
-	name: string; // 图片 url
-	// bannerUrl: string; // 图片链接
-	jumpUrl: string; // 跳转链接
-	content: string; // 内容
+	configId: number; // ID
+	type: number; // 类型
+	name: string; // 图片
 	rank: number; // 排序
 	tags: number; // 标签
 }
@@ -38,8 +35,6 @@ const defaultInitForm: IFormType = {
 	configId: -1,
 	type: -1,
 	name: "",
-	jumpUrl: "",
-	content: "",
 	rank: -1,
 	tags: -1
 };
@@ -71,7 +66,7 @@ const Banner: FC<IProps> = props => {
 	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
 	console.log({ props });
 
-	const { configId, type, name, jumpUrl, content, rank, tags } = form;
+	const { configId, type, name, rank, tags } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -154,16 +149,6 @@ const Banner: FC<IProps> = props => {
 			dataIndex: "name",
 			key: "name"
 		},
-		// {
-		// 	title: "内容",
-		// 	dataIndex: "content",
-		// 	key: "content"
-		// },
-		// {
-		// 	title: "跳转URL",
-		// 	dataIndex: "jumpUrl",
-		// 	key: "jumpUrl"
-		// },
 		{
 			title: "标签",
 			dataIndex: "tags",

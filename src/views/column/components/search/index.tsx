@@ -1,6 +1,6 @@
 import React, { FC } from "react";
-import { Button, Input } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { Button, Input } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
 import { UpdateEnum } from "@/enums/common";
@@ -25,7 +25,7 @@ const Search: FC<IProps> = ({ handleChange, setStatus, setIsModalOpen }) => {
 					<Button
 						type="primary"
 						icon={<PlusOutlined />}
-						style={{ marginRight: "10px" }}
+						style={{ marginRight: "1px" }}
 						onClick={() => {
 							setStatus(UpdateEnum.Save);
 							setIsModalOpen(true);
