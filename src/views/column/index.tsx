@@ -24,7 +24,7 @@ interface IProps {}
 
 export interface IFormType {
 	columnId: number; // 为0时，是保存，非0是更新
-	column: string; // 专栏名
+	column: string; // 教程名
 	author: number; // 作者ID
 	introduction: string; // 简介
 	cover: string; // 封面 URL
@@ -62,7 +62,7 @@ const Column: FC<IProps> = props => {
 	console.log({ props });
 
 	// @ts-ignore
-	const { ConfigType, ConfigTypeList, ColumnStatus, ColumnStatusList, ArticleTag, ArticleTagList } = props || {};
+	const { ColumnStatus, ColumnStatusList } = props || {};
 
 	const { columnId } = form;
 

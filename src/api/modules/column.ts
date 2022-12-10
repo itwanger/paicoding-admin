@@ -6,7 +6,7 @@ import { Login } from "@/api/interface/index";
 import { IFormType } from "@/views/column";
 
 /**
- * @name 专栏模块
+ * @name 教程模块
  */
 
 // 获取列表
@@ -35,6 +35,6 @@ export const updateColumnArticleApi = (form: IFormType) => {
 };
 
 // 删除操作
-export const delColumnArticleApi = (columnId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumnArticle`, { columnId });
+export const delColumnArticleApi = (id: number) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumnArticle`, { id });
 };

@@ -18,8 +18,6 @@ export const currentMenuList = [
 	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },
 	{ key: "/tag/index", icon: <TagsOutlined />, children: undefined, label: "标签管理" },
 	{ key: "/article/index", icon: <FileTextOutlined />, children: undefined, label: "文章管理" },
-	// { key: "/column/index", icon: <BookOutlined />, children: undefined, label: "教程配置" },
-	// { key: "/columnArticle/index", icon: <BookOutlined />, children: undefined, label: "教程文章" }
 	{
 		key: "/proTable",
 		icon: <ReadOutlined />,

@@ -23,15 +23,17 @@ interface DataType {
 interface IProps {}
 
 export interface IFormType {
-	id: number; // 文章ID
+	id: number; // 主键id
+	articleId: number; // 文章ID
 	title: string; // 文章标题
-	columnId: number; // 专栏ID
-	column: string; // 专栏名
+	columnId: number; // 教程ID
+	column: string; // 教程名
 	sort: number; // 排序
 }
 
 const defaultInitForm: IFormType = {
 	id: -1,
+	articleId: -1,
 	title: "",
 	columnId: -1,
 	column: "",
@@ -62,7 +64,7 @@ const ColumnArticle: FC<IProps> = props => {
 	// @ts-ignore
 	const { ConfigType, ConfigTypeList, ColumnStatus, ColumnStatusList, ArticleTag, ArticleTagList } = props || {};
 
-	const { columnId } = form;
+	const { id } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -85,7 +87,7 @@ const ColumnArticle: FC<IProps> = props => {
 	}, [query]);
 
 	// 删除
-	const handleDel = (categoryId: number) => {
+	const handleDel = (id: number) => {
 		Modal.warning({
 			title: "确认删除此教程文章吗",
 			content: "删除此教程文章后无法恢复，请谨慎操作！",
@@ -93,7 +95,7 @@ const ColumnArticle: FC<IProps> = props => {
 			closable: true,
 			onOk: async () => {
 				// @ts-ignore
-				const { status } = await delColumnArticleApi(categoryId);
+				const { status } = await delColumnArticleApi(id);
 				const { code } = status || {};
 				console.log();
 				if (code === 0) {
@@ -108,8 +110,8 @@ const ColumnArticle: FC<IProps> = props => {
 	const columns: ColumnsType<DataType> = [
 		{
 			title: "文章ID",
-			dataIndex: "id",
-			key: "id"
+			dataIndex: "articleId",
+			key: "articleId"
 		},
 		{
 			title: "文章标题",
@@ -117,7 +119,12 @@ const ColumnArticle: FC<IProps> = props => {
 			key: "title"
 		},
 		{
-			title: "专栏名",
+			title: "教程ID",
+			dataIndex: "columnId",
+			key: "columnId"
+		},
+		{
+			title: "教程名",
 			dataIndex: "column",
 			key: "column"
 		},
@@ -132,7 +139,7 @@ const ColumnArticle: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { columnId } = item;
+				const { id } = item;
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<EyeOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
@@ -141,7 +148,7 @@ const ColumnArticle: FC<IProps> = props => {
 						<Button type="primary" icon={<EditOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
 							编辑
 						</Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}>
+						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(id)}>
 							删除
 						</Button>
 					</div>
@@ -153,7 +160,7 @@ const ColumnArticle: FC<IProps> = props => {
 	const handleSubmit = async () => {
 		try {
 			const values = await formRef.validateFields();
-			const newValues = { ...values, columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId };
+			const newValues = { ...values, id: status === UpdateEnum.Save ? UpdateEnum.Save : id };
 			// @ts-ignore
 			const { status: successStatus } = (await updateColumnArticleApi(newValues)) || {};
 			const { code } = successStatus || {};
@@ -169,46 +176,31 @@ const ColumnArticle: FC<IProps> = props => {
 	// 编辑表单
 	const reviseModalContent = (
 		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="专栏名" name="column" rules={[{ required: true, message: "请输入专栏名!" }]}>
-				<Input
-					allowClear
-					onChange={e => {
-						handleChange({ column: e.target.value });
-					}}
-				/>
-			</Form.Item>
-			<Form.Item label="作者ID" name="author" rules={[{ required: true, message: "请输入作者ID!" }]}>
+			<Form.Item label="文章ID" name="articleId" rules={[{ required: true, message: "请输入文章ID!" }]}>
 				<Input
 					type="number"
 					allowClear
 					onChange={e => {
-						handleChange({ author: e.target.value });
+						handleChange({ articleId: e.target.value });
 					}}
 				/>
 			</Form.Item>
-			<Form.Item label="封面URL" name="cover" rules={[{ required: true, message: "请输入跳转URL!" }]}>
+			<Form.Item label="教程ID" name="columnId" rules={[{ required: true, message: "请输入教程ID!" }]}>
 				<Input
+					type="number"
 					allowClear
 					onChange={e => {
-						handleChange({ cover: e.target.value });
+						handleChange({ columnId: e.target.value });
 					}}
 				/>
 			</Form.Item>
-			<Form.Item label="简介" name="introduction" rules={[{ required: true, message: "请输入简介!" }]}>
+			<Form.Item label="排序" name="sort" rules={[{ required: true, message: "请输入排序!" }]}>
 				<Input
+					type="number"
 					allowClear
 					onChange={e => {
-						handleChange({ introduction: e.target.value });
+						handleChange({ sort: e.target.value });
 					}}
-				/>
-			</Form.Item>
-			<Form.Item label="状态" name="state" rules={[{ required: true, message: "请选择状态!" }]}>
-				<Select
-					allowClear
-					onChange={value => {
-						handleChange({ state: value });
-					}}
-					options={ColumnStatusList}
 				/>
 			</Form.Item>
 		</Form>
