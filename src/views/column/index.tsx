@@ -29,6 +29,7 @@ export interface IFormType {
 	introduction: string; // 简介
 	cover: string; // 封面 URL
 	state: number; // 状态
+	section: number; // 排序
 }
 
 const defaultInitForm: IFormType = {
@@ -37,7 +38,8 @@ const defaultInitForm: IFormType = {
 	author: -1,
 	introduction: "",
 	cover: "",
-	state: -1
+	state: -1,
+	section: -1
 };
 
 const Column: FC<IProps> = props => {
@@ -132,6 +134,11 @@ const Column: FC<IProps> = props => {
 			}
 		},
 		{
+			title: "排序",
+			dataIndex: "section",
+			key: "section"
+		},
+		{
 			title: "操作",
 			key: "key",
 			width: 400,
@@ -214,6 +221,15 @@ const Column: FC<IProps> = props => {
 						handleChange({ state: value });
 					}}
 					options={ColumnStatusList}
+				/>
+			</Form.Item>
+			<Form.Item label="排序" name="section" rules={[{ required: true, message: "请输入排序" }]}>
+				<Input
+					type="number"
+					allowClear
+					onChange={e => {
+						handleChange({ section: e.target.value });
+					}}
 				/>
 			</Form.Item>
 		</Form>
