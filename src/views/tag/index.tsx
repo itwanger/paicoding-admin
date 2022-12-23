@@ -148,14 +148,6 @@ const Label: FC<IProps> = props => {
 			key: "tag"
 		},
 		{
-			title: "分类",
-			dataIndex: "categoryId",
-			key: "categoryId",
-			render(tag) {
-				return CategoryType[tag];
-			}
-		},
-		{
 			title: "状态",
 			dataIndex: "status",
 			key: "status",
@@ -229,15 +221,6 @@ const Label: FC<IProps> = props => {
 					onChange={e => {
 						handleChange({ tag: e.target.value });
 					}}
-				/>
-			</Form.Item>
-			<Form.Item label="分类" name="categoryId" rules={[{ required: true, message: "请选择分类!" }]}>
-				<Select
-					allowClear
-					onChange={value => {
-						handleChange({ categoryId: value });
-					}}
-					options={CategoryTypeList}
 				/>
 			</Form.Item>
 		</Form>
