@@ -9,8 +9,8 @@ import { Login } from "@/api/interface/index";
  */
 
 // 获取列表
-export const getArticleListApi = () => {
-	return http.get(`${PORT1}/article/list`);
+export const getArticleListApi = (data: { pageNumber: number; pageSize: number }) => {
+	return http.get(`${PORT1}/article/list`, data);
 };
 
 // 删除操作

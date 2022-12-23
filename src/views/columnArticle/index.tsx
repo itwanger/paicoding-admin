@@ -6,7 +6,7 @@ import type { ColumnsType } from "antd/es/table";
 
 import { delColumnArticleApi, getColumnArticleListApi, updateColumnArticleApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { UpdateEnum } from "@/enums/common";
+import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -54,6 +54,19 @@ const ColumnArticle: FC<IProps> = props => {
 	//当前的状态
 	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
 
+	// 分页
+	const [pagination, setPagination] = useState<IPagination>(initPagination);
+	const { current, pageSize } = pagination;
+
+	const paginationInfo = {
+		showSizeChanger: true,
+		showTotal: total => `共 ${total || 0} 条`,
+		...pagination,
+		onChange: (current, pageSize) => {
+			setPagination({ current, pageSize });
+		}
+	};
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
@@ -75,7 +88,7 @@ const ColumnArticle: FC<IProps> = props => {
 	useEffect(() => {
 		const getSortList = async () => {
 			// @ts-ignore
-			const { status, result } = await getColumnArticleListApi(-1); // TODO: 需要传教程ID
+			const { status, result } = await getColumnArticleListApi({ columnId: -1, pageNumber: current, pageSize }); // TODO: 需要传教程ID
 			const { code } = status || {};
 			const { list } = result || {};
 			if (code === 0) {
@@ -84,7 +97,7 @@ const ColumnArticle: FC<IProps> = props => {
 			}
 		};
 		getSortList();
-	}, [query]);
+	}, [query, current, pageSize]);
 
 	// 删除
 	const handleDel = (id: number) => {
@@ -213,7 +226,7 @@ const ColumnArticle: FC<IProps> = props => {
 				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
 				{/* 表格 */}
 				<ContentInterWrap>
-					<Table columns={columns} dataSource={tableData} />
+					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}

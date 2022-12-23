@@ -10,8 +10,8 @@ import { IFormType } from "@/views/tag";
  */
 
 // 获取列表
-export const getTagListApi = () => {
-	return http.get(`${PORT1}/tag/list`);
+export const getTagListApi = (data: { pageNumber: number; pageSize: number }) => {
+	return http.get(`${PORT1}/tag/list`, data);
 };
 
 // 删除操作

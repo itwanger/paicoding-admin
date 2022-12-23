@@ -1,13 +1,14 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
+import { useLinkClickHandler } from "react-router-dom";
 import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
+import { Button, Descriptions, Drawer, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
 
 import { delConfigApi, getConfigListApi, operateConfigApi, updateConfigApi } from "@/api/modules/config";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { UpdateEnum } from "@/enums/common";
+import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -46,7 +47,7 @@ const Banner: FC<IProps> = props => {
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	// 弹窗
-	const [isModalOpenShow, setIsModalOpenShow] = useState<boolean>(false);
+	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
 	// 刷新函数
@@ -55,18 +56,26 @@ const Banner: FC<IProps> = props => {
 	//当前的状态
 	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
 
+	// 分页
+	const [pagination, setPagination] = useState<IPagination>(initPagination);
+	const { current, pageSize } = pagination;
+
+	const paginationInfo = {
+		showSizeChanger: true,
+		showTotal: total => `共 ${total || 0} 条`,
+		...pagination,
+		onChange: (current, pageSize) => {
+			setPagination({ current, pageSize });
+		}
+	};
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
-
-	// 获取字典值
-	console.log({ props });
-
 	// @ts-ignore
 	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
-	console.log({ props });
 
-	const { configId, type, name, rank, tags } = form;
+	const { configId, type, name, content, jumpUrl, rank, tags } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -77,16 +86,17 @@ const Banner: FC<IProps> = props => {
 	useEffect(() => {
 		const getConfigList = async () => {
 			// @ts-ignore
-			const { status, result } = await getConfigListApi();
+			const { status, result } = await getConfigListApi({ pageNumber: current, pageSize });
 			const { code } = status || {};
-			const { list } = result || {};
+			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
 				setTableData(newList);
 			}
 		};
 		getConfigList();
-	}, [query]);
+	}, [query, current, pageSize]);
 
 	// 删除
 	const handleDel = (configId: number) => {
@@ -99,7 +109,6 @@ const Banner: FC<IProps> = props => {
 				// @ts-ignore
 				const { status } = await delConfigApi(configId);
 				const { code } = status || {};
-				console.log();
 				if (code === 0) {
 					message.success("删除成功");
 					onSure();
@@ -120,13 +129,18 @@ const Banner: FC<IProps> = props => {
 				// @ts-ignore
 				const { status } = await operateConfigApi({ configId, pushStatus });
 				const { code } = status || {};
-				console.log();
 				if (code === 0) {
 					message.success("操作成功");
 					onSure();
 				}
 			}
 		});
+	};
+
+	// 重置表单
+	const resetForm = () => {
+		setForm(defaultInitForm);
+		formRef.resetFields();
 	};
 
 	// 表头设置
@@ -177,6 +191,8 @@ const Banner: FC<IProps> = props => {
 			render: (_, item) => {
 				// @ts-ignore
 				const { id, type, rank, status } = item;
+				console.log({ item });
+
 				const noUp = status === 0;
 				const pushStatus = status === 0 ? 1 : 0;
 				return (
@@ -186,9 +202,9 @@ const Banner: FC<IProps> = props => {
 							icon={<EyeOutlined />}
 							style={{ marginRight: "10px" }}
 							onClick={() => {
-								setIsModalOpenShow(true);
+								setIsOpenDrawerShow(true);
 								setStatus(UpdateEnum.Edit);
-								handleChange({ configId: id });
+								handleChange({ configId: id, ...item });
 								formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
 							}}
 						>
@@ -239,64 +255,6 @@ const Banner: FC<IProps> = props => {
 			console.log("Failed:", errorInfo);
 		}
 	};
-
-	// 表单详情
-	const reviseModalContentShow = (
-		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="类型" name="type" rules={[{ required: true, message: "请选择类型!" }]}>
-				<Select
-					allowClear
-					onChange={value => {
-						handleChange({ type: value });
-					}}
-					options={ConfigTypeList}
-				/>
-			</Form.Item>
-			<Form.Item label="名称" name="name" rules={[{ required: true, message: "请输入名称!" }]}>
-				<Input
-					allowClear
-					onChange={e => {
-						handleChange({ name: e.target.value });
-					}}
-				/>
-			</Form.Item>
-			<Form.Item label="内容" name="content" rules={[{ required: true, message: "请输入内容!" }]}>
-				<Input.TextArea
-					allowClear
-					onChange={e => {
-						handleChange({ content: e.target.value });
-					}}
-				/>
-			</Form.Item>
-			<Form.Item label="跳转URL" name="jumpUrl" rules={[{ required: true, message: "请输入跳转URL!" }]}>
-				<Input
-					allowClear
-					onChange={e => {
-						handleChange({ jumpUrl: e.target.value });
-					}}
-				/>
-			</Form.Item>
-
-			<Form.Item label="标签" name="tags" rules={[{ required: false, message: "请选择标签!" }]}>
-				<Select
-					allowClear
-					onChange={value => {
-						handleChange({ tags: value });
-					}}
-					options={ArticleTagList}
-				/>
-			</Form.Item>
-			<Form.Item label="排序" name="rank" rules={[{ required: true, message: "请输入排序!" }]}>
-				<Input
-					type="number"
-					allowClear
-					onChange={e => {
-						handleChange({ rank: e.target.value });
-					}}
-				/>
-			</Form.Item>
-		</Form>
-	);
 
 	// 编辑表单
 	const reviseModalContent = (
@@ -356,20 +314,36 @@ const Banner: FC<IProps> = props => {
 		</Form>
 	);
 
+	const detailInfo = [
+		{ label: "类型", title: ConfigType[type] },
+		{ label: "名称", title: name },
+		{ label: "内容", title: content },
+		{ label: "跳转URL", title: jumpUrl },
+		{ label: "标签", title: ArticleTag[tags] },
+		{ label: "排序", title: rank }
+	];
+
 	return (
 		<div className="banner">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
+				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen, resetForm }} />
 				{/* 表格 */}
 				<ContentInterWrap>
-					<Table columns={columns} dataSource={tableData} />
+					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
+			{/* 抽屉 */}
+			<Drawer title="详情" placement="right" onClose={() => setIsOpenDrawerShow(false)} visible={isOpenDrawerShow}>
+				<Descriptions column={1} labelStyle={{ width: "100px" }}>
+					{detailInfo.map(({ label, title }) => (
+						<Descriptions.Item label={label} key={label}>
+							{title || "-"}
+						</Descriptions.Item>
+					))}
+				</Descriptions>
+			</Drawer>
 			{/* 弹窗 */}
-			<Modal title="详情" visible={isModalOpenShow} onCancel={() => setIsModalOpenShow(false)}>
-				{reviseModalContentShow}
-			</Modal>
 			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>

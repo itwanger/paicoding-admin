@@ -10,8 +10,8 @@ import { IFormType } from "@/views/config";
  */
 
 // 获取列表
-export const getCategoryListApi = () => {
-	return http.get(`${PORT1}/category/list`);
+export const getCategoryListApi = (data: { pageNumber: number; pageSize: number }) => {
+	return http.get(`${PORT1}/category/list`, data);
 };
 
 // 删除操作

@@ -6,7 +6,7 @@ import type { ColumnsType } from "antd/es/table";
 
 import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { UpdateEnum } from "@/enums/common";
+import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -54,6 +54,19 @@ const Column: FC<IProps> = props => {
 	//当前的状态
 	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
 
+	// 分页
+	const [pagination, setPagination] = useState<IPagination>(initPagination);
+	const { current, pageSize } = pagination;
+
+	const paginationInfo = {
+		showSizeChanger: true,
+		showTotal: total => `共 ${total || 0} 条`,
+		...pagination,
+		onChange: (current, pageSize) => {
+			setPagination({ current, pageSize });
+		}
+	};
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
@@ -62,7 +75,7 @@ const Column: FC<IProps> = props => {
 	console.log({ props });
 
 	// @ts-ignore
-	const { ColumnStatus, ColumnStatusList } = props || {};
+	const { CreamStatus, CreamStatusList } = props || {};
 
 	const { columnId } = form;
 
@@ -75,16 +88,17 @@ const Column: FC<IProps> = props => {
 	useEffect(() => {
 		const getSortList = async () => {
 			// @ts-ignore
-			const { status, result } = await getColumnListApi();
+			const { status, result } = await getColumnListApi({ pageNumber: current, pageSize });
 			const { code } = status || {};
-			const { list } = result || {};
+			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
 				setTableData(newList);
 			}
 		};
 		getSortList();
-	}, [query]);
+	}, [query, current, pageSize]);
 
 	// 删除
 	const handleDel = (columnId: number) => {
@@ -128,7 +142,7 @@ const Column: FC<IProps> = props => {
 			dataIndex: "state",
 			key: "state",
 			render(state) {
-				return ColumnStatus[state];
+				return CreamStatus[state];
 			}
 		},
 		{
@@ -137,13 +151,22 @@ const Column: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { columnId } = item;
+				const { columnId, state } = item;
 				return (
 					<div className="operation-btn">
 						<Button type="primary" icon={<EyeOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
 							详情
 						</Button>
-						<Button type="primary" icon={<EditOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
+						<Button
+							type="primary"
+							icon={<EditOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								setIsModalOpen(true);
+								setStatus(UpdateEnum.Edit);
+								formRef.setFieldsValue({ ...item, state: String(state) });
+							}}
+						>
 							编辑
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}>
@@ -213,7 +236,7 @@ const Column: FC<IProps> = props => {
 					onChange={value => {
 						handleChange({ state: value });
 					}}
-					options={ColumnStatusList}
+					options={CreamStatusList}
 				/>
 			</Form.Item>
 		</Form>
@@ -226,7 +249,7 @@ const Column: FC<IProps> = props => {
 				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
 				{/* 表格 */}
 				<ContentInterWrap>
-					<Table columns={columns} dataSource={tableData} />
+					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}

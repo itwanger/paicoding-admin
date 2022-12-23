@@ -6,7 +6,7 @@ import type { ColumnsType } from "antd/es/table";
 
 import { delTagListApi, getTagListApi, operateTagApi, updateTagApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { UpdateEnum } from "@/enums/common";
+import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -48,6 +48,19 @@ const Label: FC<IProps> = props => {
 	//当前的状态
 	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
 
+	// 分页
+	const [pagination, setPagination] = useState<IPagination>(initPagination);
+	const { current, pageSize } = pagination;
+
+	const paginationInfo = {
+		showSizeChanger: true,
+		showTotal: total => `共 ${total || 0} 条`,
+		...pagination,
+		onChange: (current, pageSize) => {
+			setPagination({ current, pageSize });
+		}
+	};
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
@@ -69,16 +82,17 @@ const Label: FC<IProps> = props => {
 	useEffect(() => {
 		const getSortList = async () => {
 			// @ts-ignore
-			const { status, result } = await getTagListApi();
+			const { status, result } = await getTagListApi({ pageNumber: current, pageSize });
 			const { code } = status || {};
-			const { list } = result || {};
+			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.tagId }));
 				setTableData(newList);
 			}
 		};
 		getSortList();
-	}, [query]);
+	}, [query, current, pageSize]);
 
 	// 删除
 	const handleDel = (tagId: number) => {
@@ -155,7 +169,7 @@ const Label: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { tagId, status } = item;
+				const { tagId, status, categoryId } = item;
 				const noUp = status === 0;
 				const pushStatus = status === 0 ? 1 : 0;
 				return (
@@ -168,7 +182,7 @@ const Label: FC<IProps> = props => {
 								setIsModalOpen(true);
 								setStatus(UpdateEnum.Edit);
 								handleChange({ tagId: tagId });
-								formRef.setFieldsValue({ ...item });
+								formRef.setFieldsValue({ ...item, categoryId: String(categoryId) });
 							}}
 						>
 							编辑
@@ -205,7 +219,6 @@ const Label: FC<IProps> = props => {
 			console.log("Failed:", errorInfo);
 		}
 	};
-	console.log({ CategoryType });
 
 	// 编辑表单
 	const reviseModalContent = (
@@ -237,7 +250,7 @@ const Label: FC<IProps> = props => {
 				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
 				{/* 表格 */}
 				<ContentInterWrap>
-					<Table columns={columns} dataSource={tableData} />
+					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}

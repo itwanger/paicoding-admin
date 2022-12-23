@@ -1,6 +1,6 @@
 import React, { FC } from "react";
-import { Button, Input } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { Button, Input } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
 import { UpdateEnum } from "@/enums/common";
@@ -11,9 +11,10 @@ interface IProps {
 	handleChange: (e: object) => void;
 	setStatus: (e: UpdateEnum) => void;
 	setIsModalOpen: (e: boolean) => void;
+	resetForm: any;
 }
 
-const Search: FC<IProps> = ({ handleChange, setStatus, setIsModalOpen }) => {
+const Search: FC<IProps> = ({ handleChange, setStatus, setIsModalOpen, resetForm }) => {
 	return (
 		<div className="sort-search">
 			<ContentInterWrap className="sort-search__wrap">
@@ -27,6 +28,7 @@ const Search: FC<IProps> = ({ handleChange, setStatus, setIsModalOpen }) => {
 						icon={<PlusOutlined />}
 						style={{ marginRight: "10px" }}
 						onClick={() => {
+							resetForm();
 							setStatus(UpdateEnum.Save);
 							setIsModalOpen(true);
 						}}

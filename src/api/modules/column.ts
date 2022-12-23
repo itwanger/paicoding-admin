@@ -10,8 +10,8 @@ import { IFormType } from "@/views/column";
  */
 
 // 获取列表
-export const getColumnListApi = () => {
-	return http.get(`${PORT1}/column/listColumn`);
+export const getColumnListApi = (data: { pageNumber: number; pageSize: number }) => {
+	return http.get(`${PORT1}/column/listColumn`, data);
 };
 
 // 保存操作
@@ -25,8 +25,8 @@ export const delColumnApi = (columnId: number) => {
 };
 
 // 获取列表
-export const getColumnArticleListApi = (columnId: number) => {
-	return http.get(`${PORT1}/column/listColumnArticle`, { columnId });
+export const getColumnArticleListApi = (data: { columnId: number; pageNumber: number; pageSize: number }) => {
+	return http.get(`${PORT1}/column/listColumnArticle`, data);
 };
 
 // 保存操作

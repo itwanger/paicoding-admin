@@ -1,18 +1,18 @@
 import React, { FC } from "react";
 import {
-	LineChartOutlined,
-	CalendarOutlined,
-	HomeOutlined,
 	BarsOutlined,
-	TagsOutlined,
+	CalendarOutlined,
 	FileAddOutlined,
 	FilePptOutlined,
 	FileTextOutlined,
-	ReadOutlined
+	HomeOutlined,
+	LineChartOutlined,
+	ReadOutlined,
+	TagsOutlined
 } from "@ant-design/icons";
 
 export const currentMenuList = [
-	{ key: "/home/index", icon: <HomeOutlined />, children: undefined, label: "首页" },
+	// { key: "/home/index", icon: <HomeOutlined />, children: undefined, label: "首页" },
 	{ key: "/statistics/index", icon: <LineChartOutlined />, children: undefined, label: "数据统计" },
 	{ key: "/config/index", icon: <CalendarOutlined />, children: undefined, label: "运营配置" },
 	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },

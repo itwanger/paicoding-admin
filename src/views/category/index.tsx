@@ -6,7 +6,7 @@ import type { ColumnsType } from "antd/es/table";
 
 import { delCategoryApi, getCategoryListApi, operateCategoryApi, updateCategoryApi } from "@/api/modules/category";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { UpdateEnum } from "@/enums/common";
+import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -48,6 +48,19 @@ const Category: FC<IProps> = props => {
 	//当前的状态
 	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
 
+	// 分页
+	const [pagination, setPagination] = useState<IPagination>(initPagination);
+	const { current, pageSize } = pagination;
+
+	const paginationInfo = {
+		showSizeChanger: true,
+		showTotal: total => `共 ${total || 0} 条`,
+		...pagination,
+		onChange: (current, pageSize) => {
+			setPagination({ current, pageSize });
+		}
+	};
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
@@ -74,16 +87,17 @@ const Category: FC<IProps> = props => {
 	useEffect(() => {
 		const getSortList = async () => {
 			// @ts-ignore
-			const { status, result } = await getCategoryListApi();
+			const { status, result } = await getCategoryListApi({ pageNumber: current, pageSize });
 			const { code } = status || {};
-			const { list } = result || {};
+			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
 				setTableData(newList);
 			}
 		};
 		getSortList();
-	}, [query]);
+	}, [query, current, pageSize]);
 
 	// 删除
 	const handleDel = (categoryId: number) => {
@@ -157,7 +171,7 @@ const Category: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { categoryId, status } = item;
+				const { categoryId, status, rank } = item;
 				const noUp = status === 0;
 				const pushStatus = status === 0 ? 1 : 0;
 				return (
@@ -238,7 +252,7 @@ const Category: FC<IProps> = props => {
 				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
 				{/* 表格 */}
 				<ContentInterWrap>
-					<Table columns={columns} dataSource={tableData} />
+					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}

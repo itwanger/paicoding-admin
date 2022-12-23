@@ -1,11 +1,12 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delArticleApi, getArticleListApi, operateArticleApi } from "@/api/modules/article";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
+import { initPagination, IPagination } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -39,6 +40,19 @@ const Article: FC<IProps> = props => {
 	// 刷新函数
 	const [query, setQuery] = useState<number>(0);
 
+	// 分页
+	const [pagination, setPagination] = useState<IPagination>(initPagination);
+	const { current, pageSize } = pagination;
+
+	const paginationInfo = {
+		showSizeChanger: true,
+		showTotal: total => `共 ${total || 0} 条`,
+		...pagination,
+		onChange: (current, pageSize) => {
+			setPagination({ current, pageSize });
+		}
+	};
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
@@ -60,16 +74,17 @@ const Article: FC<IProps> = props => {
 	useEffect(() => {
 		const getSortList = async () => {
 			// @ts-ignore
-			const { status, result } = await getArticleListApi();
+			const { status, result } = await getArticleListApi({ pageNumber: current, pageSize });
 			const { code } = status || {};
-			const { list } = result || {};
+			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
 				setTableData(newList);
 			}
 		};
 		getSortList();
-	}, [query]);
+	}, [query, current, pageSize]);
 
 	// 删除
 	const handleDel = (articleId: number) => {
@@ -200,7 +215,7 @@ const Article: FC<IProps> = props => {
 				{/*<Search handleChange={handleChange} />*/}
 				{/* 表格 */}
 				<ContentInterWrap>
-					<Table columns={columns} dataSource={tableData} />
+					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
