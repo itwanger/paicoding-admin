@@ -1,0 +1,28 @@
+.statistics {
+	.content-wrap {
+		overflow-x: hidden;
+	}
+
+	&-pv__wrap {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		margin-bottom: 20px;
+		border: 1px solid #ccc;
+		background-color: #fff;
+		padding: 24px;
+	}
+
+	&-uv__wrap {
+		@extend .statistics-pv__wrap;
+	}
+
+	&-pv {
+		width: 100%;
+		height: 300px;
+	}
+
+	&-uv {
+		@extend .statistics-pv;
+	}
+}

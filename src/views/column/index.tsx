@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
+import { Button, Descriptions, Drawer, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
@@ -48,6 +48,8 @@ const Column: FC<IProps> = props => {
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+	// 弹窗
+	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
 	// 刷新函数
@@ -73,13 +75,10 @@ const Column: FC<IProps> = props => {
 		setQuery(prev => prev + 1);
 	}, []);
 
-	// 获取字典值
-	console.log({ props });
-
 	// @ts-ignore
 	const { CreamStatus, CreamStatusList } = props || {};
 
-	const { columnId } = form;
+	const { columnId, column, introduction, cover, authorName, state, section } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -159,9 +158,20 @@ const Column: FC<IProps> = props => {
 			render: (_, item) => {
 				// @ts-ignore
 				const { columnId, state } = item;
+
 				return (
 					<div className="operation-btn">
-						<Button type="primary" icon={<EyeOutlined />} style={{ marginRight: "10px" }} onClick={() => setIsModalOpen(true)}>
+						<Button
+							type="primary"
+							icon={<EyeOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								setIsOpenDrawerShow(true);
+								setStatus(UpdateEnum.Edit);
+								handleChange({ ...item });
+								// formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
+							}}
+						>
 							详情
 						</Button>
 						<Button
@@ -258,6 +268,15 @@ const Column: FC<IProps> = props => {
 		</Form>
 	);
 
+	const detailInfo = [
+		{ label: "教程名", title: column },
+		{ label: "简介", title: introduction },
+		{ label: "封面URL", title: cover },
+		{ label: "作者", title: authorName },
+		{ label: "状态", title: CreamStatus[state] },
+		{ label: "排序", title: section }
+	];
+
 	return (
 		<div className="Column">
 			<ContentWrap>
@@ -268,6 +287,16 @@ const Column: FC<IProps> = props => {
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
+			{/* 抽屉 */}
+			<Drawer title="详情" placement="right" onClose={() => setIsOpenDrawerShow(false)} visible={isOpenDrawerShow}>
+				<Descriptions column={1} labelStyle={{ width: "100px" }}>
+					{detailInfo.map(({ label, title }) => (
+						<Descriptions.Item label={label} key={label}>
+							{title !== 0 ? title || "-" : 0}
+						</Descriptions.Item>
+					))}
+				</Descriptions>
+			</Drawer>
 			{/* 弹窗 */}
 			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}

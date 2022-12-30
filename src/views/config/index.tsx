@@ -205,7 +205,7 @@ const Banner: FC<IProps> = props => {
 								setIsOpenDrawerShow(true);
 								setStatus(UpdateEnum.Edit);
 								handleChange({ configId: id, ...item });
-								formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
+								// formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
 							}}
 						>
 							详情
