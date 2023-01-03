@@ -1,15 +1,15 @@
 {
 	"compilerOptions": {
 		"target": "ESNext",
-		"useDefineForClassFields": true,
+		"useDefineForClassFields": false,
 		"lib": ["DOM", "DOM.Iterable", "ESNext"],
 		"allowJs": false,
-		"skipLibCheck": true,
+		"skipLibCheck": false,
 		"esModuleInterop": false,
-		"allowSyntheticDefaultImports": true,
+		"allowSyntheticDefaultImports": false,
 
 		/* Strict Type-Checking Options */
-		"strict": true /* Enable all strict type-checking options. */,
+		"strict": false /* Enable all strict type-checking options. */,
 		// "noImplicitAny": true,                 /* Raise error on expressions and declarations with an implied 'any' type. */
 		// "strictNullChecks": true,              /* Enable strict null checks. */
 		// "strictFunctionTypes": true,           /* Enable strict checking of function types. */
@@ -18,12 +18,12 @@
 		// "noImplicitThis": true,                /* Raise error on 'this' expressions with an implied 'any' type. */
 		// "alwaysStrict": true,                  /* Parse in strict mode and emit "use strict" for each source file. */
 
-		"forceConsistentCasingInFileNames": true,
+		"forceConsistentCasingInFileNames": false,
 		"module": "ESNext",
 		"moduleResolution": "Node",
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"noEmit": true,
+		"resolveJsonModule": false,
+		"isolatedModules": false,
+		"noEmit": false,
 		"jsx": "react-jsx",
 		// 解析非相对模块名的基准目录
 		"baseUrl": "./",
