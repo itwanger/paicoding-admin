@@ -40,8 +40,8 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 			// https: false,
 			// 代理跨域（mock 不需要配置，这里只是个事列）
 			proxy: {
-				"/api": {
-					target: "http://127.0.0.1:8080/",
+				"/admin": {
+					target: "http://127.0.0.1:8080",
 					changeOrigin: true,
 					rewrite: path => path.replace(/^\/api/, "")
 				}
@@ -78,7 +78,6 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 		esbuild: {
 			pure: viteEnv.VITE_DROP_CONSOLE ? ["console.log", "debugger"] : []
 		},
-		base: "./",
 		// build configure
 		build: {
 			outDir: "dist",
