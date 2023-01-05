@@ -75,7 +75,7 @@ const Banner: FC<IProps> = props => {
 	// @ts-ignore
 	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
 
-	const { configId, type, name, content, jumpUrl, rank, tags } = form;
+	const { configId, type, name, content, bannerUrl, jumpUrl, rank, tags } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -284,6 +284,14 @@ const Banner: FC<IProps> = props => {
 					}}
 				/>
 			</Form.Item>
+			<Form.Item label="图片URL" name="bannerUrl" rules={[{ required: true, message: "请输入图片URL!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ bannerUrl: e.target.value });
+					}}
+				/>
+			</Form.Item>
 			<Form.Item label="跳转URL" name="jumpUrl" rules={[{ required: true, message: "请输入跳转URL!" }]}>
 				<Input
 					allowClear
@@ -318,6 +326,7 @@ const Banner: FC<IProps> = props => {
 		{ label: "类型", title: ConfigType[type] },
 		{ label: "名称", title: name },
 		{ label: "内容", title: content },
+		{ label: "图片URL", title: bannerUrl },
 		{ label: "跳转URL", title: jumpUrl },
 		{ label: "标签", title: ArticleTag[tags] },
 		{ label: "排序", title: rank }
