@@ -1,7 +1,8 @@
-import { AnyAction } from "redux";
-import { TabsState } from "@/redux/interface";
-import { HOME_URL } from "@/config/config";
 import produce from "immer";
+import { AnyAction } from "redux";
+
+import { HOME_URL } from "@/config/config";
+import { TabsState } from "@/redux/interface";
 import * as types from "@/redux/mutation-types";
 
 const tabsState: TabsState = {

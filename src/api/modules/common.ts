@@ -9,5 +9,5 @@ import { PORT1 } from "@/api/config/servicePort";
 
 // 获取字典值
 export const getDiscListApi = () => {
-	return http.get(`/common/dict`);
+	return http.get(`${PORT1}/common/dict`);
 };
