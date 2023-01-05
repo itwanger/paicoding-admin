@@ -1,12 +1,13 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delArticleApi, getArticleListApi, operateArticleApi } from "@/api/modules/article";
+import { delArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
+import { updateTagApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { initPagination, IPagination } from "@/enums/common";
+import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
@@ -23,14 +24,17 @@ interface DataType {
 interface IProps {}
 
 interface IInitForm {
-	id: string;
+	articleId: number;
+	shortTitle: string;
 }
 
 const defaultInitForm = {
-	id: ""
+	articleId: -1,
+	shortTitle: ""
 };
 
 const Article: FC<IProps> = props => {
+	const [formRef] = Form.useForm();
 	// 搜索
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
 	// 弹窗
@@ -39,6 +43,9 @@ const Article: FC<IProps> = props => {
 	const [tableData, setTableData] = useState<DataType[]>([]);
 	// 刷新函数
 	const [query, setQuery] = useState<number>(0);
+
+	//当前的状态
+	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
 
 	// 分页
 	const [pagination, setPagination] = useState<IPagination>(initPagination);
@@ -64,6 +71,8 @@ const Article: FC<IProps> = props => {
 	const resetBarFrom = () => {
 		setForm(defaultInitForm);
 	};
+
+	const { articleId } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -140,6 +149,11 @@ const Article: FC<IProps> = props => {
 			key: "title"
 		},
 		{
+			title: "短标题",
+			dataIndex: "shortTitle",
+			key: "shortTitle"
+		},
+		{
 			title: "作者",
 			dataIndex: "authorName",
 			key: "authorName"
@@ -164,6 +178,19 @@ const Article: FC<IProps> = props => {
 				return (
 					<div className="operation-btn">
 						<Button
+							type="primary"
+							icon={<EditOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								setIsModalOpen(true);
+								setStatus(UpdateEnum.Edit);
+								handleChange({ articleId: articleId });
+								// formRef.setFieldsValue({ ...item, categoryId: String(categoryId) });
+							}}
+						>
+							编辑
+						</Button>
+						<Button
 							type={noUp ? "primary" : "default"}
 							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
 							style={{ marginRight: "10px" }}
@@ -185,25 +212,32 @@ const Article: FC<IProps> = props => {
 		console.log("提交");
 	};
 
+	const handleSubmit = async () => {
+		try {
+			const values = await formRef.validateFields();
+			const newValues = { ...values, articleId: status === UpdateEnum.Save ? UpdateEnum.Save : articleId };
+			// @ts-ignore
+			const { status: successStatus } = (await updateArticleApi(newValues)) || {};
+			const { code } = successStatus || {};
+			if (code === 0) {
+				setIsModalOpen(false);
+				onSure();
+			}
+		} catch (errorInfo) {
+			console.log("Failed:", errorInfo);
+		}
+	};
+
 	// 编辑表单
 	const reviseModalContent = (
-		<Form
-			name="basic"
-			labelCol={{ span: 4 }}
-			wrapperCol={{ span: 16 }}
-			initialValues={{ remember: true }}
-			// onFinish={onFinish}
-			// onFinishFailed={onFinishFailed}
-			autoComplete="off"
-		>
-			<Form.Item label="ID" name="id" rules={[{ required: true, message: "Please input ID!" }]}>
-				<Input />
-			</Form.Item>
-
-			<Form.Item wrapperCol={{ offset: 4, span: 16 }}>
-				<Button type="primary" htmlType="submit">
-					Submit
-				</Button>
+		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+			<Form.Item label="短标题" name="shortTitle" rules={[{ required: true, message: "请输入短标题!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ tag: e.target.value });
+					}}
+				/>
 			</Form.Item>
 		</Form>
 	);
@@ -219,7 +253,7 @@ const Article: FC<IProps> = props => {
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}
-			<Modal title="Basic Modal" visible={isModalOpen} onOk={handleOk} onCancel={() => setIsModalOpen(false)}>
+			<Modal title="修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
 				{reviseModalContent}
 			</Modal>
 		</div>
