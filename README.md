@@ -168,3 +168,10 @@ quick-forum-admin
 
 - FastMock： https://www.fastmock.site/
 - EasyMock：https://mock.mengxuegu.com/
+
+### 九、生产环境部署
+
+ 1、执行 `npm run build:pro`，生成 dist 目录
+
+ 2、将 dist 目录上传到服务器的 /home/admin/ 目录下（请先删除原有的 dist 目录）
+
