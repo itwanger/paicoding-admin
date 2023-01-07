@@ -1,6 +1,7 @@
-import { AnyAction } from "redux";
-import { BreadcrumbState } from "@/redux/interface";
 import produce from "immer";
+import { AnyAction } from "redux";
+
+import { BreadcrumbState } from "@/redux/interface";
 import * as types from "@/redux/mutation-types";
 
 const breadcrumbState: BreadcrumbState = {

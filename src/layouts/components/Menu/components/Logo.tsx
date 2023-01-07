@@ -1,12 +1,12 @@
-import logo from "@/assets/images/logo.png";
 import { connect } from "react-redux";
 
+import logo from "@/assets/images/logo.svg";
+import logoMd from "@/assets/images/logo_md.png";
 const Logo = (props: any) => {
 	const { isCollapse } = props;
 	return (
 		<div className="logo-box">
-			<img src={logo} alt="logo" className="logo-img" />
-			{!isCollapse ? <h2 className="logo-text">技术派</h2> : null}
+			<img src={!isCollapse ? logo : logoMd} alt="logo" className={!isCollapse ? "logo-img" : "logo-img-md"} />
 		</div>
 	);
 };

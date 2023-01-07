@@ -181,6 +181,7 @@ const Column: FC<IProps> = props => {
 							onClick={() => {
 								setIsModalOpen(true);
 								setStatus(UpdateEnum.Edit);
+								handleChange({ ...item });
 								formRef.setFieldsValue({ ...item, state: String(state) });
 							}}
 						>
@@ -284,7 +285,7 @@ const Column: FC<IProps> = props => {
 				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
 				{/* 表格 */}
 				<ContentInterWrap>
-					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
+					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} rowKey="columnId" />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 抽屉 */}

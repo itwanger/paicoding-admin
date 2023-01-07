@@ -45,7 +45,7 @@
   margin-bottom: 40px;
 }
 .login-container .login-box .login-form .login-logo .login-icon {
-  width: 70px;
+  width: 200px;
 }
 .login-container .login-box .login-form .login-logo .logo-text {
   padding-left: 25px;
@@ -76,6 +76,7 @@
   white-space: nowrap;
 }
 .login-container .login-box .login-form .login-btn .ant-form-item-control-input-content {
+  min-width: 400px;
   display: flex;
   justify-content: space-between;
 }

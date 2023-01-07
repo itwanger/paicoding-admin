@@ -176,6 +176,7 @@ const ColumnArticle: FC<IProps> = props => {
 							onClick={() => {
 								setIsModalOpen(true);
 								setStatus(UpdateEnum.Edit);
+								handleChange(item);
 								formRef.setFieldsValue({ ...item });
 							}}
 						>
