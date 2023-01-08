@@ -184,8 +184,8 @@ const Article: FC<IProps> = props => {
 							onClick={() => {
 								setIsModalOpen(true);
 								setStatus(UpdateEnum.Edit);
-								handleChange({ articleId: articleId });
-								// formRef.setFieldsValue({ ...item, categoryId: String(categoryId) });
+								handleChange({ articleId: articleId, ...item });
+								formRef.setFieldsValue(item);
 							}}
 						>
 							编辑
