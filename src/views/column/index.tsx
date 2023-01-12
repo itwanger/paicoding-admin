@@ -28,6 +28,10 @@ export interface IFormType {
 	author: number; // 作者ID
 	introduction: string; // 简介
 	cover: string; // 封面 URL
+	type: number; // 类型
+	nums: number; // 连载数量
+	freeEndTime: number; // 限时免费开始时间
+	freeStartTime: number; // 限时免费结束时间
 	state: number; // 状态
 	section: number; // 排序
 }
@@ -38,6 +42,10 @@ const defaultInitForm: IFormType = {
 	author: -1,
 	introduction: "",
 	cover: "",
+	type: -1,
+	nums: -1,
+	freeEndTime: -1,
+	freeStartTime: -1,
 	state: -1,
 	section: -1
 };
@@ -76,9 +84,9 @@ const Column: FC<IProps> = props => {
 	}, []);
 
 	// @ts-ignore
-	const { CreamStatus, CreamStatusList } = props || {};
+	const { ColumnStatus, ColumnStatusList, ColumnType, ColumnTypeList } = props || {};
 
-	const { columnId, column, introduction, cover, authorName, state, section } = form;
+	const { columnId, column, introduction, cover, authorName, state, section, type, nums, freeEndTime, freeStartTime } = form;
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
@@ -139,11 +147,19 @@ const Column: FC<IProps> = props => {
 			key: "authorName"
 		},
 		{
+			title: "类型",
+			dataIndex: "type",
+			key: "type",
+			render(type) {
+				return ColumnType[type];
+			}
+		},
+		{
 			title: "状态",
 			dataIndex: "state",
 			key: "state",
 			render(state) {
-				return CreamStatus[state];
+				return ColumnStatus[state];
 			}
 		},
 		{
@@ -248,13 +264,49 @@ const Column: FC<IProps> = props => {
 					}}
 				/>
 			</Form.Item>
+			<Form.Item label="连载数量" name="nums" rules={[{ required: true, message: "请选择连载数量!" }]}>
+				<Input
+					type="number"
+					allowClear
+					onChange={e => {
+						handleChange({ nums: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="类型" name="type" rules={[{ required: true, message: "请选择类型!" }]}>
+				<Select
+					allowClear
+					onChange={value => {
+						handleChange({ type: value });
+					}}
+					options={ColumnTypeList}
+				/>
+			</Form.Item>
+			<Form.Item label="开始时间" name="freeStartTime" rules={[{ required: false, message: "请选择连载数量!" }]}>
+				<Input
+					type="number"
+					allowClear
+					onChange={e => {
+						handleChange({ freeStartTime: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="结束时间" name="freeEndTime" rules={[{ required: false, message: "请选择结束时间!" }]}>
+				<Input
+					type="number"
+					allowClear
+					onChange={e => {
+						handleChange({ freeEndTime: e.target.value });
+					}}
+				/>
+			</Form.Item>
 			<Form.Item label="状态" name="state" rules={[{ required: true, message: "请选择状态!" }]}>
 				<Select
 					allowClear
 					onChange={value => {
 						handleChange({ state: value });
 					}}
-					options={CreamStatusList}
+					options={ColumnStatusList}
 				/>
 			</Form.Item>
 			<Form.Item label="排序" name="section" rules={[{ required: true, message: "请输入排序" }]}>
@@ -274,7 +326,11 @@ const Column: FC<IProps> = props => {
 		{ label: "简介", title: introduction },
 		{ label: "封面URL", title: cover },
 		{ label: "作者", title: authorName },
-		{ label: "状态", title: CreamStatus[state] },
+		{ label: "连载数量", title: nums },
+		{ label: "类型", title: ColumnType[type] },
+		{ label: "开始时间", title: freeStartTime },
+		{ label: "结束时间", title: freeEndTime },
+		{ label: "状态", title: ColumnStatus[state] },
 		{ label: "排序", title: section }
 	];
 
