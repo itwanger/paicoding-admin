@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Drawer, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
+import { Button, DatePicker, Descriptions, Drawer, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
@@ -11,6 +11,8 @@ import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
 import "./index.scss";
+
+const { RangePicker } = DatePicker;
 
 interface DataType {
 	key: string;
@@ -215,7 +217,13 @@ const Column: FC<IProps> = props => {
 	const handleSubmit = async () => {
 		try {
 			const values = await formRef.validateFields();
-			const newValues = { ...values, columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId };
+			const { freeStartTime, freeEndTime } = form;
+			const newValues = {
+				...values,
+				columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId,
+				freeStartTime,
+				freeEndTime
+			};
 			// @ts-ignore
 			const { status: successStatus } = (await updateColumnApi(newValues)) || {};
 			const { code } = successStatus || {};
@@ -283,20 +291,18 @@ const Column: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="开始时间" name="freeStartTime" rules={[{ required: false, message: "请选择连载数量!" }]}>
-				<Input
-					type="number"
-					allowClear
+				<DatePicker
 					onChange={e => {
-						handleChange({ freeStartTime: e.target.value });
+						const freeStartTime = new Date(e).getTime();
+						handleChange({ freeStartTime: freeStartTime });
 					}}
 				/>
 			</Form.Item>
 			<Form.Item label="结束时间" name="freeEndTime" rules={[{ required: false, message: "请选择结束时间!" }]}>
-				<Input
-					type="number"
-					allowClear
+				<DatePicker
 					onChange={e => {
-						handleChange({ freeEndTime: e.target.value });
+						const freeEndTime = new Date(e).getTime();
+						handleChange({ freeEndTime });
 					}}
 				/>
 			</Form.Item>
