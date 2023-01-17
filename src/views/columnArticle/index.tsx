@@ -91,7 +91,8 @@ const ColumnArticle: FC<IProps> = props => {
 			// @ts-ignore
 			const { status, result } = await getColumnArticleListApi({ columnId: -1, pageNumber: current, pageSize }); // TODO: 需要传教程ID
 			const { code } = status || {};
-			const { list } = result || {};
+			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
 				setTableData(newList);
@@ -114,6 +115,7 @@ const ColumnArticle: FC<IProps> = props => {
 				console.log();
 				if (code === 0) {
 					message.success("删除成功");
+					setPagination({ current: 1, pageSize });
 					onSure();
 				}
 			}

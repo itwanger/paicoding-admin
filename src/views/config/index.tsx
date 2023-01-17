@@ -111,6 +111,7 @@ const Banner: FC<IProps> = props => {
 				const { code } = status || {};
 				if (code === 0) {
 					message.success("删除成功");
+					setPagination({ current: 1, pageSize });
 					onSure();
 				}
 			}

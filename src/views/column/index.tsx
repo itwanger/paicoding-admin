@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import { Button, DatePicker, Descriptions, Drawer, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import moment from "moment";
 
 import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
@@ -32,8 +33,8 @@ export interface IFormType {
 	cover: string; // 封面 URL
 	type: number; // 类型
 	nums: number; // 连载数量
-	freeEndTime: number; // 限时免费开始时间
-	freeStartTime: number; // 限时免费结束时间
+	freeEndTime: string; // 限时免费开始时间
+	freeStartTime: string; // 限时免费结束时间
 	state: number; // 状态
 	section: number; // 排序
 }
@@ -46,8 +47,8 @@ const defaultInitForm: IFormType = {
 	cover: "",
 	type: -1,
 	nums: -1,
-	freeEndTime: -1,
-	freeStartTime: -1,
+	freeEndTime: "",
+	freeStartTime: "",
 	state: -1,
 	section: -1
 };
@@ -122,9 +123,10 @@ const Column: FC<IProps> = props => {
 				// @ts-ignore
 				const { status } = await delColumnApi(columnId);
 				const { code } = status || {};
-				console.log();
 				if (code === 0) {
 					message.success("删除成功");
+					setPagination({ current: 1, pageSize });
+					setPagination({ current: 1, pageSize });
 					onSure();
 				}
 			}
@@ -199,8 +201,19 @@ const Column: FC<IProps> = props => {
 							onClick={() => {
 								setIsModalOpen(true);
 								setStatus(UpdateEnum.Edit);
-								handleChange({ ...item });
-								formRef.setFieldsValue({ ...item, state: String(state) });
+								const { freeEndTime, freeStartTime } = item;
+								const newFreeStartTime = moment(freeStartTime);
+								const newFreeEndTime = moment(freeEndTime);
+
+								handleChange({ ...item, freeEndTime: newFreeEndTime, freeStartTime: newFreeStartTime });
+								console.log({ ...item, freeEndTime: newFreeEndTime, freeStartTime: newFreeStartTime });
+
+								formRef.setFieldsValue({
+									...item,
+									state: String(state),
+									freeEndTime: newFreeEndTime,
+									freeStartTime: newFreeStartTime
+								});
 							}}
 						>
 							编辑
@@ -221,8 +234,8 @@ const Column: FC<IProps> = props => {
 			const newValues = {
 				...values,
 				columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId,
-				freeStartTime,
-				freeEndTime
+				freeStartTime: moment(freeStartTime).valueOf() || "",
+				freeEndTime: moment(freeEndTime).valueOf() || ""
 			};
 			// @ts-ignore
 			const { status: successStatus } = (await updateColumnApi(newValues)) || {};
@@ -290,10 +303,10 @@ const Column: FC<IProps> = props => {
 					options={ColumnTypeList}
 				/>
 			</Form.Item>
-			<Form.Item label="开始时间" name="freeStartTime" rules={[{ required: false, message: "请选择连载数量!" }]}>
+			<Form.Item label="开始时间" name="freeStartTime" rules={[{ required: false, message: "请选择开始时间!" }]}>
 				<DatePicker
 					onChange={e => {
-						const freeStartTime = new Date(e).getTime();
+						const freeStartTime = moment(e).valueOf();
 						handleChange({ freeStartTime: freeStartTime });
 					}}
 				/>
@@ -301,7 +314,7 @@ const Column: FC<IProps> = props => {
 			<Form.Item label="结束时间" name="freeEndTime" rules={[{ required: false, message: "请选择结束时间!" }]}>
 				<DatePicker
 					onChange={e => {
-						const freeEndTime = new Date(e).getTime();
+						const freeEndTime = moment(e).valueOf();
 						handleChange({ freeEndTime });
 					}}
 				/>
@@ -330,15 +343,15 @@ const Column: FC<IProps> = props => {
 	const detailInfo = [
 		{ label: "教程名", title: column },
 		{ label: "简介", title: introduction },
-		{ label: "封面URL", title: cover },
+		{ label: "封面URL", title: cover ? <a href={cover}>链接</a> : "" },
 		{ label: "作者", title: authorName },
 		{ label: "连载数量", title: nums },
 		{ label: "类型", title: ColumnType[type] },
-		{ label: "开始时间", title: freeStartTime },
-		{ label: "结束时间", title: freeEndTime },
+		{ label: "开始时间", title: moment(freeStartTime).format("YYYY-MM-DD HH:mm:ss") },
+		{ label: "结束时间", title: moment(freeEndTime).format("YYYY-MM-DD HH:mm:ss") },
 		{ label: "状态", title: ColumnStatus[state] },
 		{ label: "排序", title: section }
-	];
+	].map(({ label, title }) => ({ label, title: title || "-" }));
 
 	return (
 		<div className="Column">
