@@ -20,11 +20,11 @@ const Statistics: FC<IProps> = props => {
 	const [allInfo, setAllInfo] = useState<MapItem[]>([]);
 
 	const pvDate = pvInfo.map(({ date }) => date);
-	const pvCount = pvInfo.map(({ count }) => count);
+	const pvDateCount = pvInfo.map(({ count }) => count);
 	const uvDate = uvInfo.map(({ date }) => date);
 	const uvCount = uvInfo.map(({ count }) => count);
 
-	const { pvCount: allPvCount, userCount, articleCount } = allInfo;
+	const { pvCount, userCount, articleCount } = allInfo;
 
 	const getAllList = async () => {
 		const { status, result } = await getAllApi();
@@ -61,7 +61,7 @@ const Statistics: FC<IProps> = props => {
 			},
 			series: [
 				{
-					data: pvCount,
+					data: pvDateCount,
 					type: "line",
 					smooth: true
 				}
@@ -109,7 +109,7 @@ const Statistics: FC<IProps> = props => {
 
 	useEffect(() => {
 		getPvRef();
-	}, [pvDate, pvCount]);
+	}, [pvDate, pvDateCount]);
 
 	useEffect(() => {
 		getUvRef();
