@@ -10,7 +10,10 @@
 	&__search {
 		flex: 1;
 		display: flex;
-		justify-content: flex-end;
+		justify-content: space-between;
+		&-wrap {
+			display: flex;
+		}
 	}
 
 	&__search-item {

@@ -201,16 +201,17 @@ const Column: FC<IProps> = props => {
 							onClick={() => {
 								setIsModalOpen(true);
 								setStatus(UpdateEnum.Edit);
-								const { freeEndTime, freeStartTime } = item;
+								const { freeEndTime, freeStartTime, type } = item;
 								const newFreeStartTime = moment(freeStartTime);
 								const newFreeEndTime = moment(freeEndTime);
+								console.log(type, typeof type);
 
-								handleChange({ ...item, freeEndTime: newFreeEndTime, freeStartTime: newFreeStartTime });
-								console.log({ ...item, freeEndTime: newFreeEndTime, freeStartTime: newFreeStartTime });
+								handleChange({ ...item, type: String(type), freeEndTime: newFreeEndTime, freeStartTime: newFreeStartTime });
 
 								formRef.setFieldsValue({
 									...item,
 									state: String(state),
+									type: String(type),
 									freeEndTime: newFreeEndTime,
 									freeStartTime: newFreeStartTime
 								});

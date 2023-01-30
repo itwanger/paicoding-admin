@@ -1,13 +1,14 @@
 import { useRef } from "react";
-import { Avatar, Modal, Menu, Dropdown, message } from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { HOME_URL } from "@/config/config";
 import { connect } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { Avatar, Dropdown, Menu, message, Modal } from "antd";
+
+import loginPng from "@/assets/images/logo_md.png";
+import { HOME_URL } from "@/config/config";
 import { setToken } from "@/redux/modules/global/action";
-import PasswordModal from "./PasswordModal";
 import InfoModal from "./InfoModal";
-import avatar from "@/assets/images/avatar.png";
+import PasswordModal from "./PasswordModal";
 
 const AvatarIcon = (props: any) => {
 	const { setToken } = props;
@@ -68,7 +69,7 @@ const AvatarIcon = (props: any) => {
 	return (
 		<>
 			<Dropdown overlay={menu} placement="bottom" arrow trigger={["click"]}>
-				<Avatar size="large" src={avatar} />
+				<Avatar size="large" src={loginPng} />
 			</Dropdown>
 			<InfoModal innerRef={infoRef}></InfoModal>
 			<PasswordModal innerRef={passRef}></PasswordModal>

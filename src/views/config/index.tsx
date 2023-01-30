@@ -169,7 +169,7 @@ const Banner: FC<IProps> = props => {
 			dataIndex: "tags",
 			key: "tags",
 			render(tag) {
-				return ArticleTag[tag];
+				return ArticleTag[tag] || "-";
 			}
 		},
 		{
