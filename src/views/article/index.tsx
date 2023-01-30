@@ -4,7 +4,7 @@ import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined 
 import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
+import { delArticleApi, examineArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
 import { updateTagApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
@@ -26,11 +26,13 @@ interface IProps {}
 interface IInitForm {
 	articleId: number;
 	shortTitle: string;
+	status: number;
 }
 
 const defaultInitForm = {
 	articleId: -1,
-	shortTitle: ""
+	shortTitle: "",
+	status: -1
 };
 
 const Article: FC<IProps> = props => {
@@ -65,7 +67,7 @@ const Article: FC<IProps> = props => {
 	}, []);
 
 	// @ts-ignore
-	const { PushStatus, ToppingStatus } = props || {};
+	const { PushStatus, PushStatusList, ToppingStatus } = props || {};
 
 	// 重置表单
 	const resetBarFrom = () => {
@@ -137,6 +139,27 @@ const Article: FC<IProps> = props => {
 		});
 	};
 
+	// 上线/下线
+	const handleExamine = (articleId: number, status: number) => {
+		const operateDesc = status === 1 ? "通过" : "不通过";
+		Modal.warning({
+			title: "确认" + operateDesc + "改文章吗",
+			content: "对线上会有影响，请谨慎操作！",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				// @ts-ignore
+				const { statusRes } = await examineArticleApi({ articleId, status });
+				const { code } = statusRes || {};
+				console.log();
+				if (code === 0) {
+					message.success("操作成功");
+					onSure();
+				}
+			}
+		});
+	};
+
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
@@ -168,12 +191,20 @@ const Article: FC<IProps> = props => {
 			}
 		},
 		{
+			title: "状态",
+			dataIndex: "status",
+			key: "status",
+			render(status) {
+				return PushStatus[status];
+			}
+		},
+		{
 			title: "操作",
 			key: "key",
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { articleId, toppingStat } = item;
+				const { articleId, toppingStat, status } = item;
 				const noUp = toppingStat === 0;
 				const topStatus = toppingStat === 0 ? 3 : 4; // 3-推荐；4-取消推荐
 				return (
@@ -238,6 +269,15 @@ const Article: FC<IProps> = props => {
 					onChange={e => {
 						handleChange({ tag: e.target.value });
 					}}
+				/>
+			</Form.Item>
+			<Form.Item label="状态" name="status" rules={[{ required: true, message: "请选择状态!" }]}>
+				<Select
+					allowClear
+					onChange={value => {
+						handleChange({ status: value });
+					}}
+					options={PushStatusList}
 				/>
 			</Form.Item>
 		</Form>

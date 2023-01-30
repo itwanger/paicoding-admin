@@ -27,3 +27,8 @@ export const delArticleApi = (articleId: number) => {
 export const operateArticleApi = (params: object | undefined) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/article/operate`, params);
 };
+
+// 上线/下线操作
+export const examineArticleApi = (params: object | undefined) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/article/examine`, params);
+};
