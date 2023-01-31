@@ -16,20 +16,20 @@ interface IProps {
 
 const Search: FC<IProps> = ({ handleChange, setStatus, setIsModalOpen, resetForm }) => {
 	return (
-		<div className="sort-search">
-			<ContentInterWrap className="sort-search__wrap">
-				<div className="sort-search__search">
-					<div className="sort-search__search-wrap">
-						<div className="sort-search__search-item">
-							<span className="sort-search-label">类型</span>
+		<div className="config-search">
+			<ContentInterWrap className="config-search__wrap">
+				<div className="config-search__search ">
+					<div className="config-search__search-wrap">
+						<div className="config-search__search-item">
+							<span className="config-search-label">类型</span>
 							<Input onChange={e => handleChange({ id: e.target.value })} style={{ width: 252 }} />
 						</div>
-						<div className="sort-search__search-item">
-							<span className="sort-search-label">名称</span>
+						<div className="config-search__search-item">
+							<span className="config-search-label">名称</span>
 							<Input onChange={e => handleChange({ id: e.target.value })} style={{ width: 252 }} />
 						</div>
-						<div className="sort-search__search-item">
-							<span className="sort-search-label">标签</span>
+						<div className="config-search__search-item">
+							<span className="config-search-label">标签</span>
 							<Input onChange={e => handleChange({ id: e.target.value })} style={{ width: 252 }} />
 						</div>
 					</div>
