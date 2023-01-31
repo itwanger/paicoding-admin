@@ -25,12 +25,14 @@ interface IProps {}
 
 interface IInitForm {
 	articleId: number;
+	title: string;
 	shortTitle: string;
 	status: number;
 }
 
 const defaultInitForm = {
 	articleId: -1,
+	title: "",
 	shortTitle: "",
 	status: -1
 };
@@ -216,8 +218,13 @@ const Article: FC<IProps> = props => {
 							onClick={() => {
 								setIsModalOpen(true);
 								setStatus(UpdateEnum.Edit);
-								handleChange({ articleId: articleId, ...item });
-								formRef.setFieldsValue(item);
+
+								handleChange({ articleId: articleId, status: String(status), ...item });
+
+								formRef.setFieldsValue({
+									...item,
+									status: String(status)
+								});
 							}}
 						>
 							编辑
@@ -263,7 +270,15 @@ const Article: FC<IProps> = props => {
 	// 编辑表单
 	const reviseModalContent = (
 		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="短标题" name="shortTitle" rules={[{ required: true, message: "请输入短标题!" }]}>
+			<Form.Item label="标题" name="title" rules={[{ required: false, message: "请输入标题!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ tag: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="短标题" name="shortTitle" rules={[{ required: false, message: "请输入短标题!" }]}>
 				<Input
 					allowClear
 					onChange={e => {
