@@ -120,9 +120,9 @@ const Statistics: FC<IProps> = props => {
 		{ value: "30", label: "30天" }
 	];
 	const allDataInfo = [
-		{ title: "用户总数", value: userCount, bgColor: "brown" },
-		{ title: "PV 总数", value: pvCount, bgColor: "cadetblue" },
-		{ title: "文章总数", value: articleCount, bgColor: "cornflowerblue" }
+		{ title: "用户总数", value: userCount, bgColor: "#1196EE" },
+		{ title: "PV 总数", value: pvCount, bgColor: "#4DB39E" },
+		{ title: "文章总数", value: articleCount, bgColor: "#3CC4C4" }
 	];
 
 	return (
