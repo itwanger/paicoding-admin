@@ -9,6 +9,15 @@ export interface ResultData<T = any> extends Result {
 	data?: T;
 }
 
+export interface Status {
+	code: number;
+	msg: string;
+}
+export interface PaiRes<T = any> {
+	status: Status;
+	result?: T;
+}
+
 // * 分页响应参数
 export interface ResPage<T> {
 	datalist: T[];
@@ -31,6 +40,11 @@ export namespace Login {
 	}
 	export interface ResLogin {
 		access_token: string;
+		userId: number;
+		// 登录用户名
+		userName: string;
+		// 用户头像
+		photo: string;
 	}
 	export interface ResAuthButtons {
 		[propName: string]: any;

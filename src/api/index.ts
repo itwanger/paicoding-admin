@@ -1,7 +1,7 @@
 import { message } from "antd";
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
-import { ResultData } from "@/api/interface";
+import { PaiRes, ResultData } from "@/api/interface";
 import NProgress from "@/config/nprogress";
 import { showFullScreenLoading, tryHideFullScreenLoading } from "@/config/serviceLoading";
 import { ResultEnum } from "@/enums/httpEnum";
@@ -96,6 +96,11 @@ class RequestHttp {
 	post<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
 		return this.service.post(url, params, _object);
 	}
+
+	postForm<T>(url: string, params?: object, _object = {}): Promise<PaiRes<T>> {
+		return this.service.post(url, params, _object);
+	}
+
 	put<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
 		return this.service.put(url, params, _object);
 	}

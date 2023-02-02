@@ -23,13 +23,17 @@ const LoginForm = (props: any) => {
 	const onFinish = async (loginForm: Login.ReqLoginForm) => {
 		try {
 			setLoading(true);
-			// TODO: 暂时屏蔽
-			// loginForm.password = md5(loginForm.password);
-			// const { data } = await loginApi(loginForm);
-			// setToken(data?.access_token);
-			// setTabsList([]);
-			// message.success("登录成功！");
-			navigate(HOME_URL);
+			const { status, result } = await loginApi(loginForm);
+			console.log("response: ", result);
+			if (status && status.code == 0 && result && result.userId > 0) {
+				// fixme 拿登录的用户名、用户头像来替换默认的用户名头像
+				message.success("登录成功");
+				setToken(result?.userId);
+				setTabsList([]);
+				navigate(HOME_URL);
+			} else {
+				message.success("登录失败:" + status?.msg);
+			}
 		} finally {
 			setLoading(false);
 		}
