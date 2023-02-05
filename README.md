@@ -1,10 +1,8 @@
-# quick-forum-admin 🚀
+# paicoding-admin 🚀
 
 ### 介绍 📖
 
-🚀🚀🚀 quick-forum-admin，基于 React18、React-Router v6、React-Hooks、Redux && Redux-Toolkit、TypeScript、Vite2、Ant-Design、hook admin 的一套后台博客管理系统。
-
-🌈 Redux-Toolkit 版本请切换到 Redux-Toolkit 分支上
+🚀🚀🚀 paicoding-admin，基于 React18、React-Router v6、React-Hooks、Redux && Redux-Toolkit、TypeScript、Vite2、Ant-Design、hook admin 的一套社区管理系统。
 
 ### 项目相关文档 📚
 
@@ -12,11 +10,12 @@
 
 ### 一、在线预览地址 👀
 
-- Link：https://hooks.spicyboy.cn
+- Link：[https://paicoding.com/admin-view/](https://paicoding.com/admin-view/)
 
 ### 二、Git 仓库地址 (欢迎 Star⭐)
 
-- GitHub：https://github.com/panStart/quick-forum-admin
+- GitHub：[https://github.com/itwanger/paicoding-admin](https://github.com/itwanger/paicoding-admin)
+- 码云：[https://gitee.com/itwanger/paicoding-admin](https://gitee.com/itwanger/paicoding-admin)
 
 ### 三、🔨🔨🔨 项目功能
 
@@ -38,7 +37,7 @@
 
 ```text
 # GitHub
-git clone https://github.com/panStart/quick-forum-admin.git
+git clone https://github.com/itwanger/paicoding-admin.git
 ```
 
 - **Install：**
