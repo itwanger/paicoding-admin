@@ -14,3 +14,14 @@ export const initPagination: IPagination = {
 	pageSize: 10,
 	total: 0
 };
+
+export enum PushStatusEnum {
+	noPublish = "0",
+	Publishing = "1",
+	Published = "2"
+}
+export const pushStatusInfo = {
+	[PushStatusEnum.noPublish]: "default",
+	[PushStatusEnum.Publishing]: "processing",
+	[PushStatusEnum.Published]: "success"
+};

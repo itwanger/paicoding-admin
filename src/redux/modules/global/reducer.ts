@@ -6,7 +6,7 @@ import * as types from "@/redux/mutation-types";
 
 const globalState: GlobalState = {
 	token: "",
-	userInfo: "",
+	userInfo: {},
 	assemblySize: "middle",
 	themeConfig: {
 		// 默认 primary 主题颜色
@@ -25,11 +25,16 @@ const globalState: GlobalState = {
 };
 
 // global reducer
-const global = (state: GlobalState = globalState, action: AnyAction) =>
-	produce(state, draftState => {
+const global = (state: GlobalState = globalState, action: AnyAction) => {
+	console.log({ action });
+
+	return produce(state, draftState => {
 		switch (action.type) {
 			case types.SET_TOKEN:
 				draftState.token = action.token;
+				break;
+			case types.USER_INFO:
+				draftState.userInfo = action.userInfo;
 				break;
 			case types.SET_ASSEMBLY_SIZE:
 				draftState.assemblySize = action.assemblySize;
@@ -41,5 +46,5 @@ const global = (state: GlobalState = globalState, action: AnyAction) =>
 				return draftState;
 		}
 	});
-
+};
 export default global;

@@ -11,9 +11,9 @@ import InfoModal from "./InfoModal";
 import PasswordModal from "./PasswordModal";
 
 const AvatarIcon = (props: any) => {
-	const { setToken } = props;
+	const { setToken, userInfo } = props;
 	const navigate = useNavigate();
-
+	const { photo } = userInfo || {};
 	interface ModalProps {
 		showModal: (params: { name: number }) => void;
 	}
@@ -69,7 +69,7 @@ const AvatarIcon = (props: any) => {
 	return (
 		<>
 			<Dropdown overlay={menu} placement="bottom" arrow trigger={["click"]}>
-				<Avatar size="large" src={loginPng} />
+				<Avatar size="large" src={photo || loginPng} />
 			</Dropdown>
 			<InfoModal innerRef={infoRef}></InfoModal>
 			<PasswordModal innerRef={passRef}></PasswordModal>
