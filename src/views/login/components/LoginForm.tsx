@@ -9,12 +9,13 @@ import md5 from "js-md5";
 import { Login } from "@/api/interface";
 import { loginApi } from "@/api/modules/login";
 import { HOME_URL } from "@/config/config";
+import { getDiscListAction } from "@/redux/modules/disc/action";
 import { setToken, setUserInfo } from "@/redux/modules/global/action";
 import { setTabsList } from "@/redux/modules/tabs/action";
 
 const LoginForm = (props: any) => {
 	const { t } = useTranslation();
-	const { setToken, setTabsList, setUserInfo } = props;
+	const { setToken, setTabsList, setUserInfo, getDiscListAction } = props;
 	const navigate = useNavigate();
 	const [form] = Form.useForm();
 	const [loading, setLoading] = useState<boolean>(false);
@@ -28,10 +29,11 @@ const LoginForm = (props: any) => {
 				// fixme 拿登录的用户名、用户头像来替换默认的用户名头像
 				message.success("登录成功");
 				setToken(result?.userId);
-				console.log({ result });
 
 				setUserInfo(result);
 				setTabsList([]);
+				getDiscListAction();
+
 				navigate(HOME_URL);
 			} else {
 				message.success("登录失败:" + status?.msg);
@@ -79,5 +81,5 @@ const LoginForm = (props: any) => {
 	);
 };
 
-const mapDispatchToProps = { setToken, setTabsList, setUserInfo };
+const mapDispatchToProps = { setToken, setTabsList, setUserInfo, getDiscListAction };
 export default connect(null, mapDispatchToProps)(LoginForm);
