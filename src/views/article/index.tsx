@@ -172,7 +172,14 @@ const Article: FC<IProps> = props => {
 		{
 			title: "标题",
 			dataIndex: "title",
-			key: "title"
+			key: "title",
+			render(value, item) {
+				return (
+					<a href={`https://paicoding.com/article/detail/${item?.articleId}`} target="_blank" rel="noreferrer">
+						{value}
+					</a>
+				);
+			}
 		},
 		{
 			title: "短标题",
@@ -189,7 +196,7 @@ const Article: FC<IProps> = props => {
 			dataIndex: "toppingStat",
 			key: "toppingStat",
 			render(toppingStat) {
-				return ToppingStatus[toppingStat];
+				return <Tag color={toppingStat == 1 ? "#f50" : "cyan"}>{ToppingStatus[toppingStat]}</Tag> || "-";
 			}
 		},
 		{
@@ -197,7 +204,7 @@ const Article: FC<IProps> = props => {
 			dataIndex: "status",
 			key: "status",
 			render(status) {
-				return PushStatus[status];
+				return <Tag color={status == 2 ? "red" : "green"}>{PushStatus[status]}</Tag> || "-";
 			}
 		},
 		{
