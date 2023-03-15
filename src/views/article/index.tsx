@@ -7,7 +7,7 @@ import type { ColumnsType } from "antd/es/table";
 import { delArticleApi, examineArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
 import { updateTagApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
+import { initPagination, IPagination, PushStatusEnum, pushStatusInfo, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 

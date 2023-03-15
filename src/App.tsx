@@ -7,7 +7,6 @@ import zhCN from "antd/lib/locale-provider/zh_CN";
 import useTheme from "@/hooks/useTheme";
 import Router from "@/routers/index";
 import AuthRouter from "@/routers/utils/authRouter";
-import { getDiscListAction } from "./redux/modules/disc/action";
 
 import "./index.scss";
 
@@ -18,10 +17,6 @@ const App = (props: any) => {
 
 	// 全局使用主题
 	useTheme(themeConfig);
-
-	useEffect(() => {
-		props.getDiscListAction();
-	}, []);
 
 	return (
 		<HashRouter>
@@ -35,5 +30,5 @@ const App = (props: any) => {
 };
 
 const mapStateToProps = (state: any) => state.global;
-const mapDispatchToProps = { getDiscListAction: getDiscListAction };
+const mapDispatchToProps = {};
 export default connect(mapStateToProps, mapDispatchToProps)(App);

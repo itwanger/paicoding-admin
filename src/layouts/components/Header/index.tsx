@@ -1,5 +1,7 @@
+import { connect } from "react-redux";
 import { Layout } from "antd";
 
+import { store } from "@/redux";
 import AssemblySize from "./components/AssemblySize";
 import AvatarIcon from "./components/AvatarIcon";
 import BreadcrumbNav from "./components/BreadcrumbNav";
@@ -9,7 +11,10 @@ import Theme from "./components/Theme";
 
 import "./index.less";
 
-const LayoutHeader = () => {
+const LayoutHeader = props => {
+	const { userInfo } = props || {};
+	const { userName } = userInfo || {};
+
 	const { Header } = Layout;
 
 	return (
@@ -22,11 +27,13 @@ const LayoutHeader = () => {
 				<AssemblySize />
 				<Theme />
 				<Fullscreen />
-				<span className="username">技术派</span>
-				<AvatarIcon />
+				<span className="username">{userName || "技术派"}</span>
+				<AvatarIcon userInfo={userInfo} />
 			</div>
 		</Header>
 	);
 };
 
-export default LayoutHeader;
+const mapStateToProps = (state: any) => state.global;
+const mapDispatchToProps = {};
+export default connect(mapStateToProps, mapDispatchToProps)(LayoutHeader);
