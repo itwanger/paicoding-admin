@@ -8,7 +8,9 @@ import {
 	HomeOutlined,
 	LineChartOutlined,
 	ReadOutlined,
-	TagsOutlined
+	TagsOutlined,
+	UserOutlined,
+	UserSwitchOutlined
 } from "@ant-design/icons";
 
 export const currentMenuList = [
@@ -18,6 +20,9 @@ export const currentMenuList = [
 	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },
 	{ key: "/tag/index", icon: <TagsOutlined />, children: undefined, label: "标签管理" },
 	{ key: "/article/index", icon: <FileTextOutlined />, children: undefined, label: "文章管理" },
+	{ key: "/auth", icon: <UserOutlined />, children: [
+			{ key: "/articleWhiteList/index", icon: <UserSwitchOutlined />, children: undefined, label: "发文白名单" },
+		], label: "授权管理" },
 	{
 		key: "/proTable",
 		icon: <ReadOutlined />,
