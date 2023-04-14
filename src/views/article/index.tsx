@@ -200,6 +200,14 @@ const Article: FC<IProps> = props => {
 			}
 		},
 		{
+			title: "官方",
+			dataIndex: "officalStat",
+			key: "officalStat",
+			render(officalStat) {
+				return <Tag color={officalStat == 1 ? "#f50" : "cyan"}>{ToppingStatus[officalStat]}</Tag> || "-";
+			}
+		},
+		{
 			title: "状态",
 			dataIndex: "status",
 			key: "status",
