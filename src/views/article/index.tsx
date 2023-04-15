@@ -69,7 +69,7 @@ const Article: FC<IProps> = props => {
 	}, []);
 
 	// @ts-ignore
-	const { PushStatus, PushStatusList, ToppingStatus } = props || {};
+	const { PushStatus, PushStatusList, ToppingStatus, OfficalStatus } = props || {};
 
 	// 重置表单
 	const resetBarFrom = () => {
@@ -122,7 +122,16 @@ const Article: FC<IProps> = props => {
 
 	// 上线/下线
 	const handleOperate = (articleId: number, operateType: number) => {
-		const operateDesc = operateType === 4 ? "取消" : "推荐";
+		let operateDesc = "";
+		if (operateType === 4) {
+			operateDesc = "取消置顶";
+		} else if (operateType === 3) {
+			operateDesc = "置顶";
+		} else if (operateType === 2) {
+			operateDesc = "取消官方";
+		} else if (operateType === 1) {
+			operateDesc = "官方";
+		}
 		Modal.warning({
 			title: "确认" + operateDesc + "此配置吗",
 			content: "对线上会有影响，请谨慎操作！",
@@ -192,7 +201,7 @@ const Article: FC<IProps> = props => {
 			key: "authorName"
 		},
 		{
-			title: "推荐",
+			title: "置顶",
 			dataIndex: "toppingStat",
 			key: "toppingStat",
 			render(toppingStat) {
@@ -204,7 +213,7 @@ const Article: FC<IProps> = props => {
 			dataIndex: "officalStat",
 			key: "officalStat",
 			render(officalStat) {
-				return <Tag color={officalStat == 1 ? "#f50" : "cyan"}>{ToppingStatus[officalStat]}</Tag> || "-";
+				return <Tag color={officalStat == 1 ? "#f50" : "cyan"}>{OfficalStatus[officalStat]}</Tag> || "-";
 			}
 		},
 		{
@@ -221,9 +230,12 @@ const Article: FC<IProps> = props => {
 			width: 400,
 			render: (_, item) => {
 				// @ts-ignore
-				const { articleId, toppingStat, status } = item;
+				const { articleId, toppingStat, status, officalStat } = item;
 				const noUp = toppingStat === 0;
-				const topStatus = toppingStat === 0 ? 3 : 4; // 3-推荐；4-取消推荐
+				const noOffical = officalStat === 0;
+
+				const topStatus = toppingStat === 0 ? 3 : 4; // 3-置顶；4-取消置顶
+				const officalStatus = officalStat === 0 ? 1 : 2; // 1-官方；0-取消官方
 				return (
 					<div className="operation-btn">
 						<Button
@@ -250,7 +262,15 @@ const Article: FC<IProps> = props => {
 							style={{ marginRight: "10px" }}
 							onClick={() => handleOperate(articleId, topStatus)}
 						>
-							{noUp ? "推荐" : "取消"}
+							{noUp ? "置顶" : "取消置顶"}
+						</Button>
+						<Button
+							type={noOffical ? "primary" : "default"}
+							icon={noOffical ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => handleOperate(articleId, officalStatus)}
+						>
+							{noOffical ? "官方" : "取消官方"}
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(articleId)}>
 							删除
