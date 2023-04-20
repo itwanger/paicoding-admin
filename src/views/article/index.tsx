@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
+import { Button, Form, Input, message, Modal, Select, Space, Switch, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delArticleApi, examineArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
@@ -193,27 +193,40 @@ const Article: FC<IProps> = props => {
 		{
 			title: "短标题",
 			dataIndex: "shortTitle",
+			width: 150,
 			key: "shortTitle"
 		},
 		{
 			title: "作者",
 			dataIndex: "authorName",
+			width: 100,
 			key: "authorName"
 		},
 		{
 			title: "置顶",
 			dataIndex: "toppingStat",
 			key: "toppingStat",
-			render(toppingStat) {
-				return <Tag color={toppingStat == 1 ? "#f50" : "cyan"}>{ToppingStatus[toppingStat]}</Tag> || "-";
+			render(_, item) {
+				// 使用 switch 开关
+				// @ts-ignore
+				const { articleId, toppingStat } = item;
+				const noUp = toppingStat === 0;
+
+				const topStatus = toppingStat === 0 ? 3 : 4; // 3-置顶；4-取消置顶
+				return <Switch checked={noUp} onChange={() => handleOperate(articleId, topStatus)} />;
 			}
 		},
 		{
 			title: "官方",
 			dataIndex: "officalStat",
 			key: "officalStat",
-			render(officalStat) {
-				return <Tag color={officalStat == 1 ? "#f50" : "cyan"}>{OfficalStatus[officalStat]}</Tag> || "-";
+			render(_, item) {
+				// 使用 switch 开关
+				// @ts-ignore
+				const { articleId, officalStat } = item;
+				const noOffical = officalStat === 0;
+				const officalStatus = officalStat === 0 ? 1 : 2; // 1-官方；0-取消官方
+				return <Switch checked={noOffical} onChange={() => handleOperate(articleId, officalStatus)} />;
 			}
 		},
 		{
@@ -227,15 +240,10 @@ const Article: FC<IProps> = props => {
 		{
 			title: "操作",
 			key: "key",
-			width: 400,
+			width: 210,
 			render: (_, item) => {
 				// @ts-ignore
-				const { articleId, toppingStat, status, officalStat } = item;
-				const noUp = toppingStat === 0;
-				const noOffical = officalStat === 0;
-
-				const topStatus = toppingStat === 0 ? 3 : 4; // 3-置顶；4-取消置顶
-				const officalStatus = officalStat === 0 ? 1 : 2; // 1-官方；0-取消官方
+				const { articleId, status } = item;
 				return (
 					<div className="operation-btn">
 						<Button
@@ -255,22 +263,6 @@ const Article: FC<IProps> = props => {
 							}}
 						>
 							编辑
-						</Button>
-						<Button
-							type={noUp ? "primary" : "default"}
-							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => handleOperate(articleId, topStatus)}
-						>
-							{noUp ? "置顶" : "取消置顶"}
-						</Button>
-						<Button
-							type={noOffical ? "primary" : "default"}
-							icon={noOffical ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => handleOperate(articleId, officalStatus)}
-						>
-							{noOffical ? "官方" : "取消官方"}
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(articleId)}>
 							删除
@@ -337,7 +329,14 @@ const Article: FC<IProps> = props => {
 		<div className="banner">
 			<ContentWrap>
 				{/* 搜索 */}
-				{/*<Search handleChange={handleChange} />*/}
+				<ContentInterWrap className="sort-search__wrap">
+					<div className="sort-search__search">
+						<div className="sort-search__search-item">
+							<span className="sort-search-label">文章标题</span>
+							<Input onChange={e => handleChange({ title: e.target.value })} style={{ width: 252 }} />
+						</div>
+					</div>
+				</ContentInterWrap>
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
