@@ -60,4 +60,65 @@
 		font-size: 20px;
 		color: #fff;
 	}
+
+	.top-content {
+		.traffic-box {
+			box-sizing: border-box;
+			display: flex;
+			flex-direction: column;
+			width: 47%;
+			height: 48%;
+			padding: 25px;
+			border-radius: 30px;
+			margin: 10px;
+
+			.traffic-img {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 70px;
+				height: 70px;
+				margin-bottom: 10px;
+				background-color: #fff;
+				border-radius: 19px;
+	
+				img {
+					width: 33px;
+					height: 33px;
+				}
+			}
+			.item-value {
+				margin-bottom: 4px;
+				font-family: DIN;
+				font-size: 28px;
+				font-weight: 700;
+				color: #1a1a37;
+			}
+			.traffic-name {
+				overflow: hidden;
+				font-family: DIN;
+				font-size: 16px;
+				font-weight: 400;
+				color: #1a1a37;
+				white-space: nowrap;
+			}
+		}
+	
+		.gitee-traffic {
+			background: url("./images/1-bg.png");
+			background-color: #e8faea;
+			background-size: 100% 100%;
+		}
+		.gitHub-traffic {
+			background: url("./images/2-bg.png");
+			background-color: #e7e1fb;
+			background-size: 100% 100%;
+		}
+		.today-traffic {
+			background: url("./images/3-bg.png");
+			background-color: #fdf3e9;
+			background-size: 100% 100%;
+		}
+
+	}
 }

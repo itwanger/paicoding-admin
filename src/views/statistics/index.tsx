@@ -5,6 +5,9 @@ import * as echarts from "echarts";
 import { getAllApi, getPvApi, getUvApi } from "@/api/modules/statistics";
 import { ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
+import pvCountImg from "./images/fangwenliang.png";
+import articleCountImg from "./images/wenzhangzongshu.png";
+import userCountImg from "./images/yonghu.png";
 
 import "./index.scss";
 
@@ -128,15 +131,28 @@ const Statistics: FC<IProps> = props => {
 	return (
 		<div className="statistics">
 			<ContentWrap>
-				<div className="statistics-all__wrap">
-					{allDataInfo.map(({ title, value, bgColor }) => (
-						<div className="statistics-all__item" key={title} style={{ backgroundColor: bgColor }}>
-							<div className="statistics-all__item-box">
-								<span className="statistics-all__item-title">{title}</span>
-								<span className="statistics-all__item-value">{value}</span>
-							</div>
+				<div className="statistics-all__wrap top-content">
+					<div className="gitHub-traffic traffic-box">
+						<div className="traffic-img">
+							<img src={userCountImg} />
 						</div>
-					))}
+						<span className="item-value">{userCount}</span>
+						<span className="traffic-name sle">用户总数</span>
+					</div>
+					<div className="today-traffic traffic-box">
+						<div className="traffic-img">
+							<img src={articleCountImg} />
+						</div>
+						<span className="item-value">{articleCount}</span>
+						<span className="traffic-name sle">文章总数</span>
+					</div>
+					<div className="gitee-traffic traffic-box">
+						<div className="traffic-img">
+							<img src={pvCountImg} />
+						</div>
+						<span className="item-value">{pvCount}</span>
+						<span className="traffic-name sle">总访问量</span>
+					</div>
 				</div>
 				<div className="statistics-pv__wrap">
 					<div>
