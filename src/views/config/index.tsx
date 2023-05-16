@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useLinkClickHandler } from "react-router-dom";
@@ -79,7 +80,10 @@ const Banner: FC<IProps> = props => {
 
 	// 值改变
 	const handleChange = (item: MapItem) => {
+		console.log("输入框值改变", item);
 		setForm({ ...form, ...item });
+
+		// 调用 getConfigList 方法查询数据
 	};
 
 	// 数据请求

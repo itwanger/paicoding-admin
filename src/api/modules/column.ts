@@ -3,7 +3,7 @@ import qs from "qs";
 import http from "@/api";
 import { PORT1 } from "@/api/config/servicePort";
 import { Login } from "@/api/interface/index";
-import { IFormType } from "@/views/column";
+import { IFormType } from "@/views/column/setting";
 
 /**
  * @name 教程模块

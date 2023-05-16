@@ -1,5 +1,6 @@
+/* eslint-disable prettier/prettier */
 import React, { FC } from "react";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
@@ -33,6 +34,17 @@ const Search: FC<IProps> = ({ handleChange, setStatus, setIsModalOpen, resetForm
 							<Input onChange={e => handleChange({ id: e.target.value })} style={{ width: 252 }} />
 						</div>
 					</div>
+					<Button 
+						type="primary" 
+						icon={<SearchOutlined />}
+						style={{ marginRight: "10px" }}
+						onClick={() => {
+							// 根据类型、名称、标签进行搜索
+						}}
+						>
+						搜索
+					</Button>
+
 					<Button
 						type="primary"
 						icon={<PlusOutlined />}
