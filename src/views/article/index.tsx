@@ -202,9 +202,10 @@ const Article: FC<IProps> = props => {
 			dataIndex: "title",
 			key: "title",
 			render(value, item) {
+				const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 				return (
 					<a 
-						href={`https://paicoding.com/article/detail/${item?.articleId}`}
+						href={`${baseUrl}/article/detail/${item?.articleId}`}
 						className="cell-text"
 						target="_blank" rel="noreferrer">
 						{value}

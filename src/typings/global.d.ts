@@ -15,6 +15,7 @@ declare type Recordable<T = any> = Record<string, T>;
 
 declare interface ViteEnv {
 	VITE_API_URL: string;
+	VITE_APP_BASE_URL: string;
 	VITE_PORT: number;
 	VITE_OPEN: boolean;
 	VITE_GLOB_APP_TITLE: string;

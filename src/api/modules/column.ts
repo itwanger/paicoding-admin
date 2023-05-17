@@ -14,6 +14,11 @@ export const getColumnListApi = (data: { pageNumber: number; pageSize: number })
 	return http.get(`${PORT1}/column/listColumn`, data);
 };
 
+// 上传图片
+export const uploadCoverApi = (data: FormData) => {
+	return http.post(`${PORT1}/image/upload`, data);
+};
+
 // 保存操作
 export const updateColumnApi = (form: IFormType) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/column/saveColumn`, form);
