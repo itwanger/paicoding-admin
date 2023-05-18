@@ -9,7 +9,7 @@ import { Login } from "@/api/interface/index";
  */
 
 // 获取列表
-export const getArticleListApi = (data: { pageNumber: number; pageSize: number; title: string }) => {
+export const getArticleListApi = (data: { pageNumber: number; pageSize: number }) => {
 	return http.post(`${PORT1}/article/list`, data);
 };
 

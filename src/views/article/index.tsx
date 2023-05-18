@@ -36,6 +36,9 @@ interface IInitForm {
 // 查询表单接口，定义类型
 interface ISearchForm {
 	title: string;
+	status: number;
+	toppingStat: number;
+	officalStat: number;
 }
 
 // 编辑表单默认值
@@ -60,7 +63,7 @@ const Article: FC<IProps> = props => {
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
 	// 查询表单
 	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
-	// 搜索，目前是根据标题搜索
+	// 搜索，目前是根据标题、状态、置顶、推荐搜索
 	const [search, setSearch] = useState<ISearchForm>(defaultSearchForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);

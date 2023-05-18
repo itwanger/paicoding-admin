@@ -11,7 +11,7 @@ import { IFormType } from "@/views/column/setting";
 
 // 获取列表
 export const getColumnListApi = (data: { pageNumber: number; pageSize: number }) => {
-	return http.get(`${PORT1}/column/listColumn`, data);
+	return http.post(`${PORT1}/column/list`, data);
 };
 
 // 上传图片

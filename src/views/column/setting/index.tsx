@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, InboxOutlined, UploadOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, InboxOutlined, SearchOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, DatePicker, Descriptions, Drawer, Form, Input, message, Modal, Select, Space, Table, Tag, UploadFile } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
@@ -61,14 +61,26 @@ const defaultInitForm: IFormType = {
 	section: -1
 };
 
+// 查询表单接口，定义类型
+interface ISearchForm {
+	column: string;
+}
+
+// 查询表单默认值
+const defaultSearchForm = {
+	column: "",
+};
+
 const Column: FC<IProps> = props => {
 	// 用户填值的 Form 表单，有些格式可能和后端不一样，需要转换
 	const [formRef] = Form.useForm();
 	// form值，临时保存一些值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
-	// 弹窗
-	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-	// 弹窗
+	// 查询表单
+	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
+	// 触发搜索
+	const [search, setSearch] = useState<ISearchForm>(defaultSearchForm);
+	// 抽屉
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
@@ -120,6 +132,13 @@ const Column: FC<IProps> = props => {
 		console.log("handleChange setform after", form);
 	};
 
+	// 查询表单值改变
+	const handleSearchChange = (item: MapItem) => {
+		// 当 status 的值为 -1 时，重新显示
+		setSearchForm({ ...searchForm, ...item });
+		console.log("查询条件变化了",searchForm);
+	};
+
 	const customCoverUpload = async (options: any) => {
 		const { onSuccess, onProgress, onError, file } = options;
 		console.log("上传图片", options);
@@ -149,7 +168,11 @@ const Column: FC<IProps> = props => {
 	useEffect(() => {
 		const getSortList = async () => {
 			// @ts-ignore
-			const { status, result } = await getColumnListApi({ pageNumber: current, pageSize });
+			const { status, result } = await getColumnListApi({ 
+				pageNumber: current, 
+				pageSize,
+				...searchForm
+			});
 			const { code } = status || {};
 			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
@@ -159,7 +182,7 @@ const Column: FC<IProps> = props => {
 			}
 		};
 		getSortList();
-	}, [query, current, pageSize]);
+	}, [query, current, pageSize, search]);
 
 	// 删除
 	const handleDel = (columnId: number) => {
@@ -247,8 +270,8 @@ const Column: FC<IProps> = props => {
 							icon={<EditOutlined />}
 							style={{ marginRight: "10px" }}
 							onClick={() => {
-								// 打开模态框
-								setIsModalOpen(true);
+								// 打开抽屉
+								setIsOpenDrawerShow(true);
 								// 设置为更新的状态
 								setStatus(UpdateEnum.Edit);
 								console.log("item", item);
@@ -318,7 +341,7 @@ const Column: FC<IProps> = props => {
 			const { status: successStatus } = (await updateColumnApi(newValues)) || {};
 			const { code } = successStatus || {};
 			if (code === 0) {
-				setIsModalOpen(false);
+				setIsOpenDrawerShow(false);
 				onSure();
 			}
 		} catch (errorInfo) {
@@ -464,18 +487,44 @@ const Column: FC<IProps> = props => {
 		{ label: "排序", title: section }
 	].map(({ label, title }) => ({ label, title: title || "-" }));
 
+	// 当点击查询按钮的时候触发
+	const handleSearch = () => {
+		// 目前是根据文章标题搜索，后面需要加上其他条件
+		console.log("查询条件", searchForm);
+		setSearch(searchForm);
+	};
+
 	return (
 		<div className="Column">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
+				<ContentInterWrap className="sort-search__wrap">
+					<div className="sort-search__search">
+						<div className="sort-search__search-item">
+							<span className="sort-search-label">教程名称</span>
+							<Input onChange={e => handleSearchChange({ column: e.target.value })} style={{ width: 252 }} />
+						</div>
+					</div>
+					<Button 
+							type="primary" 
+							icon={<SearchOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {handleSearch();}}
+							>
+							搜索
+						</Button>
+				</ContentInterWrap>
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} rowKey="columnId" />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 抽屉 */}
-			<Drawer title="详情" placement="right" onClose={() => setIsOpenDrawerShow(false)} visible={isOpenDrawerShow}>
+			<Drawer 
+				title="详情" 
+				placement="right" 
+				onClose={() => setIsOpenDrawerShow(false)} 
+				open={isOpenDrawerShow}>
 				<Descriptions column={1} labelStyle={{ width: "100px" }}>
 					{detailInfo.map(({ label, title }) => (
 						<Descriptions.Item label={label} key={label}>
@@ -484,10 +533,15 @@ const Column: FC<IProps> = props => {
 					))}
 				</Descriptions>
 			</Drawer>
-			{/* 弹窗 */}
-			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
+			{/* 把弹窗修改为抽屉 */}
+			<Drawer 
+				title="添加/修改" 
+				placement="right" 
+				size="large"
+				onClose={() => setIsOpenDrawerShow(false)} 
+				open={isOpenDrawerShow}>
 				{reviseModalContent}
-			</Modal>
+			</Drawer>
 		</div>
 	);
 };
