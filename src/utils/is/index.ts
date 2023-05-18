@@ -116,3 +116,13 @@ export function isNullAndUnDef(val: unknown): val is null | undefined {
 export function isNullOrUnDef(val: unknown): val is null | undefined {
 	return isUnDef(val) || isNull(val);
 }
+
+export const getCompleteUrl = (partialUrl: string | string[]) => {
+	// 域名，展示图片的时候用
+	const baseUrl = import.meta.env.VITE_APP_BASE_URL;
+	let completeUrl = partialUrl;
+	if (partialUrl.indexOf("http") === -1 && partialUrl.indexOf("https") === -1) {
+		completeUrl = baseUrl + partialUrl;
+	}
+	return completeUrl;
+};

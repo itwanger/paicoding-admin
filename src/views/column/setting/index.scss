@@ -1,1 +1,22 @@
+// 增加 avatar 的样式
+.avatar {
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	margin-right: 16px;
+}
+.cell-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 控制显示的行数 */
+  -webkit-box-orient: vertical;
+}
+// 增加封面图的样式
+.cover {
+	width: 60px;
+	background-size: cover;
+	background-position: center;
+	padding-right: 4px;
+}
 

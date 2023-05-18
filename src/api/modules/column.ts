@@ -14,9 +14,14 @@ export const getColumnListApi = (data: { pageNumber: number; pageSize: number })
 	return http.post(`${PORT1}/column/list`, data);
 };
 
+// 获取作者列表，参数为作者名称
+export const getAuthorListApi = (key: string) => {
+	return http.get(`${PORT1}/user/query`, { key });
+};
+
 // 上传图片
 export const uploadCoverApi = (data: FormData) => {
-	return http.post(`${PORT1}/image/upload`, data);
+	return http.post<Login.ResAuthButtons>(`${PORT1}/image/upload`, data);
 };
 
 // 保存操作
