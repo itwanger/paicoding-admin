@@ -294,8 +294,11 @@ const Column: FC<IProps> = props => {
 			title: "封面",
 			dataIndex: "cover",
 			key: "cover",
+			width: 100,
 			render(value) {
+				console.log("封面", value);
 				const coverUrl = getCompleteUrl(value);
+				console.log("封面 coverUrl", coverUrl);
 				return <div className="cover-wrapper">
 						<Image
 							className="cover"
