@@ -14,7 +14,9 @@
 }
 // 增加封面图的样式
 .cover {
-	width: 60px;
+	width: 70px;
+	// height = width * 156 / 110
+	height: 100px;
 	background-size: cover;
 	background-position: center;
 	padding-right: 4px;
