@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { DeleteOutlined, EyeOutlined, SearchOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Descriptions, Drawer, Form, Image,Input, message, Modal, Select, SelectProps, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
@@ -381,6 +381,17 @@ const ColumnArticle: FC<IProps> = props => {
 							onClick={() => {handleSearch();}}
 							>
 							搜索
+						</Button>
+						<Button
+							type="primary"
+							icon={<PlusOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								setIsModalOpen(true);
+								setStatus(UpdateEnum.Save);
+							}}
+						>
+							添加
 						</Button>
 					</div>
 				</ContentInterWrap>

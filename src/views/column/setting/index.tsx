@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, InboxOutlined, SearchOutlined, UploadOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, InboxOutlined, PlusOutlined, SearchOutlined, UploadOutlined } from "@ant-design/icons";
 import { Avatar, Button, DatePicker, Descriptions, Divider, Drawer, Form, Image, Input, message, Modal, Select, Space, Table, UploadFile } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
@@ -641,7 +641,18 @@ const Column: FC<IProps> = props => {
 							onClick={() => {handleSearch}}
 							>
 							搜索
-						</Button>
+					</Button>
+					<Button
+						type="primary"
+						icon={<PlusOutlined />}
+						style={{ marginRight: "10px" }}
+						onClick={() => {
+							setIsOpenDrawerShow(true);
+							setStatus(UpdateEnum.Save);
+						}}
+					>
+						添加
+					</Button>
 				</ContentInterWrap>
 				{/* 表格 */}
 				<ContentInterWrap>
