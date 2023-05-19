@@ -36,7 +36,7 @@ export const delColumnApi = (columnId: number) => {
 
 // 获取列表
 export const getColumnArticleListApi = (data: { columnId: number; pageNumber: number; pageSize: number }) => {
-	return http.get(`${PORT1}/column/listColumnArticle`, data);
+	return http.post(`${PORT1}/column/listColumnArticle`, data);
 };
 
 // 保存操作

@@ -1,16 +1,19 @@
+/* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Drawer, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
+import { DeleteOutlined, EyeOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Descriptions, Drawer, Form, Image,Input, message, Modal, Select, SelectProps, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delColumnArticleApi, getColumnArticleListApi, updateColumnArticleApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
-import Search from "./components/search";
+import { getCompleteUrl } from "@/utils/is";
 
 import "./index.scss";
+
+interface IProps {}
 
 interface DataType {
 	key: string;
@@ -20,9 +23,19 @@ interface DataType {
 	tags: string[];
 }
 
-interface IProps {}
+interface ValueType {
+	key?: string; 
+	label: React.ReactNode; 
+	value: string | number
+}
 
-export interface IFormType {
+// 查询表单接口，定义类型
+interface ISearchForm {
+	articleTitle: string;
+	columnId: number;
+}
+
+interface IFormType {
 	id: number; // 主键id
 	articleId: number; // 文章ID
 	title: string; // 文章标题
@@ -40,10 +53,25 @@ const defaultInitForm: IFormType = {
 	sort: -1
 };
 
+// 查询表单默认值
+const defaultSearchForm = {
+	articleTitle: "",
+	columnId: -1,
+};
+
+const baseUrl = import.meta.env.VITE_APP_BASE_URL;
+
 const ColumnArticle: FC<IProps> = props => {
+
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
+
+	// 查询表单
+	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
+	// 搜索，目前是根据文章标题、教程 ID 搜索
+	const [search, setSearch] = useState<ISearchForm>(defaultSearchForm);
+
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
@@ -59,6 +87,13 @@ const ColumnArticle: FC<IProps> = props => {
 	// 分页
 	const [pagination, setPagination] = useState<IPagination>(initPagination);
 	const { current, pageSize } = pagination;
+
+	// 教程下拉框选项
+	const [options, setOptions] = useState<ValueType[]>([]);
+	// 教程查询
+	const [columnSearch, setColumnSearch] = useState<String>("");
+	// 教程列表的查询条件
+	const [columnSearchKey, setColumnSearchKey] = useState<string>("");
 
 	const paginationInfo = {
 		showSizeChanger: true,
@@ -80,26 +115,33 @@ const ColumnArticle: FC<IProps> = props => {
 	const { ConfigType, ConfigTypeList, ColumnStatus, ColumnStatusList, ArticleTag, ArticleTagList } = props || {};
 
 	const { id, articleId, title, columnId, column, sort } = form;
+
+	const detailInfo = [
+		{ label: "文章ID", title: articleId },
+		{ label: "文章标题", title: title },
+		{ label: "教程ID", title: columnId },
+		{ label: "教程名", title: column },
+		{ label: "排序", title: sort }
+	];
+
 	// 值改变
 	const handleChange = (item: MapItem) => {
 		setForm({ ...form, ...item });
 	};
 
-	// 数据请求
-	useEffect(() => {
-		const getSortList = async () => {
-			// @ts-ignore
-			const { status, result } = await getColumnArticleListApi({ columnId: -1, pageNumber: current, pageSize }); // TODO: 需要传教程ID
-			const { code } = status || {};
-			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
-			setPagination({ current: pageNum, pageSize: resPageSize, total });
-			if (code === 0) {
-				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
-				setTableData(newList);
-			}
-		};
-		getSortList();
-	}, [query, current, pageSize]);
+	// 查询表单值改变
+	const handleSearchChange = (item: MapItem) => {
+		// 当 status 的值为 -1 时，重新显示
+		setSearchForm({ ...searchForm, ...item });
+		console.log("查询条件变化了",searchForm);
+	};
+
+	// 当点击查询按钮的时候触发
+	const handleSearch = () => {
+		// 目前是根据文章标题搜索，后面需要加上其他条件
+		console.log("查询条件", searchForm);
+		setSearch(searchForm);
+	};
 
 	// 删除
 	const handleDel = (id: number) => {
@@ -122,77 +164,6 @@ const ColumnArticle: FC<IProps> = props => {
 		});
 	};
 
-	// 表头设置
-	const columns: ColumnsType<DataType> = [
-		{
-			title: "文章ID",
-			dataIndex: "articleId",
-			key: "articleId"
-		},
-		{
-			title: "文章标题",
-			dataIndex: "title",
-			key: "title"
-		},
-		{
-			title: "教程ID",
-			dataIndex: "columnId",
-			key: "columnId"
-		},
-		{
-			title: "教程名",
-			dataIndex: "column",
-			key: "column"
-		},
-		{
-			title: "排序",
-			dataIndex: "sort",
-			key: "sort"
-		},
-		{
-			title: "操作",
-			key: "key",
-			width: 400,
-			render: (_, item) => {
-				// @ts-ignore
-				const { id } = item;
-				return (
-					<div className="operation-btn">
-						<Button
-							type="primary"
-							icon={<EyeOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {
-								setIsOpenDrawerShow(true);
-								setStatus(UpdateEnum.Edit);
-								handleChange({ ...item });
-								// formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
-							}}
-						>
-							详情
-						</Button>
-						<Button
-							type="primary"
-							icon={<EditOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {
-								setIsModalOpen(true);
-								setStatus(UpdateEnum.Edit);
-								handleChange(item);
-								formRef.setFieldsValue({ ...item });
-							}}
-						>
-							编辑
-						</Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(id)}>
-							删除
-						</Button>
-					</div>
-				);
-			}
-		}
-	];
-
 	const handleSubmit = async () => {
 		try {
 			const values = await formRef.validateFields();
@@ -208,6 +179,129 @@ const ColumnArticle: FC<IProps> = props => {
 			console.log("Failed:", errorInfo);
 		}
 	};
+
+	// 数据请求
+	useEffect(() => {
+		const getSortList = async () => {
+			// @ts-ignore
+			const { status, result } = await getColumnArticleListApi({
+				pageNumber: current, 
+				pageSize,
+				...searchForm
+			});
+			const { code } = status || {};
+			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
+			if (code === 0) {
+				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
+				setTableData(newList);
+			}
+		};
+		getSortList();
+	}, [query, current, pageSize, search]);
+
+	// 获取教程列表
+	useEffect(() => {
+		const getColumnList = async () => {
+			// @ts-ignore
+			const { status, result } = await getColumnList(columnSearchKey);
+			const { code } = status || {};
+			const { items } = result || {};
+			if (code === 0) {
+				const newList = items.map((item: MapItem) => ({ ...item, key: item?.userId }));
+				setOptions(newList);
+			}
+		};
+		getColumnList();
+	}, [columnSearch]);
+
+	// 表头设置
+	const columns: ColumnsType<DataType> = [
+		{
+			title: "教程封面",
+			dataIndex: "columnCover",
+			key: "columnCover",
+			width: 100,
+			render(value) {
+				console.log("封面", value);
+				const coverUrl = getCompleteUrl(value);
+				console.log("封面 coverUrl", coverUrl);
+				return <div>
+						<Image
+							className="cover"
+							src={coverUrl}
+						/>
+					</div>
+			}
+		},
+		{
+			title: "教程名称",
+			dataIndex: "column",
+			key: "column",
+			render(value, item) {
+				return (
+					<a 
+						href={`${baseUrl}/column/${item?.columnId}/1`}
+						className="cell-text"
+						target="_blank" rel="noreferrer">
+						{value}
+					</a>
+				);
+			}
+		},
+		{
+			title: "文章标题",
+			dataIndex: "title",
+			key: "title",
+			render(value, item) {
+				return (
+					<a 
+						href={`${baseUrl}/article/detail/${item?.articleId}`}
+						className="cell-text"
+						target="_blank" rel="noreferrer">
+						{value}
+					</a>
+				);
+			}
+		},
+		{
+			title: "排序",
+			dataIndex: "sort",
+			key: "sort"
+		},
+		{
+			title: "操作",
+			key: "key",
+			width: 220,
+			render: (_, item) => {
+				// @ts-ignore
+				const { id } = item;
+				return (
+					<div className="operation-btn">
+						<Button
+							type="primary"
+							icon={<EyeOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								setIsOpenDrawerShow(true);
+								setStatus(UpdateEnum.Edit);
+								handleChange({ ...item });
+							}}
+						>
+							详情
+						</Button>
+						<Button 
+							type="primary" 
+							danger 
+							icon={<DeleteOutlined />} 
+							onClick={() => handleDel(id)}>
+							删除
+						</Button>
+					</div>
+				);
+			}
+		}
+	];
 
 	// 编辑表单
 	const reviseModalContent = (
@@ -242,19 +336,36 @@ const ColumnArticle: FC<IProps> = props => {
 		</Form>
 	);
 
-	const detailInfo = [
-		{ label: "文章ID", title: articleId },
-		{ label: "文章标题", title: title },
-		{ label: "教程ID", title: columnId },
-		{ label: "教程名", title: column },
-		{ label: "排序", title: sort }
-	];
-
 	return (
 		<div className="ColumnArticle">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
+				<ContentInterWrap className="sort-search__wrap">
+					<div className="sort-search__search">
+						<div className="sort-search__search-item">
+							{/*用下拉框做一个教程的选择 */}
+							<Select
+								style={{ width: 252 }}
+								filterOption={false}
+								placeholder="选择教程"
+								onChange={value => handleSearchChange({ columnId: value })}
+							/>
+
+						</div>
+						<div className="sort-search__search-item">
+							<span className="sort-search-label">文章标题</span>
+							<Input onChange={e => handleSearchChange({ articleTitle: e.target.value })} style={{ width: 252 }} />
+						</div>
+						<Button 
+							type="primary" 
+							icon={<SearchOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {handleSearch();}}
+							>
+							搜索
+						</Button>
+					</div>
+				</ContentInterWrap>
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />

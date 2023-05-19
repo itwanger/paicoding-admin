@@ -299,7 +299,7 @@ const Column: FC<IProps> = props => {
 				console.log("封面", value);
 				const coverUrl = getCompleteUrl(value);
 				console.log("封面 coverUrl", coverUrl);
-				return <div className="cover-wrapper">
+				return <div>
 						<Image
 							className="cover"
 							src={coverUrl}
