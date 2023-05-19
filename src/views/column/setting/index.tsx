@@ -296,9 +296,7 @@ const Column: FC<IProps> = props => {
 			key: "cover",
 			width: 100,
 			render(value) {
-				console.log("封面", value);
 				const coverUrl = getCompleteUrl(value);
-				console.log("封面 coverUrl", coverUrl);
 				return <div>
 						<Image
 							className="cover"
@@ -402,11 +400,7 @@ const Column: FC<IProps> = props => {
 								const newFreeEndTime = moment(freeEndTime);
 
 								// 此时不能直接从 form 中取出来，所以我们从 item 中取出来了。
-								console.log("cover", cover);
 								let coverUrl = getCompleteUrl(cover);
-								// 如果 cover 中有 http 或者 https 就不用拼接了
-								// 如果没有就拼接
-								console.log("coverUrl", coverUrl);
 								
 								// 需要把 cover 放到 coverList 中，默认显示
 								setCoverList([{ uid: "-1", name: "封面图(建议110px*156px)", status: "done", thumbUrl: coverUrl, url: coverUrl }]);
@@ -485,8 +479,6 @@ const Column: FC<IProps> = props => {
 						if (status === 'done') {
 							// 把 data 的值赋给 form 的 cover，传递给后端
 							handleChange({ cover: response });
-							console.log("setform after", form.cover);
-
 							const coverUrl = getCompleteUrl(response);
 							// 更新 coverList
 							setCoverList([{ 

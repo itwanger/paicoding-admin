@@ -5,7 +5,7 @@ import { DeleteOutlined, EyeOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Descriptions, Drawer, Form, Image,Input, message, Modal, Select, SelectProps, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delColumnArticleApi, getColumnArticleListApi, updateColumnArticleApi } from "@/api/modules/column";
+import { delColumnArticleApi, getColumnArticleListApi, getColumnByNameListApi, getColumnListApi, updateColumnArticleApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -108,12 +108,6 @@ const ColumnArticle: FC<IProps> = props => {
 		setQuery(prev => prev + 1);
 	}, []);
 
-	// 获取字典值
-	console.log({ props });
-
-	// @ts-ignore
-	const { ConfigType, ConfigTypeList, ColumnStatus, ColumnStatusList, ArticleTag, ArticleTagList } = props || {};
-
 	const { id, articleId, title, columnId, column, sort } = form;
 
 	const detailInfo = [
@@ -183,12 +177,15 @@ const ColumnArticle: FC<IProps> = props => {
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			// @ts-ignore
-			const { status, result } = await getColumnArticleListApi({
+			const newValues = {
+				...searchForm,
 				pageNumber: current, 
 				pageSize,
-				...searchForm
-			});
+				columnId: searchForm.columnId
+			};
+			console.log("submit 之前的所有值:", newValues);
+			// @ts-ignore
+			const { status, result } = await getColumnArticleListApi(newValues);
 			const { code } = status || {};
 			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
@@ -204,11 +201,23 @@ const ColumnArticle: FC<IProps> = props => {
 	useEffect(() => {
 		const getColumnList = async () => {
 			// @ts-ignore
-			const { status, result } = await getColumnList(columnSearchKey);
+			const { status, result } = await getColumnByNameListApi(columnSearchKey);
 			const { code } = status || {};
 			const { items } = result || {};
 			if (code === 0) {
-				const newList = items.map((item: MapItem) => ({ ...item, key: item?.userId }));
+				const newList = items.map((item: MapItem) => ({
+					key: item?.columnId,
+					// label 这里我想把教程封面也加上
+					label: <div>
+						<Image
+							className="cover-select"
+							src={getCompleteUrl(item?.cover)}
+						/>
+						<span>{item?.column}</span>
+					</div>,
+					value: item?.column
+				}));
+				console.log("教程列表", newList);
 				setOptions(newList);
 			}
 		};
@@ -223,9 +232,7 @@ const ColumnArticle: FC<IProps> = props => {
 			key: "columnCover",
 			width: 100,
 			render(value) {
-				console.log("封面", value);
 				const coverUrl = getCompleteUrl(value);
-				console.log("封面 coverUrl", coverUrl);
 				return <div>
 						<Image
 							className="cover"
@@ -343,12 +350,23 @@ const ColumnArticle: FC<IProps> = props => {
 				<ContentInterWrap className="sort-search__wrap">
 					<div className="sort-search__search">
 						<div className="sort-search__search-item">
+							<span className="sort-search-label">教程</span>
 							{/*用下拉框做一个教程的选择 */}
 							<Select
+								allowClear
 								style={{ width: 252 }}
 								filterOption={false}
 								placeholder="选择教程"
-								onChange={value => handleSearchChange({ columnId: value })}
+								optionLabelProp="value"
+								onChange={
+									(value, option) => {
+									if(option)
+										handleSearchChange({ columnId: option.key })
+									else
+										handleSearchChange({ columnId: -1 })
+									}
+								}
+								options={options}
 							/>
 
 						</div>

@@ -1,6 +1,8 @@
 // 增加封面图的样式
 .cover {
-	width: 60px;
+	width: 70px;
+	// height = width * 156 / 110
+	height: 100px;
 	background-size: cover;
 	background-position: center;
 	padding-right: 4px;
@@ -11,4 +13,13 @@
   display: -webkit-box;
   -webkit-line-clamp: 2; /* 控制显示的行数 */
   -webkit-box-orient: vertical;
+}
+
+.cover-select {
+	// 放在下拉框中的封面图
+	width: 50px;
+	height: 70px;
+	background-size: cover;
+	background-position: center;
+	margin-right: 4px;
 }
