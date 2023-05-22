@@ -1,18 +1,21 @@
+/* eslint-disable react/jsx-no-comment-textnodes */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { DeleteOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Drawer, Form, Image,Input, message, Modal, Select, Space, Table } from "antd";
+import { Avatar, Button, Checkbox, Descriptions, Divider, Drawer, Form, Image,Input, message, Modal, Select, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delColumnArticleApi, getColumnArticleListApi, getColumnByNameListApi, updateColumnArticleApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
+import { initArticlePagination, initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import { getCompleteUrl } from "@/utils/is";
 
 import "./index.scss";
-import DebounceSelect from "./components/DebounceSelect";
+import DebounceSelect from "./components/debounceselect/DebounceSelect";
+import { getArticleListApi } from "@/api/modules/article";
+import { is } from "immer/dist/internal";
 
 interface IProps {}
 
@@ -34,6 +37,14 @@ interface ValueType {
 interface ISearchForm {
 	articleTitle: string;
 	columnId: number;
+}
+
+// 查询表单接口，定义类型
+interface ISearchArticleForm {
+	title: string;
+	status: number;
+	toppingStat: number;
+	officalStat: number;
 }
 
 interface IFormType {
@@ -60,6 +71,21 @@ const defaultSearchForm = {
 	columnId: -1,
 };
 
+// 查询表单默认值
+const defaultArticleSearchForm = {
+	title: "",
+	status: -1,
+	toppingStat : -1,
+	officalStat : -1
+};
+
+// Usage of DebounceSelect
+interface ColumnValue {
+	key: string;
+	label: string;
+	value: string;
+}
+
 const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 
 const ColumnArticle: FC<IProps> = props => {
@@ -72,11 +98,18 @@ const ColumnArticle: FC<IProps> = props => {
 	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
 	// 搜索，目前是根据文章标题、教程 ID 搜索
 	const [search, setSearch] = useState<ISearchForm>(defaultSearchForm);
-
+	// 查询文章表单
+	const [searchArticleForm, setSearchArticleForm] = useState<ISearchArticleForm>(defaultArticleSearchForm);
+	// 文章搜索，目前是根据标题、状态、置顶、推荐搜索
+	const [searchArticle, setSearchArticle] = useState<ISearchArticleForm>(defaultArticleSearchForm);
 	// 修改添加抽屉
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 详情抽屉
 	const [isDetailDrawerShow, setIsDetailDrawerShow] = useState<boolean>(false);
+	// 文章选择下拉框是否打开
+	const [isArticleSelectOpen, setIsArticleSelectOpen] = useState<boolean>(false);
+	// 文章下拉框显示的值
+	const [articleSelectValue, setArticleSelectValue] = useState<ValueType>();
 
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
@@ -90,17 +123,31 @@ const ColumnArticle: FC<IProps> = props => {
 	const [pagination, setPagination] = useState<IPagination>(initPagination);
 	const { current, pageSize } = pagination;
 
-	// 教程下拉框选项
-	const [options, setOptions] = useState<ValueType[]>([]);
-	// 教程查询
-	const [columnSearch, setColumnSearch] = useState<String>("");
+	// 文章列表数据
+	const [tableArticleData, setTableArticleData] = useState<DataType[]>([]);
 
-	// 新增教程文章时教程下拉框选项
-	const [addColumnArticleOptions, setAddColumnArticleOptions] = useState<ValueType[]>([]);
-	// 教程查询
-	const [addColumnArticleSearch, setAddColumnArticleSearch] = useState<String>("");
-	// 教程列表的查询条件
-	const [addColumnArticleSearchKey, setAddColumnArticleSearchKey] = useState<string>("");
+	// 文章分页
+	const [paginationArticle, setPaginationArticle] = useState<IPagination>(initArticlePagination);
+	const { current: currentArticle, pageSize: pageSizeArticle } = paginationArticle;
+
+	const { id, articleId, title, columnId, column, sort } = form;
+
+	const detailInfo = [
+		{ label: "文章ID", title: articleId },
+		{ label: "文章标题", title: title },
+		{ label: "教程ID", title: columnId },
+		{ label: "教程名", title: column },
+		{ label: "排序", title: sort }
+	];
+
+	const paginationArticleInfo = {
+		showSizeChanger: false,
+		showTotal: total => `共 ${total || 0} 条`,
+		...paginationArticle,
+		onChange: (current, pageSize) => {
+			setPaginationArticle({ current, pageSize });
+		}
+	};
 
 	const paginationInfo = {
 		showSizeChanger: true,
@@ -115,16 +162,6 @@ const ColumnArticle: FC<IProps> = props => {
 		setQuery(prev => prev + 1);
 	}, []);
 
-	const { id, articleId, title, columnId, column, sort } = form;
-
-	const detailInfo = [
-		{ label: "文章ID", title: articleId },
-		{ label: "文章标题", title: title },
-		{ label: "教程ID", title: columnId },
-		{ label: "教程名", title: column },
-		{ label: "排序", title: sort }
-	];
-
 	// 值改变（新增教程文章时）
 	const handleChange = (item: MapItem) => {
 		setForm({ ...form, ...item });
@@ -137,9 +174,11 @@ const ColumnArticle: FC<IProps> = props => {
 		console.log("查询条件变化了",searchForm);
 	};
 
-	// 添加教程文章时教程下拉框值改变
-	const handleColumnChange = (item: MapItem) => {
-		setForm({ ...form, ...item });
+	// 文章查询表单值改变
+	const handleSearchArticleChange = (item: MapItem) => {
+		// 当 status 的值为 -1 时，重新显示
+		setSearchArticleForm({ ...searchArticleForm, ...item });
+		console.log("文章查询条件变化了",searchArticleForm);
 	};
 
 	// 当点击查询按钮的时候触发
@@ -149,11 +188,12 @@ const ColumnArticle: FC<IProps> = props => {
 		setSearch(searchForm);
 	};
 
-	// 下拉框搜索的时候触发，但不要立即触发请求，而是等待用户停止输入
-	const handleColumnSearch = (value: any) => {
-		console.log("准备教程下拉框搜索时执行", value);
-		setColumnSearch(value);
-  };
+	// 当点击文章筛选按钮的时候触发
+	const handleArticleSearch = () => {
+		// 目前是根据文章标题搜索，后面需要加上其他条件
+		console.log("查询条件", searchArticleForm);
+		setSearchArticle(searchArticleForm);
+	};
 		
 	// 删除
 	const handleDel = (id: number) => {
@@ -176,16 +216,34 @@ const ColumnArticle: FC<IProps> = props => {
 		});
 	};
 
+	// 添加教程文章
 	const handleSubmit = async () => {
 		try {
 			const values = await formRef.validateFields();
-			const newValues = { ...values, id: status === UpdateEnum.Save ? UpdateEnum.Save : id };
+			const newValues = {
+				columnId : form.columnId, 
+				articleId: form.articleId,
+				id: status === UpdateEnum.Save ? UpdateEnum.Save : id 
+			};
+			console.log("提交的值:", newValues);
+			// columnId 不允许为空
+			if (!newValues.columnId || newValues.columnId === -1) {
+				message.error("请选择教程");
+				return;
+			}
+			// articleId 不允许为空
+			if (!newValues.articleId || newValues.columnId === -1) {
+				message.error("请选择文章");
+				return;
+			}
 			// @ts-ignore
 			const { status: successStatus } = (await updateColumnArticleApi(newValues)) || {};
-			const { code } = successStatus || {};
+			const { code, msg } = successStatus || {};
 			if (code === 0) {
 				setIsOpenDrawerShow(false);
 				onSure();
+			} else {
+				message.error(msg);
 			}
 		} catch (errorInfo) {
 			console.log("Failed:", errorInfo);
@@ -201,7 +259,7 @@ const ColumnArticle: FC<IProps> = props => {
 				pageSize,
 				columnId: searchForm.columnId
 			};
-			console.log("submit 之前的所有值:", newValues);
+			console.log("查询教程列表之前的所有值:", newValues);
 			// @ts-ignore
 			const { status, result } = await getColumnArticleListApi(newValues);
 			const { code } = status || {};
@@ -215,12 +273,25 @@ const ColumnArticle: FC<IProps> = props => {
 		getSortList();
 	}, [query, current, pageSize, search]);
 
-	// Usage of DebounceSelect
-	interface ColumnValue {
-		key: string;
-		label: string;
-		value: string;
-	}
+	// 文章数据请求，这是一个钩子，query, current, pageSize, search 有变化的时候就会自动触发
+	useEffect(() => {
+		const getArticleSortList = async () => {
+			// @ts-ignore
+			const { status, result } = await getArticleListApi({ 
+				pageNumber: currentArticle, 
+				pageSize: pageSizeArticle,
+				...searchArticleForm
+			});
+			const { code } = status || {};
+			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			setPaginationArticle({ current: pageNum, pageSize: resPageSize, total });
+			if (code === 0) {
+				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
+				setTableArticleData(newList);
+			}
+		};
+		getArticleSortList();
+	}, [currentArticle, pageSizeArticle, searchArticle]);
 
 	async function fetchColumnList(key: string): Promise<ColumnValue[]> {
 		console.log('fetching user', key);
@@ -251,24 +322,10 @@ const ColumnArticle: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "教程封面",
-			dataIndex: "columnCover",
-			key: "columnCover",
-			width: 100,
-			render(value) {
-				const coverUrl = getCompleteUrl(value);
-				return <div>
-						<Image
-							className="cover"
-							src={coverUrl}
-						/>
-					</div>
-			}
-		},
-		{
 			title: "教程名称",
 			dataIndex: "column",
 			key: "column",
+			width: 200,
 			render(value, item) {
 				return (
 					<a 
@@ -284,6 +341,7 @@ const ColumnArticle: FC<IProps> = props => {
 			title: "文章标题",
 			dataIndex: "title",
 			key: "title",
+			width: 300,
 			render(value, item) {
 				return (
 					<a 
@@ -297,13 +355,14 @@ const ColumnArticle: FC<IProps> = props => {
 		},
 		{
 			title: "排序",
+			width: 100,
 			dataIndex: "sort",
 			key: "sort"
 		},
 		{
 			title: "操作",
 			key: "key",
-			width: 220,
+			width: 200,
 			render: (_, item) => {
 				// @ts-ignore
 				const { id } = item;
@@ -334,52 +393,148 @@ const ColumnArticle: FC<IProps> = props => {
 		}
 	];
 
+	// 表头设置
+	const columnsArticle: ColumnsType<DataType> = [
+		{
+			title: "短标题",
+			dataIndex: "shortTitle",
+			key: "shortTitle",
+			render(value, item) {
+				return (
+					<span className="cell-text-article">
+						{/* 如果 value 为空，则从 item 中取出 title */}
+						{value || item?.title}
+					</span>
+				);
+			}
+		},
+		{
+			title: "作者",
+			dataIndex: "authorName",
+			key: "authorName",
+			render(value) {
+				return <>
+					<Avatar style={{ backgroundColor: '#87d068' }} size={"small"}>
+						{value.slice(0, 3)}
+					</Avatar>
+				</>;
+			}
+		},
+		{
+			title: "操作",
+			key: "key",
+			render: (_, item) => {
+				{/* 用 checkbox 来负责选中当前行，把选中行的 articleId 带回到下拉框中 */}
+				return (
+						<Checkbox
+							checked={articleSelectValue?.value === item?.articleId}
+							onChange={(e) => {
+								const { checked } = e.target;
+								console.log("选中的状态", checked);
+								if (checked) {
+									// @ts-ignore
+									const { articleId, shortTitle, title } = item;
+									console.log("文章当前的 ID", articleId);
+									handleChange({
+										articleId: articleId
+									});
+		
+									setArticleSelectValue({value : articleId, label : shortTitle || title});
+									console.log("选中的文章", articleSelectValue);
+									// 关闭下拉框
+									setIsArticleSelectOpen(false);
+								}
+							}}
+						/>
+				);
+			}
+		}
+	];
+
 	// 编辑表单
-	const reviseModalContent = (
-		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="文章" name="articleId" rules={[{ required: true, message: "请选择文章!" }]}>
-				<Input
-					type="number"
-					allowClear
-					onChange={e => {
-						handleChange({ articleId: e.target.value });
-					}}
-				/>
-			</Form.Item>
-			<Form.Item label="教程" name="columnId" rules={[{ required: true, message: "请选择教程!" }]}>
-				<Input
-					type="number"
-					allowClear
-					onChange={e => {
-						handleChange({ columnId: e.target.value });
-					}}
-				/>
+	const reviseDrawerContent = (
+		<Form 
+			name="basic" 
+			form={formRef} 
+			labelCol={{ span: 4 }} 
+			wrapperCol={{ span: 16 }} 
+			autoComplete="off">
+			<Form.Item label="教程">
 				{/*用下拉框做一个教程的选择 */}
-				<Select
-						allowClear
-						filterOption={false}
-						placeholder="选择教程"
-						optionLabelProp="value"
-						onChange={
-							(value, option) => {
-							if(option)
-								handleSearchChange({ columnId: option.key })
-							else
-								handleSearchChange({ columnId: -1 })
-							}
-						}
-						options={options}
-					/>
-			</Form.Item>
-			<Form.Item label="排序" name="sort" rules={[{ required: true, message: "请输入排序!" }]}>
-				<Input
-					type="number"
+				<DebounceSelect
 					allowClear
-					onChange={e => {
-						handleChange({ sort: e.target.value });
-					}}
+					filterOption={false}
+					placeholder="选择教程"
+					// optionLabelProp：回填到选择框的 Option 的属性值，默认是 Option 的子元素。
+					// 比如在子元素需要高亮效果时，此值可以设为 value
+					optionLabelProp="value"
+					// 是否在输入框聚焦时自动调用搜索方法
+					showSearch={true}
+					onChange={
+						(value, option) => {
+							console.log("添加教程文章时教程搜索的值改变", value, option)
+						if(option)
+							handleChange({ columnId: option.key })
+						else
+							handleChange({ columnId: -1 })
+						}
+					}
+					fetchOptions={fetchColumnList}
 				/>
 			</Form.Item>
+			
+			<Form.Item label="文章"  rules={[{ required: true, message: "请选择文章!" }]}>
+				<Select
+					placeholder="请选择文章"
+					labelInValue={true}
+					open={isArticleSelectOpen}
+					// render
+					dropdownRender={menu => {
+						return (
+							<div>
+								<div
+									style={{
+										display: "flex",
+										flexWrap: "nowrap",
+										padding: 8
+									}}
+								>
+									<Input
+										placeholder="请输入你想要查找的文章名"
+										allowClear
+										style={{ flex: "auto" }}
+										onChange={e => {
+											handleSearchArticleChange({title : e.target.value});
+										}}
+									/>
+									<Button
+										type="primary"
+										style={{ marginLeft: 8 }}
+										onClick={() => {handleArticleSearch();}}
+									>
+										筛选
+									</Button>
+								</div>
+								{/* 添加一个分割线 */}
+								<Divider style={{ margin: "4px 0" }} />
+								{/* 添加一个Table */}
+								<Table 
+										columns={columnsArticle} 
+										dataSource={tableArticleData} 
+										pagination={paginationArticleInfo} />
+							</div>
+						);
+					}}
+					// 下拉框展开时触发
+					onDropdownVisibleChange={() => {
+						console.log("下拉框展开")
+						setIsArticleSelectOpen(true);
+					}}
+					showSearch={false}
+					value={articleSelectValue}
+				/>
+			</Form.Item>
+			
 		</Form>
 	);
 
@@ -462,6 +617,7 @@ const ColumnArticle: FC<IProps> = props => {
 			{/* 把弹窗修改为抽屉 */}
 			<Drawer 
 				title="添加" 
+				size="large"
 				placement="right"
 				extra={
           <Space>
@@ -473,7 +629,7 @@ const ColumnArticle: FC<IProps> = props => {
         }
 				onClose={() => setIsOpenDrawerShow(false)} 
 				open={isOpenDrawerShow}>
-				{reviseModalContent}
+				{reviseDrawerContent}
 			</Drawer>
 		</div>
 	);

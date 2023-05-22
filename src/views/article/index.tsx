@@ -85,19 +85,19 @@ const Article: FC<IProps> = props => {
 		}
 	};
 
+	// @ts-ignore
+	const { PushStatusList, ToppingStatusList, OfficalStatusList} = props || {};
+
+	const { articleId } = form;
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
-
-	// @ts-ignore
-	const { PushStatusList, ToppingStatusList, OfficalStatusList} = props || {};
 
 	// 重置表单
 	const resetBarFrom = () => {
 		setForm(defaultInitForm);
 	};
-
-	const { articleId } = form;
 
 	// 编辑表单值改变
 	const handleChange = (item: MapItem) => {

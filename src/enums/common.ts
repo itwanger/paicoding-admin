@@ -15,6 +15,12 @@ export const initPagination: IPagination = {
 	total: 0
 };
 
+export const initArticlePagination: IPagination = {
+	current: 1,
+	pageSize: 5,
+	total: 0
+};
+
 export enum PushStatusEnum {
 	noPublish = "0",
 	Publishing = "1",

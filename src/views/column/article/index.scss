@@ -15,6 +15,14 @@
   -webkit-box-orient: vertical;
 }
 
+.cell-text-article {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* 控制显示的行数 */
+  -webkit-box-orient: vertical;
+}
+
 .cover-select {
 	// 放在下拉框中的封面图
 	width: 50px;
