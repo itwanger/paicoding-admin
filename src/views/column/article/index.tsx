@@ -51,6 +51,7 @@ interface IFormType {
 	id: number; // 主键id
 	articleId: number; // 文章ID
 	title: string; // 文章标题
+	shortTitle: string; // 文章短标题
 	columnId: number; // 教程ID
 	column: string; // 教程名
 	sort: number; // 排序
@@ -60,6 +61,7 @@ const defaultInitForm: IFormType = {
 	id: -1,
 	articleId: -1,
 	title: "",
+	shortTitle: "",
 	columnId: -1,
 	column: "",
 	sort: -1
@@ -91,7 +93,7 @@ const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 const ColumnArticle: FC<IProps> = props => {
 
 	const [formRef] = Form.useForm();
-	// form值
+	// form值（详情和新增的时候会用到）
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
 
 	// 查询表单
@@ -130,13 +132,16 @@ const ColumnArticle: FC<IProps> = props => {
 	const [paginationArticle, setPaginationArticle] = useState<IPagination>(initArticlePagination);
 	const { current: currentArticle, pageSize: pageSizeArticle } = paginationArticle;
 
-	const { id, articleId, title, columnId, column, sort } = form;
+	// 详情信息
+	const { id, articleId, title, shortTitle, columnId, column, sort } = form;
 
 	const detailInfo = [
+		{ label: "专栏ID", title: columnId },
+		{ label: "专栏名", title: column },
 		{ label: "文章ID", title: articleId },
 		{ label: "文章标题", title: title },
-		{ label: "教程ID", title: columnId },
-		{ label: "教程名", title: column },
+		{ label: "教程ID", title: id },
+		{ label: "教程标题", title: shortTitle },
 		{ label: "排序", title: sort }
 	];
 
@@ -223,12 +228,18 @@ const ColumnArticle: FC<IProps> = props => {
 			const newValues = {
 				columnId : form.columnId, 
 				articleId: form.articleId,
+				shortTitle: form.shortTitle,
 				id: status === UpdateEnum.Save ? UpdateEnum.Save : id 
 			};
 			console.log("提交的值:", newValues);
 			// columnId 不允许为空
 			if (!newValues.columnId || newValues.columnId === -1) {
 				message.error("请选择专栏");
+				return;
+			}
+			// 教程标题不能为空
+			if (!newValues.shortTitle) {
+				message.error("教程标题不能为空");
 				return;
 			}
 			// articleId 不允许为空
@@ -339,13 +350,13 @@ const ColumnArticle: FC<IProps> = props => {
 		},
 		{
 			title: "教程标题",
-			dataIndex: "title",
-			key: "title",
+			dataIndex: "shortTitle",
+			key: "shortTitle",
 			width: 300,
 			render(value, item) {
 				return (
 					<a 
-						href={`${baseUrl}/article/detail/${item?.articleId}`}
+						href={`${baseUrl}/column/${item?.columnId}/${item?.sort}`}
 						className="cell-text"
 						target="_blank" rel="noreferrer">
 						{value}
@@ -402,8 +413,8 @@ const ColumnArticle: FC<IProps> = props => {
 			render(value, item) {
 				return (
 					<span className="cell-text-article">
-						{/* 如果 value 为空，则从 item 中取出 title */}
-						{value || item?.title}
+						{/* 全部改用 title，shortTitle 在选中的时候带回到输入框 */}
+						{item?.title}
 					</span>
 				);
 			}
@@ -434,12 +445,16 @@ const ColumnArticle: FC<IProps> = props => {
 								if (checked) {
 									// @ts-ignore
 									const { articleId, shortTitle, title } = item;
-									console.log("文章当前的 ID", articleId);
+									console.log("文章当前的 ID", articleId, shortTitle, title);
+
+									// 选中当前行，把当前行的 articleId 和 title 传给 form 表单
 									handleChange({
-										articleId: articleId
+										articleId: articleId,
+										shortTitle: shortTitle
 									});
 		
-									setArticleSelectValue({value : articleId, label : shortTitle || title});
+									// 把当前行的 articleId 和 title 传给下拉框
+									setArticleSelectValue({value : articleId, label : title});
 									console.log("选中的文章", articleSelectValue);
 									// 关闭下拉框
 									setIsArticleSelectOpen(false);
@@ -482,8 +497,17 @@ const ColumnArticle: FC<IProps> = props => {
 					fetchOptions={fetchColumnList}
 				/>
 			</Form.Item>
+
+			<Form.Item label="教程标题">
+				<Input
+					allowClear
+					placeholder="请输入教程标题"
+					value={shortTitle}
+					onChange={e => handleChange({ shortTitle: e.target.value })}
+				/>
+			</Form.Item>
 			
-			<Form.Item label="教程"  rules={[{ required: true, message: "请选择教程!" }]}>
+			<Form.Item label="教程">
 				<Select
 					placeholder="请选择教程"
 					labelInValue={true}
