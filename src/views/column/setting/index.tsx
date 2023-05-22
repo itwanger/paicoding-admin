@@ -306,7 +306,7 @@ const Column: FC<IProps> = props => {
 			}
 		},
 		{
-			title: "教程名",
+			title: "专栏名",
 			dataIndex: "column",
 			key: "column",
 			render(value, item) {
@@ -434,7 +434,7 @@ const Column: FC<IProps> = props => {
 	// 编辑表单
 	const reviseModalContent = (
 		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="教程名" name="column" rules={[{ required: true, message: "请输入教程名!" }]}>
+			<Form.Item label="专栏名" name="column" rules={[{ required: true, message: "请输入专栏名!" }]}>
 				<Input
 					allowClear
 					onChange={e => {
@@ -630,7 +630,7 @@ const Column: FC<IProps> = props => {
 				<ContentInterWrap className="sort-search__wrap">
 					<div className="sort-search__search">
 						<div className="sort-search__search-item">
-							<span className="sort-search-label">教程名称</span>
+							<span className="sort-search-label">专栏名称</span>
 							<Input onChange={e => handleSearchChange({ column: e.target.value })} style={{ width: 252 }} />
 						</div>
 					</div>
@@ -638,7 +638,7 @@ const Column: FC<IProps> = props => {
 							type="primary" 
 							icon={<SearchOutlined />}
 							style={{ marginRight: "10px" }}
-							onClick={() => {handleSearch}}
+							onClick={e => {handleSearch();}}
 							>
 							搜索
 					</Button>

@@ -228,12 +228,12 @@ const ColumnArticle: FC<IProps> = props => {
 			console.log("提交的值:", newValues);
 			// columnId 不允许为空
 			if (!newValues.columnId || newValues.columnId === -1) {
-				message.error("请选择教程");
+				message.error("请选择专栏");
 				return;
 			}
 			// articleId 不允许为空
 			if (!newValues.articleId || newValues.columnId === -1) {
-				message.error("请选择文章");
+				message.error("请选择教程");
 				return;
 			}
 			// @ts-ignore
@@ -322,7 +322,7 @@ const ColumnArticle: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "教程名称",
+			title: "专栏名称",
 			dataIndex: "column",
 			key: "column",
 			width: 200,
@@ -338,7 +338,7 @@ const ColumnArticle: FC<IProps> = props => {
 			}
 		},
 		{
-			title: "文章标题",
+			title: "教程标题",
 			dataIndex: "title",
 			key: "title",
 			width: 300,
@@ -396,7 +396,7 @@ const ColumnArticle: FC<IProps> = props => {
 	// 表头设置
 	const columnsArticle: ColumnsType<DataType> = [
 		{
-			title: "短标题",
+			title: "教程标题",
 			dataIndex: "shortTitle",
 			key: "shortTitle",
 			render(value, item) {
@@ -459,12 +459,12 @@ const ColumnArticle: FC<IProps> = props => {
 			labelCol={{ span: 4 }} 
 			wrapperCol={{ span: 16 }} 
 			autoComplete="off">
-			<Form.Item label="教程">
+			<Form.Item label="专栏">
 				{/*用下拉框做一个教程的选择 */}
 				<DebounceSelect
 					allowClear
 					filterOption={false}
-					placeholder="选择教程"
+					placeholder="选择专栏"
 					// optionLabelProp：回填到选择框的 Option 的属性值，默认是 Option 的子元素。
 					// 比如在子元素需要高亮效果时，此值可以设为 value
 					optionLabelProp="value"
@@ -483,9 +483,9 @@ const ColumnArticle: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			
-			<Form.Item label="文章"  rules={[{ required: true, message: "请选择文章!" }]}>
+			<Form.Item label="教程"  rules={[{ required: true, message: "请选择教程!" }]}>
 				<Select
-					placeholder="请选择文章"
+					placeholder="请选择教程"
 					labelInValue={true}
 					open={isArticleSelectOpen}
 					// render
@@ -500,7 +500,7 @@ const ColumnArticle: FC<IProps> = props => {
 									}}
 								>
 									<Input
-										placeholder="请输入你想要查找的文章名"
+										placeholder="请输入你想要查找的教程名"
 										allowClear
 										style={{ flex: "auto" }}
 										onChange={e => {
@@ -545,13 +545,13 @@ const ColumnArticle: FC<IProps> = props => {
 				<ContentInterWrap className="sort-search__wrap">
 					<div className="sort-search__search">
 						<div className="sort-search__search-item">
-							<span className="sort-search-label">教程</span>
+							<span className="sort-search-label">专栏</span>
 							{/*用下拉框做一个教程的选择 */}
 							<DebounceSelect
 								allowClear
 								style={{ width: 252 }}
 								filterOption={false}
-								placeholder="选择教程"
+								placeholder="选择专栏"
 								// 回填到选择框的 Option 的属性值，默认是 Option 的子元素。
 								// 比如在子元素需要高亮效果时，此值可以设为 value
 								optionLabelProp="value"
@@ -571,7 +571,7 @@ const ColumnArticle: FC<IProps> = props => {
 
 						</div>
 						<div className="sort-search__search-item">
-							<span className="sort-search-label">文章标题</span>
+							<span className="sort-search-label">教程标题</span>
 							<Input onChange={e => handleSearchChange({ articleTitle: e.target.value })} style={{ width: 252 }} />
 						</div>
 						<Button 

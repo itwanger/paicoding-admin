@@ -21,8 +21,8 @@ export const currentMenuList = [
 		key: "/column",
 		icon: <ReadOutlined />,
 		children: [
-			{ key: "/column/setting/index", icon: <FilePptOutlined />, children: undefined, label: "教程配置" },
-			{ key: "/column/article/index", icon: <FileAddOutlined />, children: undefined, label: "教程文章" }
+			{ key: "/column/setting/index", icon: <FilePptOutlined />, children: undefined, label: "专栏配置" },
+			{ key: "/column/article/index", icon: <FileAddOutlined />, children: undefined, label: "教程配置" }
 		],
 		label: "教程管理"
 	}
