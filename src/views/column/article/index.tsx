@@ -5,17 +5,17 @@ import { connect } from "react-redux";
 import { DeleteOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Avatar, Button, Checkbox, Descriptions, Divider, Drawer, Form, Image,Input, message, Modal, Select, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { is } from "immer/dist/internal";
 
+import { getArticleListApi } from "@/api/modules/article";
 import { delColumnArticleApi, getColumnArticleListApi, getColumnByNameListApi, updateColumnArticleApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initArticlePagination, initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import { getCompleteUrl } from "@/utils/is";
+import DebounceSelect from "./components/debounceselect/DebounceSelect";
 
 import "./index.scss";
-import DebounceSelect from "./components/debounceselect/DebounceSelect";
-import { getArticleListApi } from "@/api/modules/article";
-import { is } from "immer/dist/internal";
 
 interface IProps {}
 
