@@ -14,6 +14,7 @@ export const getColumnListApi = (data: { pageNumber: number; pageSize: number })
 	return http.post(`${PORT1}/column/list`, data);
 };
 
+// 添加返回类型
 export const getColumnByNameListApi = (key: string) => {
 	return http.get(`${PORT1}/column/query`, { key });
 };

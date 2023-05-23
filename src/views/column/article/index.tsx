@@ -15,6 +15,7 @@ import { getCompleteUrl } from "@/utils/is";
 import DebounceSelect from "./components/debounceselect/DebounceSelect";
 
 import "./index.scss";
+import Search from "./components/search";
 
 interface IProps {}
 
@@ -314,10 +315,10 @@ const ColumnArticle: FC<IProps> = props => {
 	}, [currentArticle, pageSizeArticle, searchArticle]);
 
 	async function fetchColumnList(key: string): Promise<ColumnValue[]> {
-		console.log('fetching user', key);
-
+		console.log('根据教程名查询', key);
 		const { status, result } = await getColumnByNameListApi(key);
 		const { code } = status || {};
+		// @ts-ignore
 		const { items } = result || {};
 		if (code === 0) {
 			const newList = items.map((item: MapItem) => ({
@@ -336,7 +337,6 @@ const ColumnArticle: FC<IProps> = props => {
 			return newList;
 		}
 		return [];
-		
 	};
 
 	// 表头设置
@@ -573,57 +573,15 @@ const ColumnArticle: FC<IProps> = props => {
 			<ContentWrap>
 				{/* 搜索 */}
 				<ContentInterWrap className="sort-search__wrap">
-					<div className="sort-search__search">
-						<div className="sort-search__search-item">
-							<span className="sort-search-label">专栏</span>
-							{/*用下拉框做一个教程的选择 */}
-							<DebounceSelect
-								allowClear
-								style={{ width: 252 }}
-								filterOption={false}
-								placeholder="选择专栏"
-								// 回填到选择框的 Option 的属性值，默认是 Option 的子元素。
-								// 比如在子元素需要高亮效果时，此值可以设为 value
-								optionLabelProp="value"
-								// 是否在输入框聚焦时自动调用搜索方法
-								showSearch={true}
-								onChange={
-									(value, option) => {
-										console.log("教程搜索的值改变", value, option)
-									if(option)
-										handleSearchChange({ columnId: option.key })
-									else
-										handleSearchChange({ columnId: -1 })
-									}
-								}
-								fetchOptions={fetchColumnList}
-							/>
+					<Search
+						handleSearchChange={handleSearchChange}
+						fetchColumnList={fetchColumnList}
+						handleSearch={handleSearch} 
+						handleChange={handleChange}
+						setStatus={setStatus}
+						setIsOpenDrawerShow={setIsOpenDrawerShow}
+						/>
 
-						</div>
-						<div className="sort-search__search-item">
-							<span className="sort-search-label">教程标题</span>
-							<Input onChange={e => handleSearchChange({ articleTitle: e.target.value })} style={{ width: 252 }} />
-						</div>
-						<Button 
-							type="primary" 
-							icon={<SearchOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {handleSearch();}}
-							>
-							搜索
-						</Button>
-						<Button
-							type="primary"
-							icon={<PlusOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {
-								setIsOpenDrawerShow(true);
-								setStatus(UpdateEnum.Save);
-							}}
-						>
-							添加
-						</Button>
-					</div>
 				</ContentInterWrap>
 				{/* 表格 */}
 				<ContentInterWrap>
