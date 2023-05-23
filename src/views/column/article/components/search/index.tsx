@@ -18,10 +18,6 @@ const Search: FC<IProps> = ({ handleChange, setStatus, setIsModalOpen }) => {
 		<div className="sort-search">
 			<ContentInterWrap className="sort-search__wrap">
 				<div className="sort-search__search">
-					{/* <div className="sort-search__search-item">
-						<span className="sort-search-label">用户</span>
-						<Input onChange={e => handleChange({ id: e.target.value })} style={{ width: 252 }} />
-					</div>*/}
 					<Button
 						type="primary"
 						icon={<PlusOutlined />}

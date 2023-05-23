@@ -2,7 +2,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, InboxOutlined, PlusOutlined, SearchOutlined, UploadOutlined } from "@ant-design/icons";
-import { Avatar, Button, DatePicker, Descriptions, Divider, Drawer, Form, Image, Input, message, Modal, Select, Space, Table, UploadFile } from "antd";
+import { Avatar, Button, DatePicker, Descriptions, Divider, Drawer, Form, Image, Input, InputNumber, message, Modal, Select, Space, Table, UploadFile } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
 import Dragger from "antd/lib/upload/Dragger";
@@ -21,6 +21,7 @@ import "./index.scss";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
+const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 
 interface DataType {
 	key: string;
@@ -163,31 +164,33 @@ const Column: FC<IProps> = props => {
 		console.log("查询条件变化了",searchForm);
 	};
 
-	// 删除
-	const handleDel = (columnId: number) => {
-		Modal.warning({
-			title: "确认删除此教程吗",
-			content: "删除此教程后无法恢复，请谨慎操作！",
-			maskClosable: true,
-			closable: true,
-			onOk: async () => {
-				// @ts-ignore
-				const { status } = await delColumnApi(columnId);
-				const { code } = status || {};
-				if (code === 0) {
-					message.success("删除成功");
-					setPagination({ current: 1, pageSize });
-					onSure();
-				}
-			}
-		});
-	};
-
 	// 当点击查询按钮的时候触发
 	const handleSearch = () => {
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchForm);
 		setSearch(searchForm);
+	};
+
+	// 删除
+	const handleDel = (columnId: number) => {
+		Modal.warning({
+			title: "确认删除此专栏吗",
+			content: "删除此专栏后无法恢复，请谨慎操作！",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				// @ts-ignore
+				const { status } = await delColumnApi(columnId);
+				const { code, msg } = status || {};
+				if (code === 0) {
+					message.success("删除成功");
+					setPagination({ current: 1, pageSize });
+					onSure();
+				} else {
+					message.error(msg);
+				}
+			}
+		});
 	};
 
 	// 编辑或者新增时提交数据到服务器端
@@ -310,7 +313,6 @@ const Column: FC<IProps> = props => {
 			dataIndex: "column",
 			key: "column",
 			render(value, item) {
-				const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 				return (
 					<a 
 						href={`${baseUrl}/column/${item?.columnId}/1`}
@@ -577,12 +579,11 @@ const Column: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="连载数量" name="nums" rules={[{ required: true, message: "请选择连载数量!" }]}>
-				<Input
-					type="number"
-					allowClear
-					onChange={e => {
-						handleChange({ nums: e.target.value });
-					}}
+				<InputNumber
+					onChange={value => {
+							handleChange({ nums: value });
+						}
+					}
 				/>
 			</Form.Item>
 			<Form.Item label="类型" name="type" rules={[{ required: true, message: "请选择类型!" }]}>
@@ -612,12 +613,12 @@ const Column: FC<IProps> = props => {
 			</Form.Item>
 			
 			<Form.Item label="排序" name="section" rules={[{ required: true, message: "请输入排序" }]}>
-				<Input
-					type="number"
-					allowClear
-					onChange={e => {
-						handleChange({ section: e.target.value });
-					}}
+				
+				<InputNumber
+					onChange={value => {
+							handleChange({ section: value });
+						}
+					}
 				/>
 			</Form.Item>
 		</Form>
@@ -627,33 +628,12 @@ const Column: FC<IProps> = props => {
 		<div className="Column">
 			<ContentWrap>
 				{/* 搜索 */}
-				<ContentInterWrap className="sort-search__wrap">
-					<div className="sort-search__search">
-						<div className="sort-search__search-item">
-							<span className="sort-search-label">专栏名称</span>
-							<Input onChange={e => handleSearchChange({ column: e.target.value })} style={{ width: 252 }} />
-						</div>
-					</div>
-					<Button 
-							type="primary" 
-							icon={<SearchOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={e => {handleSearch();}}
-							>
-							搜索
-					</Button>
-					<Button
-						type="primary"
-						icon={<PlusOutlined />}
-						style={{ marginRight: "10px" }}
-						onClick={() => {
-							setIsOpenDrawerShow(true);
-							setStatus(UpdateEnum.Save);
-						}}
-					>
-						添加
-					</Button>
-				</ContentInterWrap>
+				<Search 
+					handleSearch={handleSearch}
+					handleSearchChange={handleSearchChange}
+					setStatus={setStatus}
+					setIsOpenDrawerShow={setIsOpenDrawerShow}
+				/>
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} rowKey="columnId" />

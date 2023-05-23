@@ -345,7 +345,6 @@ const ColumnArticle: FC<IProps> = props => {
 			title: "专栏名称",
 			dataIndex: "column",
 			key: "column",
-			width: 200,
 			render(value, item) {
 				return (
 					<a 
@@ -361,7 +360,6 @@ const ColumnArticle: FC<IProps> = props => {
 			title: "教程标题",
 			dataIndex: "shortTitle",
 			key: "shortTitle",
-			width: 300,
 			render(value, item) {
 				return (
 					<a 
@@ -375,14 +373,13 @@ const ColumnArticle: FC<IProps> = props => {
 		},
 		{
 			title: "排序",
-			width: 100,
 			dataIndex: "sort",
 			key: "sort"
 		},
 		{
 			title: "操作",
 			key: "key",
-			width: 200,
+			width: 220,
 			render: (_, item) => {
 				// @ts-ignore
 				const { id } = item;

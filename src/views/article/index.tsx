@@ -2,7 +2,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Modal, Radio, Select, Space, Switch, Table, Tag } from "antd";
+import { Avatar, Button, Form, Input, message, Modal, Radio, Select, Space, Switch, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { set } from "immer/dist/internal";
 
@@ -196,11 +196,6 @@ const Article: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "ID",
-			dataIndex: "articleId",
-			key: "articleId"
-		},
-		{
 			title: "标题",
 			dataIndex: "title",
 			key: "title",
@@ -217,16 +212,17 @@ const Article: FC<IProps> = props => {
 			}
 		},
 		{
-			title: "短标题",
-			dataIndex: "shortTitle",
-			width: 150,
-			key: "shortTitle"
-		},
-		{
 			title: "作者",
 			dataIndex: "authorName",
-			width: 100,
-			key: "authorName"
+			width: 110,
+			key: "authorName",
+			render(value, item) {
+				return <>
+					<Avatar style={{ backgroundColor: '#87d068' }} size="large">
+						{value.slice(0, 3)}
+					</Avatar>
+				</>;
+			}
 		},
 		{
 			title: "置顶",
@@ -262,12 +258,10 @@ const Article: FC<IProps> = props => {
 			render(_, item) {
 				// @ts-ignore
 				const { articleId, status } = item;
-				
 				return <Select 
 								// 如果 status 为 1 那么 status 为 warning
 								status={status === 1 ? "" : "error"}
 								value={status.toString()} 
-								style={{ width: 120 }}
 								options={PushStatusList}
 								onChange={(value) => handleStatusChange(articleId, Number(value))}
 							>
@@ -363,8 +357,11 @@ const Article: FC<IProps> = props => {
 				<ContentInterWrap className="sort-search__wrap">
 					<div className="sort-search__search">
 						<div className="sort-search__search-item">
-							<span className="sort-search-label">文章标题</span>
-							<Input onChange={e => handleSearchChange({ title: e.target.value })} style={{ width: 252 }} />
+							<Input 
+								onChange={e => handleSearchChange({ title: e.target.value })} 
+								allowClear 
+								placeholder="请输入标题"
+								/>
 						</div>
 						<div className="sort-search__search-item">
 							<Select
@@ -372,7 +369,6 @@ const Article: FC<IProps> = props => {
 								allowClear
 								// 默认值
 								placeholder="选择状态"
-								style={{ width: 120 }}
 								options={PushStatusList}
 								// 触发搜索
 								onChange={(value) => handleSearchChange({ status: Number(value || -1) })}
@@ -385,7 +381,6 @@ const Article: FC<IProps> = props => {
 								allowClear
 								// 默认值
 								placeholder="是否置顶"
-								style={{ width: 120 }}
 								options={ToppingStatusList}
 								// 触发搜索
 								onChange={(value) => handleSearchChange({ toppingStat: Number(value || -1) })}
@@ -398,7 +393,6 @@ const Article: FC<IProps> = props => {
 								allowClear
 								// 默认值
 								placeholder="是否推荐"
-								style={{ width: 120 }}
 								options={OfficalStatusList}
 								// 触发搜索
 								onChange={(value) => handleSearchChange({ officalStat: Number(value || -1) })}
@@ -408,7 +402,7 @@ const Article: FC<IProps> = props => {
 						<Button 
 							type="primary" 
 							icon={<SearchOutlined />}
-							style={{ marginRight: "10px" }}
+							style={{ marginRight: "25px" }}
 							onClick={() => {handleSearch();}}
 							>
 							搜索
