@@ -71,7 +71,7 @@ const Search: FC<IProps> = ({
 			<Button
 				type="primary"
 				icon={<PlusOutlined />}
-				style={{ marginRight: "10px" }}
+				style={{ marginRight: "22px" }}
 				onClick={() => {
 					setIsOpenDrawerShow(true);
 					setStatus(UpdateEnum.Save);
