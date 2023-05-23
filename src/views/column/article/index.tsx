@@ -5,7 +5,6 @@ import { connect } from "react-redux";
 import { DeleteOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Avatar, Button, Checkbox, Descriptions, Divider, Drawer, Form, Image,Input, message, Modal, Select, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { is } from "immer/dist/internal";
 
 import { getArticleListApi } from "@/api/modules/article";
 import { delColumnArticleApi, getColumnArticleListApi, getColumnByNameListApi, updateColumnArticleApi } from "@/api/modules/column";
@@ -19,12 +18,15 @@ import "./index.scss";
 
 interface IProps {}
 
+// 教程文章的数据类型
 interface DataType {
-	key: string;
-	name: string;
-	age: number;
-	address: string;
-	tags: string[];
+	id: number;
+	articleId: string;
+	title: string;
+	shortTitle: string;
+	columnId: number;
+	column: string;
+	sort: number;
 }
 
 interface ValueType {
@@ -147,18 +149,18 @@ const ColumnArticle: FC<IProps> = props => {
 
 	const paginationArticleInfo = {
 		showSizeChanger: false,
-		showTotal: total => `共 ${total || 0} 条`,
+		showTotal: (total: number) => `共 ${total || 0} 条`,
 		...paginationArticle,
-		onChange: (current, pageSize) => {
+		onChange: (current: number, pageSize: number) => {
 			setPaginationArticle({ current, pageSize });
 		}
 	};
 
 	const paginationInfo = {
 		showSizeChanger: true,
-		showTotal: total => `共 ${total || 0} 条`,
+		showTotal: (total: any) => `共 ${total || 0} 条`,
 		...pagination,
-		onChange: (current, pageSize) => {
+		onChange: (current: number, pageSize: number) => {
 			setPagination({ current, pageSize });
 		}
 	};
@@ -198,6 +200,13 @@ const ColumnArticle: FC<IProps> = props => {
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchArticleForm);
 		setSearchArticle(searchArticleForm);
+	};
+
+	// 关闭抽屉时触发
+	const handleCloseDrawer = () => {
+		// 关闭文章的下拉框
+		setIsArticleSelectOpen(false);
+		setIsOpenDrawerShow(false);
 	};
 		
 	// 删除
@@ -512,6 +521,13 @@ const ColumnArticle: FC<IProps> = props => {
 					placeholder="请选择教程"
 					labelInValue={true}
 					open={isArticleSelectOpen}
+					showSearch={false}
+					value={articleSelectValue}
+					// 下拉框展开时触发
+					onDropdownVisibleChange={() => {
+						console.log("下拉框展开")
+						setIsArticleSelectOpen(true);
+					}}
 					// render
 					dropdownRender={menu => {
 						return (
@@ -549,13 +565,6 @@ const ColumnArticle: FC<IProps> = props => {
 							</div>
 						);
 					}}
-					// 下拉框展开时触发
-					onDropdownVisibleChange={() => {
-						console.log("下拉框展开")
-						setIsArticleSelectOpen(true);
-					}}
-					showSearch={false}
-					value={articleSelectValue}
 				/>
 			</Form.Item>
 			
@@ -645,13 +654,13 @@ const ColumnArticle: FC<IProps> = props => {
 				placement="right"
 				extra={
           <Space>
-            <Button onClick={() => setIsOpenDrawerShow(false)}>取消</Button>
+            <Button onClick={handleCloseDrawer}>取消</Button>
             <Button type="primary" onClick={handleSubmit}>
               OK
             </Button>
           </Space>
         }
-				onClose={() => setIsOpenDrawerShow(false)} 
+				onClose={handleCloseDrawer} 
 				open={isOpenDrawerShow}>
 				{reviseDrawerContent}
 			</Drawer>
