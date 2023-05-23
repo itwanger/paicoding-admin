@@ -3,9 +3,9 @@ import React, { FC, useEffect, useState } from "react";
 import { Avatar,Button, Checkbox, Divider, Input, Select, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
+import { getArticleListApi } from "@/api/modules/article";
 import { initArticlePagination,IPagination } from "@/enums/common";
 import { MapItem } from "@/typings/common";
-import { getArticleListApi } from "@/api/modules/article";
 
 const { Option } = Select;
 
@@ -84,6 +84,8 @@ const TableSelect: FC<IProps> = ({
 	const handleArticleSearch = () => {
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchArticleForm);
+		// 查询的时候把分页重置为第一页
+		setPaginationArticle(initArticlePagination);
 		setSearchArticle(searchArticleForm);
 	};
 

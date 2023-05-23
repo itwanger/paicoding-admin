@@ -35,6 +35,7 @@ interface IInitForm {
 
 // 查询表单接口，定义类型
 interface ISearchForm {
+	userName: string;
 	title: string;
 	status: number;
 	toppingStat: number;
@@ -51,6 +52,7 @@ const defaultInitForm = {
 
 // 查询表单默认值
 const defaultSearchForm = {
+	userName: "",
 	title: "",
 	status: -1,
 	toppingStat : -1,
@@ -78,9 +80,9 @@ const Article: FC<IProps> = props => {
 
 	const paginationInfo = {
 		showSizeChanger: true,
-		showTotal: total => `共 ${total || 0} 条`,
+		showTotal: (total: number) => `共 ${total || 0} 条`,
 		...pagination,
-		onChange: (current, pageSize) => {
+		onChange: (current: number, pageSize: number) => {
 			setPagination({ current, pageSize });
 		}
 	};
@@ -116,18 +118,21 @@ const Article: FC<IProps> = props => {
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchForm);
 		setSearch(searchForm);
+		// 查询的时候重置分页
+		setPagination(initPagination);
 	};
 
 	// 数据请求，这是一个钩子，query, current, pageSize, search 有变化的时候就会自动触发
 	useEffect(() => {
 		const getSortList = async () => {
-			// @ts-ignore
+			
 			const { status, result } = await getArticleListApi({ 
 				pageNumber: current, 
 				pageSize,
 				...searchForm
 			});
 			const { code } = status || {};
+			// @ts-ignore
 			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
@@ -356,6 +361,17 @@ const Article: FC<IProps> = props => {
 				{/* 搜索 */}
 				<ContentInterWrap className="sort-search__wrap">
 					<div className="sort-search__search">
+						<div className="sort-search__search-item">
+							{/* 增加一个作者的查询条件 */}
+							<Input
+								placeholder="请输入作者名"
+								allowClear
+								style={{ flex: "auto", marginRight: 8 }}
+								onChange={e => {
+									handleSearchChange({ userName: e.target.value });
+								}}
+							/>
+						</div>
 						<div className="sort-search__search-item">
 							<Input 
 								onChange={e => handleSearchChange({ title: e.target.value })} 

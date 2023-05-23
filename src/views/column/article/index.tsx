@@ -412,7 +412,7 @@ const ColumnArticle: FC<IProps> = props => {
 			<Drawer 
 				title="详情" 
 				placement="right" 
-				onClose={() => setIsDetailDrawerShow(false)} 
+				onClose={handleCloseDrawer} 
 				open={isDetailDrawerShow}>
 				<Descriptions column={1} labelStyle={{ width: "100px" }}>
 					{detailInfo.map(({ label, title }) => (

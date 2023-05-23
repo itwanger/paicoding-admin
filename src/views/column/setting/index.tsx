@@ -122,9 +122,9 @@ const Column: FC<IProps> = props => {
 	
 	const paginationInfo = {
 		showSizeChanger: true,
-		showTotal: total => `共 ${total || 0} 条`,
+		showTotal: (total: number) => `共 ${total || 0} 条`,
 		...pagination,
-		onChange: (current, pageSize) => {
+		onChange: (current: number, pageSize: number) => {
 			setPagination({ current, pageSize });
 		}
 	};
@@ -169,6 +169,8 @@ const Column: FC<IProps> = props => {
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchForm);
 		setSearch(searchForm);
+		// 查询的时候重置分页
+		setPagination(initPagination);
 	};
 
 	// 删除
