@@ -9,14 +9,22 @@ import { MapItem } from "@/typings/common";
 import pvCountImg from "./images/fangwenliang.png";
 import articleCountImg from "./images/wenzhangzongshu.png";
 import userCountImg from "./images/yonghu.png";
+import yonghuImg from "./images/yonghu.png";
+import zhuanlanImg from "./images/zhuanlan.png";
+import zhuceImg from "./images/zhuce.png";
 
 import "./index.scss";
 
 interface IProps {}
 
 const Statistics: FC<IProps> = props => {
+	// 折线图
 	const chartRef = useRef<HTMLDivElement>(null);
   const myChartRef = useRef<echarts.ECharts>();
+
+	// 饼状图
+	const pieChartRef = useRef<HTMLDivElement>(null);
+	const myPieChartRef = useRef<echarts.ECharts>();
 
 	const [pvUvDay, setPvUvDay] = useState<string>("7");
 	const [pvUvInfo, setPvUvInfo] = useState<MapItem[]>([]);
@@ -28,7 +36,7 @@ const Statistics: FC<IProps> = props => {
 	const uvDateCount = pvUvInfo.map(({ uvCount }) => uvCount);
 
 	// @ts-ignore
-	const { pvCount, userCount, articleCount } = allInfo;
+	const { pvCount, userCount, articleCount,tutorialCount,collectCount,likeCount,readCount,commentCount } = allInfo;
 
 	const dayLimitList = [
 		{ value: "7", label: "7天" },
@@ -36,14 +44,10 @@ const Statistics: FC<IProps> = props => {
 		{ value: "90", label: "90天" },
 		{ value: "180", label: "180天" },
 	];
-	const allDataInfo = [
-		{ title: "用户总数", value: userCount, bgColor: "#1196EE" },
-		{ title: "PV 总数", value: pvCount, bgColor: "#4DB39E" },
-		{ title: "文章总数", value: articleCount, bgColor: "#3CC4C4" }
-	];
 
 	const resizeChart = useCallback(() => {
     myChartRef.current?.resize();
+		myPieChartRef.current?.resize();
   }, []);
 
 	useEffect(() => {
@@ -68,6 +72,62 @@ const Statistics: FC<IProps> = props => {
 		getPvUv();
 	}, [pvUvDay]);
 
+	// 饼状图数据加载
+	useEffect(() => {
+		const getPieRef = () => {
+		// 构建饼图
+		if (echarts.getInstanceByDom(pieChartRef.current)) {
+			echarts.dispose(pieChartRef.current);
+		}
+		
+		let myPieChart = echarts.init(pieChartRef.current,
+			isDarkTheme ? 'dark' : 'light');
+		let option = {
+			title: {
+				text: '数据统计',
+				left: 'center'
+			},
+			tooltip: {
+				trigger: 'item',
+			},
+			legend: {
+				orient: 'vertical',
+				left: 'left',
+				// 底部
+				bottom: 0,
+			},
+			series: [
+				{
+					name: '数据统计',
+					type: 'pie',
+					radius: ['60%'],
+					emphasis: {
+						itemStyle: {
+							shadowBlur: 10,
+							shadowOffsetX: 0,
+							shadowColor: 'rgba(0, 0, 0, 0.5)'
+						}
+					},
+					data: [
+						{ value: collectCount, name: '收藏总数' },
+						{ value: likeCount, name: '点赞总数' },
+						{ value: readCount, name: '阅读总数' },
+						{ value: commentCount, name: '评论总数' }
+					]
+				}
+			]
+		}
+		myPieChartRef.current = myPieChart;
+		option && myPieChart.setOption(option);
+		window.addEventListener("resize", resizeChart);
+	}
+	getPieRef();
+		return () => {
+      window.removeEventListener("resize", resizeChart);
+    };
+})
+
+	// 折线图数据加载
 	useEffect(() => {
 		const getPvUvRef = () => {
 			console.log("当前的主题是", isDarkTheme ? "dark" : "light");
@@ -146,28 +206,47 @@ const Statistics: FC<IProps> = props => {
 
 	return (
 		<div className="statistics">
-			<ContentWrap>
+			<ContentWrap className="content">
 				<div className="statistics-all__wrap top-content">
-					<div className="gitHub-traffic traffic-box">
-						<div className="traffic-img">
-							<img src={userCountImg} />
-						</div>
-						<span className="item-value">{userCount}</span>
-						<span className="traffic-name sle">用户总数</span>
-					</div>
-					<div className="today-traffic traffic-box">
-						<div className="traffic-img">
-							<img src={articleCountImg} />
-						</div>
-						<span className="item-value">{articleCount}</span>
-						<span className="traffic-name sle">文章总数</span>
-					</div>
-					<div className="gitee-traffic traffic-box">
-						<div className="traffic-img">
+					<div className="item-left sle">
+						<span className="left-title">访问总数</span>
+						<div className="img-box">
 							<img src={pvCountImg} />
 						</div>
-						<span className="item-value">{pvCount}</span>
-						<span className="traffic-name sle">总访问量</span>
+						<span className="left-number">{pvCount}</span>
+					</div>
+					<div className="item-center">
+						<div className="gitee-traffic traffic-box">
+							<div className="traffic-img">
+								<img src={userCountImg} />
+							</div>
+							<span className="item-value">2400</span>
+							<span className="traffic-name sle">星球用户</span>
+						</div>
+						<div className="gitHub-traffic traffic-box">
+							<div className="traffic-img">
+								<img src={zhuceImg} />
+							</div>
+							<span className="item-value">{userCount}</span>
+							<span className="traffic-name sle">用户总数</span>
+						</div>
+						<div className="today-traffic traffic-box">
+							<div className="traffic-img">
+								<img src={articleCountImg} />
+							</div>
+							<span className="item-value">{articleCount}</span>
+							<span className="traffic-name sle">文章总数</span>
+						</div>
+						<div className="yesterday-traffic traffic-box">
+							<div className="traffic-img">
+								<img src={zhuanlanImg} />
+							</div>
+							<span className="item-value">{tutorialCount}</span>
+							<span className="traffic-name sle">专栏总数</span>
+						</div>
+					</div>
+					<div className="item-right">
+						<div className="statistics-pie" ref={pieChartRef}></div>
 					</div>
 				</div>
 				<div className="statistics-pv__wrap">
