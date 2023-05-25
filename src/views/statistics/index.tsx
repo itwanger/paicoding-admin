@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Select, Switch } from "antd";
 import * as echarts from "echarts";
 
@@ -15,7 +15,9 @@ import "./index.scss";
 interface IProps {}
 
 const Statistics: FC<IProps> = props => {
-	const pvUvRef = useRef<HTMLDivElement>(null);
+	const chartRef = useRef<HTMLDivElement>(null);
+  const myChartRef = useRef<echarts.ECharts>();
+
 	const [pvUvDay, setPvUvDay] = useState<string>("7");
 	const [pvUvInfo, setPvUvInfo] = useState<MapItem[]>([]);
 	const [allInfo, setAllInfo] = useState<MapItem[]>([]);
@@ -30,13 +32,19 @@ const Statistics: FC<IProps> = props => {
 
 	const dayLimitList = [
 		{ value: "7", label: "7天" },
-		{ value: "30", label: "30天" }
+		{ value: "30", label: "30天" },
+		{ value: "90", label: "90天" },
+		{ value: "180", label: "180天" },
 	];
 	const allDataInfo = [
 		{ title: "用户总数", value: userCount, bgColor: "#1196EE" },
 		{ title: "PV 总数", value: pvCount, bgColor: "#4DB39E" },
 		{ title: "文章总数", value: articleCount, bgColor: "#3CC4C4" }
 	];
+
+	const resizeChart = useCallback(() => {
+    myChartRef.current?.resize();
+  }, []);
 
 	useEffect(() => {
 		const getAllInfo = async () => {
@@ -63,10 +71,10 @@ const Statistics: FC<IProps> = props => {
 	useEffect(() => {
 		const getPvUvRef = () => {
 			console.log("当前的主题是", isDarkTheme ? "dark" : "light");
-			if (echarts.getInstanceByDom(pvUvRef.current)) {
-					echarts.dispose(pvUvRef.current);
+			if (echarts.getInstanceByDom(chartRef.current)) {
+					echarts.dispose(chartRef.current);
 			}
-			let myChart = echarts.init(pvUvRef.current, 
+			let myChart = echarts.init(chartRef.current, 
 				isDarkTheme ? 'dark' : 'light');
 
 			let option = {
@@ -125,15 +133,15 @@ const Statistics: FC<IProps> = props => {
 				]
 			};
 	
+			myChartRef.current = myChart;
 			option && myChart.setOption(option);
-
-			const resizeChart = () => {
-				myChart.resize();
-			};
 
 			window.addEventListener('resize', resizeChart);
 		};
 		getPvUvRef();
+		return () => {
+      window.removeEventListener("resize", resizeChart);
+    };
 	}, [pvUvDate, pvDateCount, isDarkTheme]);
 
 	return (
@@ -178,7 +186,7 @@ const Statistics: FC<IProps> = props => {
 							onChange={value => setPvUvDay(value)} 
 							options={dayLimitList} />
 					</div>
-					<div className="statistics-pv" ref={pvUvRef}></div>
+					<div className="statistics-pv" ref={chartRef}></div>
 				</div>
 			</ContentWrap>
 		</div>
