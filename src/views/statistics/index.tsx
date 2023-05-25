@@ -53,7 +53,8 @@ const Statistics: FC<IProps> = props => {
 		const getPvUv = async () => {
 			const { status, result } = await getPvUvApi(pvUvDay);
 			if (status.code === 0) {
-				setPvUvInfo(result);
+				// 对 result 进行倒序
+				setPvUvInfo(result.reverse());
 			}
 		};
 		getPvUv();
