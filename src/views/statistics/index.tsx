@@ -1,8 +1,9 @@
+/* eslint-disable prettier/prettier */
 import React, { FC, useEffect, useRef, useState } from "react";
-import { Select } from "antd";
+import { Select, Switch } from "antd";
 import * as echarts from "echarts";
 
-import { getAllApi, getPvApi, getUvApi } from "@/api/modules/statistics";
+import { getAllApi, getPvUvApi } from "@/api/modules/statistics";
 import { ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import pvCountImg from "./images/fangwenliang.png";
@@ -14,109 +15,18 @@ import "./index.scss";
 interface IProps {}
 
 const Statistics: FC<IProps> = props => {
-	const pvRef = useRef<HTMLDivElement>(null);
-	const uvRef = useRef<HTMLDivElement>(null);
-	const [pvDay, setPvDay] = useState<string>("7");
-	const [uvDay, setUvDay] = useState<string>("7");
-	const [pvInfo, setPvInfo] = useState<MapItem[]>([]);
-	const [uvInfo, setUvInfo] = useState<MapItem[]>([]);
+	const pvUvRef = useRef<HTMLDivElement>(null);
+	const [pvUvDay, setPvUvDay] = useState<string>("7");
+	const [pvUvInfo, setPvUvInfo] = useState<MapItem[]>([]);
 	const [allInfo, setAllInfo] = useState<MapItem[]>([]);
+	const [isDarkTheme, setIsDarkTheme] = useState(false);
 
-	const pvDate = pvInfo.map(({ date }) => date);
-	const pvDateCount = pvInfo.map(({ count }) => count);
-	const uvDate = uvInfo.map(({ date }) => date);
-	const uvCount = uvInfo.map(({ count }) => count);
+	const pvUvDate = pvUvInfo.map(({ date }) => date);
+	const pvDateCount = pvUvInfo.map(({ pvCount }) => pvCount);
+	const uvDateCount = pvUvInfo.map(({ uvCount }) => uvCount);
 
+	// @ts-ignore
 	const { pvCount, userCount, articleCount } = allInfo;
-
-	const getAllList = async () => {
-		const { status, result } = await getAllApi();
-		if (status.code === 0) {
-			setAllInfo(result);
-		}
-	};
-
-	const getPvList = async () => {
-		const { status, result } = await getPvApi(pvDay);
-		if (status.code === 0) {
-			setPvInfo(result);
-		}
-	};
-
-	const getUvList = async () => {
-		const { status, result } = await getUvApi(uvDay);
-		if (status.code === 0) {
-			setUvInfo(result);
-		}
-	};
-
-	const getPvRef = () => {
-		let myChart = echarts.init(pvRef.current);
-		let option;
-
-		option = {
-			xAxis: {
-				type: "category",
-				data: pvDate
-			},
-			yAxis: {
-				type: "value"
-			},
-			series: [
-				{
-					data: pvDateCount,
-					type: "line",
-					smooth: true
-				}
-			]
-		};
-
-		option && myChart.setOption(option);
-	};
-
-	const getUvRef = () => {
-		let myChart = echarts.init(uvRef.current);
-		let option;
-
-		option = {
-			xAxis: {
-				type: "category",
-				data: uvDate
-			},
-			yAxis: {
-				type: "value"
-			},
-			series: [
-				{
-					data: uvCount,
-					type: "line",
-					smooth: true
-				}
-			]
-		};
-
-		option && myChart.setOption(option);
-	};
-
-	useEffect(() => {
-		getAllList();
-	}, []);
-
-	useEffect(() => {
-		getPvList();
-	}, [pvDay]);
-
-	useEffect(() => {
-		getUvList();
-	}, [uvDay]);
-
-	useEffect(() => {
-		getPvRef();
-	}, [pvDate, pvDateCount]);
-
-	useEffect(() => {
-		getUvRef();
-	}, [uvDate, uvCount]);
 
 	const dayLimitList = [
 		{ value: "7", label: "7天" },
@@ -127,6 +37,103 @@ const Statistics: FC<IProps> = props => {
 		{ title: "PV 总数", value: pvCount, bgColor: "#4DB39E" },
 		{ title: "文章总数", value: articleCount, bgColor: "#3CC4C4" }
 	];
+
+	useEffect(() => {
+		const getAllInfo = async () => {
+			const { status, result } = await getAllApi();
+			// @ts-ignore
+			if (status.code === 0) {
+				setAllInfo(result);
+			}
+		};
+		getAllInfo();
+	}, []);
+
+	useEffect(() => {
+		const getPvUv = async () => {
+			const { status, result } = await getPvUvApi(pvUvDay);
+			if (status.code === 0) {
+				setPvUvInfo(result);
+			}
+		};
+		getPvUv();
+	}, [pvUvDay]);
+
+	useEffect(() => {
+		const getPvUvRef = () => {
+			console.log("当前的主题是", isDarkTheme ? "dark" : "light");
+			if (echarts.getInstanceByDom(pvUvRef.current)) {
+					echarts.dispose(pvUvRef.current);
+			}
+			let myChart = echarts.init(pvUvRef.current, 
+				isDarkTheme ? 'dark' : 'light');
+
+			let option = {
+				title: {
+					text: 'PV UV数据',
+    			top: 0
+				},
+				tooltip: {
+					trigger: 'axis'
+				},
+				legend: {
+					data: ['PV', 'UV']
+				},
+				grid: {
+					left: '3%',
+					right: '3%',
+					bottom: '3%',
+					containLabel: true
+				},
+				toolbox: {
+					show: true,
+					magicType: {
+						type: ["line", "bar"]
+					},
+					feature: {
+						saveAsImage: {}
+					}
+				},
+				xAxis: {
+					type: "category",
+					data: pvUvDate
+				},
+				yAxis: {
+					type: "value"
+				},
+				series: [
+					{
+						name: "PV",
+						data: pvDateCount,
+						type: "line",
+						smooth: true,
+						label: {
+							show: true,
+							position: "top",
+							textStyle: {
+								fontSize: 20
+							}
+						}
+					},
+					{
+						name: "UV",
+						data: uvDateCount,
+						type: "line",
+						smooth: true,
+					}
+				]
+			};
+	
+			option && myChart.setOption(option);
+
+			const resizeChart = () => {
+				myChart.resize();
+			};
+
+			window.addEventListener('resize', resizeChart);
+		};
+		getPvUvRef();
+	}, [pvUvDate, pvDateCount, isDarkTheme]);
 
 	return (
 		<div className="statistics">
@@ -155,25 +162,22 @@ const Statistics: FC<IProps> = props => {
 					</div>
 				</div>
 				<div className="statistics-pv__wrap">
-					<div>
-						<span style={{ marginRight: "20px" }}>PV数据</span>
-						<Select value={pvDay} onChange={value => setPvDay(value)} options={dayLimitList} />
-					</div>
-					<div className="statistics-pv" ref={pvRef}></div>
-				</div>
-				<div className="statistics-pv__wrap">
-					<div>
-						<span style={{ marginRight: "20px" }}>UV数据</span>
-						<Select
-							value={uvDay}
-							onChange={value => {
-								setUvDay(value);
-							}}
-							options={dayLimitList}
+					{/*居中*/}
+					<div style={{marginBottom: 10}}>
+						<Switch
+							style={{ marginRight: "20px" }}
+							onChange={checked => setIsDarkTheme(checked)}
+							checkedChildren="深色"
+							unCheckedChildren="浅色"
 						/>
-					</div>
 
-					<div className="statistics-uv" ref={uvRef}></div>
+						<Select 
+							style={{ width: "80px" }}
+							value={pvUvDay} 
+							onChange={value => setPvUvDay(value)} 
+							options={dayLimitList} />
+					</div>
+					<div className="statistics-pv" ref={pvUvRef}></div>
 				</div>
 			</ContentWrap>
 		</div>
