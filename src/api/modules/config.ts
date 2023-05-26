@@ -11,7 +11,7 @@ import { IFormType } from "@/views/config";
 
 // 获取列表
 export const getConfigListApi = (data: { pageNumber: number; pageSize: number }) => {
-	return http.get(`${PORT1}/config/list`, data);
+	return http.post(`${PORT1}/config/list`, data);
 };
 
 // 删除操作

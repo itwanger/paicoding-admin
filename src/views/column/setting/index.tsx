@@ -18,6 +18,7 @@ import { getCompleteUrl } from "@/utils/is";
 import Search from "./components/search";
 
 import "./index.scss";
+import ImgUpload from "./components/imgupload";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -107,7 +108,7 @@ const Column: FC<IProps> = props => {
 	// @ts-ignore
 	const { ColumnStatus, ColumnStatusList, ColumnType, ColumnTypeList } = props || {};
 
-	const { columnId, column, introduction, cover, authorName,authorAvatar, state, section, type, nums, freeEndTime, freeStartTime } = form;
+	const { columnId, column, introduction, cover, authorName, authorAvatar, state, section, type, nums, freeEndTime, freeStartTime } = form;
 
 	const detailInfo = [
 		{ label: "教程名", title: column },
@@ -230,31 +231,6 @@ const Column: FC<IProps> = props => {
 			}
 		} catch (errorInfo) {
 			console.log("Failed:", errorInfo);
-		}
-	};
-
-	const customCoverUpload = async (options: any) => {
-		const { onSuccess, onProgress, onError, file } = options;
-		console.log("上传图片", options);
-		// 限制图片大小，不超过 5M
-		if (file.size > 5 * 1024 * 1024) {
-			onError("图片大小不能超过 5M");
-			return;
-		}
-
-		const formData = new FormData();
-		formData.append("image", file);
-
-		const { status, result } = await uploadCoverApi(formData);
-		const { code, msg } = status || {};
-		const { imagePath } = result || {};
-		console.log("上传图片",status, result, code, msg, imagePath);
-
-		if (code === 0) {
-			console.log("上传图片成功，回调 onsuccess", imagePath);
-			onSuccess(imagePath);
-		} else {
-			onError("上传失败");
 		}
 	};
 
@@ -457,49 +433,11 @@ const Column: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="封面" name="cover" rules={[{ required: true, message: "请上传封面!" }]}>
-				<Upload
-					customRequest={customCoverUpload}
-					multiple={false}
-					listType="picture"
-					maxCount={1}
-					defaultFileList={[...coverList]}
-					accept="image/*"
-					onRemove={() => {
-						console.log("删除封面");
-						// 删除封面的时候，清空 cover
-						handleChange({ cover: "" });
-						// 清空 coverList
-						setCoverList([]);
-					}}
-					onChange={info => {
-						// clear 的时候记得清空 cover
-						// submit 的时候要判断 cover 是否为空，空的话提示用户上传
-						const { status, name, response } = info.file;
-						console.log("上传封面 onchange info", status, name, response);
-
-						if (status !== 'uploading') {
-							console.log("上传封面 onchange !uploading");
-						}
-						if (status === 'done') {
-							// 把 data 的值赋给 form 的 cover，传递给后端
-							handleChange({ cover: response });
-							const coverUrl = getCompleteUrl(response);
-							// 更新 coverList
-							setCoverList([{ 
-								uid: "-1", 
-								name: "封面图(建议110px*156px)", 
-								status: "done", 
-								thumbUrl: coverUrl, 
-								url: coverUrl
-							}]);
-							message.success(`${name} 封面上传成功.`);
-						} else if (status === 'error') {
-							message.error(`封面上传失败，原因：${info.file.error}`);
-						}
-					}}
-				>
-					<Button icon={<UploadOutlined />}>Upload</Button>
-				</Upload>
+				<ImgUpload 
+					coverList={coverList} 
+					setCoverList={setCoverList} 
+					handleChange={handleChange}
+					/>
 			</Form.Item>
 			<Form.Item label="作者" name="authorName" rules={[{ required: true, message: "请选择作者!" }]}>
 				{/* 使用 select 选择器实现一个可以查找的作者列表供选择 */}

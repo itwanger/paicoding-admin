@@ -1,31 +1,38 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { useLinkClickHandler } from "react-router-dom";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Drawer, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
+import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { Button, Descriptions, Drawer, Form, Input, InputNumber, message, Modal, Select, Space, Switch, Table, UploadFile, UploadProps } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import TextArea from "antd/lib/input/TextArea";
 
+import { uploadCoverApi } from "@/api/modules/column";
 import { delConfigApi, getConfigListApi, operateConfigApi, updateConfigApi } from "@/api/modules/config";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
+import ImgUpload from "./components/imgupload";
 import Search from "./components/search";
 
 import "./index.scss";
 
+import 'antd/es/modal/style';
+import 'antd/es/slider/style';
+
 interface DataType {
+	id: number,
 	key: string;
 	name: string;
 	age: number;
 	address: string;
 	tags: string[];
+	type: number;
+	status: number;
 }
 
 interface IProps {}
 
-export interface IFormType {
+// 编辑新增表单的值类型
+interface IFormType {
 	configId: number; // ID
 	type: number; // 类型
 	name: string; // 图片
@@ -33,6 +40,13 @@ export interface IFormType {
 	tags: number; // 标签
 }
 
+// 查询表单的值类型
+interface ISearchFormType {
+	type: number; // 类型
+	name: string; // 名称
+}
+
+// 编辑新增表单默认值
 const defaultInitForm: IFormType = {
 	configId: -1,
 	type: -1,
@@ -41,12 +55,20 @@ const defaultInitForm: IFormType = {
 	tags: -1
 };
 
+// 查询表单默认值
+const defaultSearchForm: ISearchFormType = {
+	type: -1,
+	name: "",
+};
+
 const Banner: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
-	// 弹窗
-	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+	// 查询表单值
+	const [searchForm, setSearchForm] = useState<ISearchFormType>(defaultSearchForm);
+	// 改成抽屉
+	const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 	// 弹窗
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 列表数据
@@ -57,9 +79,18 @@ const Banner: FC<IProps> = props => {
 	//当前的状态
 	const [status, setStatus] = useState<UpdateEnum>(UpdateEnum.Save);
 
+	// 图片
+	const [coverList, setCoverList] = useState<UploadFile[]>([]);
+
 	// 分页
 	const [pagination, setPagination] = useState<IPagination>(initPagination);
 	const { current, pageSize } = pagination;
+
+	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
+
+	const { configId, type, name, content, bannerUrl, jumpUrl, rank, tags } = form;
+
+	const [fileList, setFileList] = useState<UploadFile[]>([]);
 
 	const paginationInfo = {
 		showSizeChanger: true,
@@ -70,27 +101,144 @@ const Banner: FC<IProps> = props => {
 		}
 	};
 
+	const detailInfo = [
+		{ label: "类型", title: ConfigType[type] },
+		{ label: "名称", title: name },
+		{ label: "内容", title: content },
+		{ label: "图片URL", title: bannerUrl },
+		{ label: "跳转URL", title: jumpUrl },
+		{ label: "标签", title: ArticleTag[tags] },
+		{ label: "排序", title: rank }
+	];
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
-	// @ts-ignore
-	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
 
-	const { configId, type, name, content, bannerUrl, jumpUrl, rank, tags } = form;
-
-	// 值改变
+	// 编辑新增表单值改变
 	const handleChange = (item: MapItem) => {
-		console.log("输入框值改变", item);
 		setForm({ ...form, ...item });
-
-		// 调用 getConfigList 方法查询数据
 	};
+	// 查询表单值改变
+	const handleSearchChange = (item: MapItem) => {
+		setSearchForm({ ...searchForm, ...item });
+	};
+
+	// 点击搜索按钮时触发搜索
+	const handleSearch = () => {
+		console.log("准备查询",searchForm);
+		// 重置分页
+		setPagination(initPagination);
+		onSure();
+	};
+
+	// 点击取消关闭按钮时触发，关闭抽屉
+	const handleClose = () => {
+		setIsDrawerOpen(false);
+	};
+
+	// 删除
+	const handleDel = (configId: number) => {
+		Modal.warning({
+			title: "确认删除此配置吗",
+			content: "删除此配置后无法恢复，请谨慎操作！",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				const { status } = await delConfigApi(configId);
+				const { code, msg } = status || {};
+				if (code === 0) {
+					message.success("删除成功");
+					// 重置分页
+					setPagination(initPagination);
+					// 触发刷新
+					onSure();
+				} else {
+					message.error(msg);
+				}
+			}
+		});
+	};
+
+	const handleSubmit = async () => {
+		const values = await formRef.validateFields();
+		console.log("values", values);
+		// 从 value 中取出 type 定义为变量 value 并转为 number 类型
+		const { type, bannerUrl } = values;
+		// 转成 number
+		const typeNumber = Number(type);
+
+		// 如果类型为教程和公告时，详细描述必填
+		if (typeNumber === 4 || typeNumber === 5) {
+			if (!values.content) {
+				message.error("类型为" + ConfigType[type] +"时详细描述不能为空");
+				return;
+			}
+		}
+		// 如果类型为教程和 PDF 时，图片不能为空
+		if (typeNumber === 5 || typeNumber === 6) {
+			if (!bannerUrl) {
+				message.error("类型为" + ConfigType[type] +"时图片不能为空");
+				return;
+			}
+		}
+
+		const newValues = { ...values, configId: status === UpdateEnum.Save ? UpdateEnum.Save : configId };
+		const { status: successStatus } = (await updateConfigApi(newValues)) || {};
+		const { code } = successStatus || {};
+		if (code === 0) {
+			setIsDrawerOpen(false);
+			onSure();
+		} else {
+			message.error("操作失败");
+		}
+	};
+
+	// 上线/下线
+	const handleOperate = async (configId: number, pushStatus: number) => {
+		const { status } = await operateConfigApi({ configId, pushStatus });
+		const { code, msg } = status || {};
+		if (code === 0) {
+			message.success("操作成功");
+			onSure();
+		} else {
+			message.error(msg);
+		}
+	};
+
+	// 重置表单
+	const resetForm = () => {
+		setForm(defaultInitForm);
+		formRef.resetFields();
+	};
+
+	const onChange: UploadProps["onChange"] = ({ fileList: newFileList }) => {
+    setFileList(newFileList);
+  };
+
+  const onPreview = async (file: UploadFile) => {
+    let src = file.url as string;
+    if (!src) {
+      src = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj as RcFile);
+        reader.onload = () => resolve(reader.result as string);
+      });
+    }
+    const image = new Image();
+    image.src = src;
+    const imgWindow = window.open(src);
+    imgWindow?.document.write(image.outerHTML);
+  };
 
 	// 数据请求
 	useEffect(() => {
 		const getConfigList = async () => {
-			// @ts-ignore
-			const { status, result } = await getConfigListApi({ pageNumber: current, pageSize });
+			const { status, result } = await getConfigListApi({ 
+				...searchForm,
+				pageNumber: current, 
+				pageSize 
+			});
 			const { code } = status || {};
 			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
@@ -102,58 +250,12 @@ const Banner: FC<IProps> = props => {
 		getConfigList();
 	}, [query, current, pageSize]);
 
-	// 删除
-	const handleDel = (configId: number) => {
-		Modal.warning({
-			title: "确认删除此配置吗",
-			content: "删除此配置后无法恢复，请谨慎操作！",
-			maskClosable: true,
-			closable: true,
-			onOk: async () => {
-				// @ts-ignore
-				const { status } = await delConfigApi(configId);
-				const { code } = status || {};
-				if (code === 0) {
-					message.success("删除成功");
-					setPagination({ current: 1, pageSize });
-					onSure();
-				}
-			}
-		});
-	};
-
-	// 上线/下线
-	const handleOperate = (configId: number, pushStatus: number) => {
-		const operateDesc = pushStatus === 0 ? "下线" : "上线";
-		Modal.warning({
-			title: "确认" + operateDesc + "此配置吗",
-			content: "对线上会有影响，请谨慎操作！",
-			maskClosable: true,
-			closable: true,
-			onOk: async () => {
-				// @ts-ignore
-				const { status } = await operateConfigApi({ configId, pushStatus });
-				const { code } = status || {};
-				if (code === 0) {
-					message.success("操作成功");
-					onSure();
-				}
-			}
-		});
-	};
-
-	// 重置表单
-	const resetForm = () => {
-		setForm(defaultInitForm);
-		formRef.resetFields();
-	};
-
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "ID",
-			dataIndex: "id",
-			key: "id"
+			title: "配置名称",
+			dataIndex: "name",
+			key: "name"
 		},
 		{
 			title: "类型",
@@ -164,24 +266,21 @@ const Banner: FC<IProps> = props => {
 			}
 		},
 		{
-			title: "名称",
-			dataIndex: "name",
-			key: "name"
-		},
-		{
-			title: "标签",
-			dataIndex: "tags",
-			key: "tags",
-			render(tag) {
-				return ArticleTag[tag] || "-";
-			}
-		},
-		{
-			title: "状态",
+			title: "上下线",
 			dataIndex: "status",
 			key: "status",
-			render(status) {
-				return PushStatus[status];
+			render(status, item) {
+				// switch 组件
+				return (
+					<Switch
+						checked={status === 1}
+						onChange={() => {
+							const pushStatus = status === 0 ? 1 : 0;
+							handleOperate(item.id, pushStatus);
+						}
+					}
+				/>
+				);
 			}
 		},
 		{
@@ -192,14 +291,9 @@ const Banner: FC<IProps> = props => {
 		{
 			title: "操作",
 			key: "key",
-			width: 400,
+			width: 300,
 			render: (_, item) => {
-				// @ts-ignore
-				const { id, type, rank, status } = item;
-				console.log({ item });
-
-				const noUp = status === 0;
-				const pushStatus = status === 0 ? 1 : 0;
+				const { id, type, status } = item;
 				return (
 					<div className="operation-btn">
 						<Button
@@ -210,7 +304,6 @@ const Banner: FC<IProps> = props => {
 								setIsOpenDrawerShow(true);
 								setStatus(UpdateEnum.Edit);
 								handleChange({ configId: id, ...item });
-								// formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
 							}}
 						>
 							详情
@@ -220,21 +313,13 @@ const Banner: FC<IProps> = props => {
 							icon={<EditOutlined />}
 							style={{ marginRight: "10px" }}
 							onClick={() => {
-								setIsModalOpen(true);
+								setIsDrawerOpen(true);
 								setStatus(UpdateEnum.Edit);
 								handleChange({ configId: id });
 								formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
 							}}
 						>
 							编辑
-						</Button>
-						<Button
-							type={noUp ? "primary" : "default"}
-							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => handleOperate(id, pushStatus)}
-						>
-							{noUp ? "上线" : "下线"}
 						</Button>
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(id)}>
 							删除
@@ -245,25 +330,15 @@ const Banner: FC<IProps> = props => {
 		}
 	];
 
-	const handleSubmit = async () => {
-		try {
-			const values = await formRef.validateFields();
-			const newValues = { ...values, configId: status === UpdateEnum.Save ? UpdateEnum.Save : configId };
-			// @ts-ignore
-			const { status: successStatus } = (await updateConfigApi(newValues)) || {};
-			const { code } = successStatus || {};
-			if (code === 0) {
-				setIsModalOpen(false);
-				onSure();
-			}
-		} catch (errorInfo) {
-			console.log("Failed:", errorInfo);
-		}
-	};
-
 	// 编辑表单
-	const reviseModalContent = (
-		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+	const reviseDrawerContent = (
+		<Form 
+			name="basic" 
+			form={formRef} 
+			labelCol={{ span: 4 }} 
+			wrapperCol={{ span: 16 }} 
+			autoComplete="off"
+			>
 			<Form.Item label="类型" name="type" rules={[{ required: true, message: "请选择类型!" }]}>
 				<Select
 					allowClear
@@ -281,24 +356,34 @@ const Banner: FC<IProps> = props => {
 					}}
 				/>
 			</Form.Item>
-			<Form.Item label="内容" name="content" rules={[{ required: true, message: "请输入内容!" }]}>
+			<Form.Item 
+				label="详细描述" 
+				name="content" 
+				tooltip="对公告和教程类型的配置进行一些简短介绍，不要太多字哦"
+				>
 				<Input.TextArea
 					allowClear
+					maxLength={120}
 					onChange={e => {
 						handleChange({ content: e.target.value });
 					}}
 				/>
 			</Form.Item>
-			<Form.Item label="图片URL" name="bannerUrl" rules={[{ required: true, message: "请输入图片URL!" }]}>
-				<Input
-					allowClear
-					onChange={e => {
-						handleChange({ bannerUrl: e.target.value });
-					}}
-				/>
+			<Form.Item 
+				label="图片" 
+				name="bannerUrl" 
+				tooltip="类型为教程和PDF需要，建议尺寸：70*100"
+				>
+				<ImgUpload 
+					coverList={coverList} 
+					setCoverList={setCoverList} 
+					handleChange={handleChange}
+					/>
 			</Form.Item>
-			<Form.Item label="跳转URL" name="jumpUrl" rules={[{ required: true, message: "请输入跳转URL!" }]}>
-				<Input
+			<Form.Item 
+				tooltip="可以是内部或者外部链接"
+				label="跳转URL" name="jumpUrl" rules={[{ required: true, message: "请输入跳转URL!" }]}>
+				<Input.TextArea
 					allowClear
 					onChange={e => {
 						handleChange({ jumpUrl: e.target.value });
@@ -306,7 +391,9 @@ const Banner: FC<IProps> = props => {
 				/>
 			</Form.Item>
 
-			<Form.Item label="标签" name="tags" rules={[{ required: false, message: "请选择标签!" }]}>
+			<Form.Item 
+				tooltip="在用户端显示的时候会用到"
+				label="标签" name="tags" rules={[{ required: false, message: "请选择标签!" }]}>
 				<Select
 					allowClear
 					onChange={value => {
@@ -316,39 +403,38 @@ const Banner: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="排序" name="rank" rules={[{ required: true, message: "请输入排序!" }]}>
-				<Input
-					type="number"
-					allowClear
-					onChange={e => {
-						handleChange({ rank: e.target.value });
+				<InputNumber
+					onChange={value => {
+						handleChange({ rank: value });
 					}}
 				/>
 			</Form.Item>
 		</Form>
 	);
 
-	const detailInfo = [
-		{ label: "类型", title: ConfigType[type] },
-		{ label: "名称", title: name },
-		{ label: "内容", title: content },
-		{ label: "图片URL", title: bannerUrl },
-		{ label: "跳转URL", title: jumpUrl },
-		{ label: "标签", title: ArticleTag[tags] },
-		{ label: "排序", title: rank }
-	];
-
 	return (
 		<div className="banner">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen, resetForm }} />
+				<Search 
+					ConfigTypeList={ConfigTypeList}
+					handleSearchChange={handleSearchChange}
+					handleSearch={handleSearch}
+					handleChange={handleChange}
+					{...{ setStatus, setIsDrawerOpen, resetForm }} />
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 抽屉 */}
-			<Drawer title="详情" placement="right" onClose={() => setIsOpenDrawerShow(false)} visible={isOpenDrawerShow}>
+			<Drawer 
+				title="详情" 
+				placement="right"
+				onClose={() => {
+					setIsOpenDrawerShow(false);
+				}}
+				open={isOpenDrawerShow}>
 				<Descriptions column={1} labelStyle={{ width: "100px" }}>
 					{detailInfo.map(({ label, title }) => (
 						<Descriptions.Item label={label} key={label}>
@@ -358,9 +444,22 @@ const Banner: FC<IProps> = props => {
 				</Descriptions>
 			</Drawer>
 			{/* 弹窗 */}
-			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
-				{reviseModalContent}
-			</Modal>
+			<Drawer 
+				title="添加/修改" 
+				open={isDrawerOpen} 
+				width={720}
+				onClose={handleClose}
+				extra={
+          <Space>
+            <Button onClick={handleClose}>取消</Button>
+            <Button type="primary" onClick={handleSubmit}>
+              确定
+            </Button>
+          </Space>
+        }
+				>
+				{reviseDrawerContent}
+			</Drawer>
 		</div>
 	);
 };
