@@ -95,7 +95,7 @@ const Banner: FC<IProps> = props => {
 	const [pagination, setPagination] = useState<IPagination>(initPagination);
 	const { current, pageSize } = pagination;
 
-	const { ConfigType, ConfigTypeList, PushStatus, ArticleTag, ArticleTagList } = props || {};
+	const { ConfigType, ConfigTypeList, ArticleTag, ArticleTagList } = props || {};
 
 	const { configId, type, name, content, bannerUrl, jumpUrl, rank, tags } = form;
 
@@ -122,8 +122,6 @@ const Banner: FC<IProps> = props => {
 	// 编辑新增表单值改变
 	const handleChange = (item: MapItem) => {
 		setForm({ ...form, ...item });
-		console.log("handleChange form",form);
-		console.log("handleChange item", item);
 	};
 	// 查询表单值改变
 	const handleSearchChange = (item: MapItem) => {
@@ -132,7 +130,6 @@ const Banner: FC<IProps> = props => {
 
 	// 点击搜索按钮时触发搜索
 	const handleSearch = () => {
-		console.log("准备查询",searchForm);
 		// 重置分页
 		setPagination(initPagination);
 		onSure();
@@ -156,7 +153,6 @@ const Banner: FC<IProps> = props => {
 		setIsDrawerOpen(true);
 		// 图片也清空
 		setCoverList([]);
-		console.log("添加",form, coverList);
 	}
 
 	// 删除
@@ -215,14 +211,13 @@ const Banner: FC<IProps> = props => {
 			configId: status === UpdateEnum.Save ? UpdateEnum.Save : configId
 		};
 
-		console.log("newValues", newValues);
 		const { status: successStatus } = (await updateConfigApi(newValues)) || {};
-		const { code } = successStatus || {};
+		const { code, msg } = successStatus || {};
 		if (code === 0) {
 			setIsDrawerOpen(false);
 			onSure();
 		} else {
-			message.error("操作失败");
+			message.error(msg);
 		}
 	};
 
@@ -247,10 +242,10 @@ const Banner: FC<IProps> = props => {
 				pageSize 
 			});
 			const { code } = status || {};
-			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			const { list, pageNum, pageSize: resPageSize, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
-				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
+				const newList = list.map((item: MapItem) => ({ ...item, key: item.id }));
 				setTableData(newList);
 			}
 		};
@@ -262,7 +257,16 @@ const Banner: FC<IProps> = props => {
 		{
 			title: "配置名称",
 			dataIndex: "name",
-			key: "name"
+			key: "name",
+			width: 400,
+			render(name, item) {
+				return <span>
+					<Tag bordered={false} color="orange">
+						{ArticleTag[item.tags]}
+					</Tag>
+					{name}
+				</span>;
+			}
 		},
 		{
 			title: "类型",
@@ -433,8 +437,8 @@ const Banner: FC<IProps> = props => {
 	);
 
 	return (
-		<div className="banner">
-			<ContentWrap>
+		<div>
+			<ContentWrap className="container">
 				{/* 搜索 */}
 				<Search 
 					ConfigTypeList={ConfigTypeList}
@@ -443,7 +447,10 @@ const Banner: FC<IProps> = props => {
 					handleAdd={handleAdd} />
 				{/* 表格 */}
 				<ContentInterWrap>
-					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
+					<Table 
+						columns={columns} 
+						dataSource={tableData} 
+						pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 抽屉 */}
