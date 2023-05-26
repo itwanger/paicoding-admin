@@ -396,6 +396,7 @@ const Banner: FC<IProps> = props => {
 			</Form.Item>
 			<Form.Item 
 				label="图片"
+				name="bannerUrl"
 				tooltip="类型为教程和PDF需要，建议尺寸：70*100"
 				>
 				<ImgUpload 

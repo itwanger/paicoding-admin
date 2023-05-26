@@ -35,6 +35,21 @@ const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange }) => {
 		if (code === 0) {
 			console.log("上传图片成功，回调 onsuccess", imagePath);
 			onSuccess(imagePath);
+			// 把 data 的值赋给 form 的 bannerUrl，传递给后端
+			handleChange({ bannerUrl: imagePath });
+			const coverUrl = getCompleteUrl(imagePath);
+			console.log("上传封面 onchange done", coverUrl);
+			// 更新 coverList
+			setCoverList([
+				{
+					uid: "-1",
+					name: "封面图(建议70px*100px)",
+					status: "done",
+					thumbUrl: coverUrl,
+					url: coverUrl
+				}
+			]);
+			console.log("上传封面 onchange done", coverList);
 		} else {
 			onError("上传失败");
 		}
@@ -65,19 +80,6 @@ const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange }) => {
 					console.log("上传封面 onchange !uploading");
 				}
 				if (status === "done") {
-					// 把 data 的值赋给 form 的 bannerUrl，传递给后端
-					handleChange({ bannerUrl: response });
-					const coverUrl = getCompleteUrl(response);
-					// 更新 coverList
-					setCoverList([
-						{
-							uid: "-1",
-							name: "封面图(建议70px*100px)",
-							status: "done",
-							thumbUrl: coverUrl,
-							url: coverUrl
-						}
-					]);
 					message.success(`${name} 封面上传成功.`);
 				} else if (status === "error") {
 					message.error(`封面上传失败，原因：${info.file.error}`);
