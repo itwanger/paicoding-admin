@@ -251,7 +251,7 @@ const Statistics: FC<IProps> = props => {
 				</div>
 				<div className="statistics-pv__wrap">
 					{/*居中*/}
-					<div style={{marginBottom: 10}}>
+					<div className="statistics-setting">
 						<Switch
 							style={{ marginRight: "20px" }}
 							onChange={checked => setIsDarkTheme(checked)}
@@ -260,7 +260,7 @@ const Statistics: FC<IProps> = props => {
 						/>
 
 						<Select 
-							style={{ width: "80px" }}
+							style={{ width: "100px" }}
 							value={pvUvDay} 
 							onChange={value => setPvUvDay(value)} 
 							options={dayLimitList} />

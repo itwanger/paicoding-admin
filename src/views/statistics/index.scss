@@ -30,7 +30,7 @@
 				box-sizing: border-box;
 				width: 22%;
 				color: rgb(255, 255, 255);
-				padding: 40px 0px 120px 30px;
+				padding: 40px 0px 100px 30px;
 				overflow: hidden;
 				background: url(images/book-bg.png) 0% 0% / 100% 100%;
 				border-radius: 20px;
@@ -45,10 +45,10 @@
 					display: flex;
 					align-items: center;
 					justify-content: center;
-					width: 90px;
-					height: 90px;
+					width: 60px;
+					height: 60px;
 					box-shadow: rgba(0, 0, 0, 0.14) 0px 10px 20px;
-					margin: 40px 0px 20px;
+					margin: 20px 0px 10px;
 					background: rgb(255, 255, 255);
 					border-radius: 20px;
 
@@ -60,7 +60,7 @@
 
 				.left-number {
 					font-family: DIN;
-					font-size: 62px;
+					font-size: 42px;
 					font-weight: 500;
 					overflow: hidden;
 				}
@@ -81,14 +81,14 @@
 					flex-direction: column;
 					width: 47%;
 					height: 48%;
-					padding: 25px;
-					border-radius: 30px;
+					padding: 15px;
+					border-radius: 15px;
 					.traffic-img {
 						display: flex;
 						align-items: center;
 						justify-content: center;
-						width: 70px;
-						height: 70px;
+						width: 50px;
+						height: 50px;
 						margin-bottom: 10px;
 						background-color: #ffffff;
 						border-radius: 19px;
@@ -141,12 +141,12 @@
 				display: flex;
 				flex-direction: column;
 				width: 40%;
-				height: 430px;
+				height: 330px;
 				border-width: 1px;
 				border-style: solid;
 				border-color: rgb(229, 231, 235);
 				border-image: initial;
-				border-radius: 25px;
+				border-radius: 16px;
 			}
 		}
 	}
@@ -155,17 +155,16 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
-		margin-bottom: 20px;
 		border: 1px solid #ccc;
 		background-color: #fff;
-		padding: 24px;
+		padding: 10px;
 		border-radius: 8px
 	}
 
 	&-pv {
 		width: 100%;
 		// height 随着屏幕大小变化
-		height: calc(100vh - 680px);
+		height: calc(100vh - 510px);
 		display: flex;
 		justify-content: center;
 	}
