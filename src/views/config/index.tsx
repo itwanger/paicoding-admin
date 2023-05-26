@@ -1,15 +1,16 @@
+/* eslint-disable react/jsx-no-undef */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Drawer, Form, Input, InputNumber, message, Modal, Select, Space, Switch, Table, UploadFile, UploadProps } from "antd";
+import { Button, Descriptions, Drawer, Form, Image, Input, InputNumber, message, Modal, Select, Space, Switch, Table, Tag,UploadFile } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { uploadCoverApi } from "@/api/modules/column";
 import { delConfigApi, getConfigListApi, operateConfigApi, updateConfigApi } from "@/api/modules/config";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
+import { getCompleteUrl } from "@/utils/is";
 import ImgUpload from "./components/imgupload";
 import Search from "./components/search";
 
@@ -19,6 +20,8 @@ import 'antd/es/modal/style';
 import 'antd/es/slider/style';
 
 interface DataType {
+	bannerUrl: string;
+	jumpUrl: string;
 	id: number,
 	key: string;
 	name: string;
@@ -35,7 +38,10 @@ interface IProps {}
 interface IFormType {
 	configId: number; // ID
 	type: number; // 类型
-	name: string; // 图片
+	name: string; // 名称
+	content: string; // 详细描述
+	bannerUrl: string; // 图片
+	jumpUrl: string; // 跳转URL
 	rank: number; // 排序
 	tags: number; // 标签
 }
@@ -52,7 +58,10 @@ const defaultInitForm: IFormType = {
 	type: -1,
 	name: "",
 	rank: -1,
-	tags: -1
+	tags: -1,
+	content: "",
+	bannerUrl: "",
+	jumpUrl: ""
 };
 
 // 查询表单默认值
@@ -90,8 +99,6 @@ const Banner: FC<IProps> = props => {
 
 	const { configId, type, name, content, bannerUrl, jumpUrl, rank, tags } = form;
 
-	const [fileList, setFileList] = useState<UploadFile[]>([]);
-
 	const paginationInfo = {
 		showSizeChanger: true,
 		showTotal: total => `共 ${total || 0} 条`,
@@ -105,9 +112,6 @@ const Banner: FC<IProps> = props => {
 		{ label: "类型", title: ConfigType[type] },
 		{ label: "名称", title: name },
 		{ label: "内容", title: content },
-		{ label: "图片URL", title: bannerUrl },
-		{ label: "跳转URL", title: jumpUrl },
-		{ label: "标签", title: ArticleTag[tags] },
 		{ label: "排序", title: rank }
 	];
 
@@ -118,6 +122,8 @@ const Banner: FC<IProps> = props => {
 	// 编辑新增表单值改变
 	const handleChange = (item: MapItem) => {
 		setForm({ ...form, ...item });
+		console.log("handleChange form",form);
+		console.log("handleChange item", item);
 	};
 	// 查询表单值改变
 	const handleSearchChange = (item: MapItem) => {
@@ -136,6 +142,22 @@ const Banner: FC<IProps> = props => {
 	const handleClose = () => {
 		setIsDrawerOpen(false);
 	};
+
+	// 重置表单
+	const resetForm = () => {
+		setForm(defaultInitForm);
+		formRef.resetFields();
+	};
+
+	// 新增触发
+	const handleAdd = () => {
+		resetForm();
+		setStatus(UpdateEnum.Save);
+		setIsDrawerOpen(true);
+		// 图片也清空
+		setCoverList([]);
+		console.log("添加",form, coverList);
+	}
 
 	// 删除
 	const handleDel = (configId: number) => {
@@ -164,7 +186,7 @@ const Banner: FC<IProps> = props => {
 		const values = await formRef.validateFields();
 		console.log("values", values);
 		// 从 value 中取出 type 定义为变量 value 并转为 number 类型
-		const { type, bannerUrl } = values;
+		const { type } = values;
 		// 转成 number
 		const typeNumber = Number(type);
 
@@ -175,6 +197,9 @@ const Banner: FC<IProps> = props => {
 				return;
 			}
 		}
+
+		console.log("bannerUrl", bannerUrl);
+		
 		// 如果类型为教程和 PDF 时，图片不能为空
 		if (typeNumber === 5 || typeNumber === 6) {
 			if (!bannerUrl) {
@@ -183,7 +208,14 @@ const Banner: FC<IProps> = props => {
 			}
 		}
 
-		const newValues = { ...values, configId: status === UpdateEnum.Save ? UpdateEnum.Save : configId };
+		// 重写新的值
+		const newValues = {
+			...values, 
+			bannerUrl: bannerUrl,// 图片要重新赋值，因为 values 中没有
+			configId: status === UpdateEnum.Save ? UpdateEnum.Save : configId
+		};
+
+		console.log("newValues", newValues);
 		const { status: successStatus } = (await updateConfigApi(newValues)) || {};
 		const { code } = successStatus || {};
 		if (code === 0) {
@@ -205,31 +237,6 @@ const Banner: FC<IProps> = props => {
 			message.error(msg);
 		}
 	};
-
-	// 重置表单
-	const resetForm = () => {
-		setForm(defaultInitForm);
-		formRef.resetFields();
-	};
-
-	const onChange: UploadProps["onChange"] = ({ fileList: newFileList }) => {
-    setFileList(newFileList);
-  };
-
-  const onPreview = async (file: UploadFile) => {
-    let src = file.url as string;
-    if (!src) {
-      src = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file.originFileObj as RcFile);
-        reader.onload = () => resolve(reader.result as string);
-      });
-    }
-    const image = new Image();
-    image.src = src;
-    const imgWindow = window.open(src);
-    imgWindow?.document.write(image.outerHTML);
-  };
 
 	// 数据请求
 	useEffect(() => {
@@ -315,7 +322,21 @@ const Banner: FC<IProps> = props => {
 							onClick={() => {
 								setIsDrawerOpen(true);
 								setStatus(UpdateEnum.Edit);
-								handleChange({ configId: id });
+								const { bannerUrl } = item;
+								console.log("点击编辑 bannerUrl", bannerUrl);
+								handleChange({ configId: id, bannerUrl: bannerUrl});
+								// 需要设置 image 的值
+								const coverUrl = getCompleteUrl(bannerUrl);
+								// 更新 coverList
+								setCoverList([
+									{
+										uid: "-1",
+										name: "封面图(建议70px*100px)",
+										status: "done",
+										thumbUrl: coverUrl,
+										url: coverUrl
+									}
+								]);
 								formRef.setFieldsValue({ ...item, type: String(type), status: String(status) });
 							}}
 						>
@@ -370,8 +391,7 @@ const Banner: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item 
-				label="图片" 
-				name="bannerUrl" 
+				label="图片"
 				tooltip="类型为教程和PDF需要，建议尺寸：70*100"
 				>
 				<ImgUpload 
@@ -420,8 +440,7 @@ const Banner: FC<IProps> = props => {
 					ConfigTypeList={ConfigTypeList}
 					handleSearchChange={handleSearchChange}
 					handleSearch={handleSearch}
-					handleChange={handleChange}
-					{...{ setStatus, setIsDrawerOpen, resetForm }} />
+					handleAdd={handleAdd} />
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
@@ -431,6 +450,7 @@ const Banner: FC<IProps> = props => {
 			<Drawer 
 				title="详情" 
 				placement="right"
+				width={500}
 				onClose={() => {
 					setIsOpenDrawerShow(false);
 				}}
@@ -441,13 +461,39 @@ const Banner: FC<IProps> = props => {
 							{title || "-"}
 						</Descriptions.Item>
 					))}
+					{/* 标签显示 */}
+					<Descriptions.Item label="标签" key="tags">
+						<Tag bordered={false} color="orange">
+							{ArticleTag[tags]}
+						</Tag>
+					</Descriptions.Item>
+					{/* 链接显示 */}
+					<Descriptions.Item label="跳转URL" key="jumpUrl">
+						<Button 
+							type="link" 
+							style={{ padding: 0, margin: 0}}
+							target="_blank"
+							href={jumpUrl}
+							>
+							{jumpUrl}
+						</Button>
+					</Descriptions.Item>
+					{/* 图片组件显示 */}
+					<Descriptions.Item label="图片" key="bannerUrl">
+						<Image
+							width={100}
+							src={getCompleteUrl(bannerUrl)}
+						/>
+					</Descriptions.Item>
+					
 				</Descriptions>
+				
 			</Drawer>
 			{/* 弹窗 */}
 			<Drawer 
 				title="添加/修改" 
 				open={isDrawerOpen} 
-				width={720}
+				width={620}
 				onClose={handleClose}
 				extra={
           <Space>

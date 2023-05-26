@@ -46,12 +46,12 @@ const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange }) => {
 			multiple={false}
 			listType="picture"
 			maxCount={1}
-			defaultFileList={[...coverList]}
+			fileList={[...coverList]}
 			accept="image/*"
 			onRemove={() => {
 				console.log("删除封面");
 				// 删除封面的时候，清空 cover
-				handleChange({ cover: "" });
+				handleChange({ bannerUrl: "" });
 				// 清空 coverList
 				setCoverList([]);
 			}}
@@ -72,7 +72,7 @@ const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange }) => {
 					setCoverList([
 						{
 							uid: "-1",
-							name: "封面图(建议110px*156px)",
+							name: "封面图(建议70px*100px)",
 							status: "done",
 							thumbUrl: coverUrl,
 							url: coverUrl

@@ -12,19 +12,14 @@ interface IProps {
 	ConfigTypeList: any;
 	handleSearch: (e: object) => void;
 	handleSearchChange: (e: object) => void;
-	handleChange: (e: object) => void;
-	setStatus: (e: UpdateEnum) => void;
-	setIsDrawerOpen: (e: boolean) => void;
-	resetForm: any;
+	handleAdd: () => void;
 }
 
 const Search: FC<IProps> = ({ 
 	ConfigTypeList,
 	handleSearch,
 	handleSearchChange,
-	setIsDrawerOpen,
-	handleChange, setStatus, 
-	resetForm 
+	handleAdd,
 }) => {
 	return (
 		<div className="config-search">
@@ -68,11 +63,7 @@ const Search: FC<IProps> = ({
 							type="primary"
 							icon={<PlusOutlined />}
 							style={{ marginRight: "20px" }}
-							onClick={() => {
-								resetForm();
-								setStatus(UpdateEnum.Save);
-								setIsDrawerOpen(true);
-							}}
+							onClick={handleAdd}
 						>
 							添加
 						</Button>
