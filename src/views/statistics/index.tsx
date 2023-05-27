@@ -1,17 +1,16 @@
 /* eslint-disable prettier/prettier */
-import React, { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Select, Switch } from "antd";
 import * as echarts from "echarts";
 
 import { getAllApi, getPvUvApi } from "@/api/modules/statistics";
+import pvCountImg from "@/assets/images/fangwenliang.png";
+import articleCountImg from "@/assets/images/wenzhangzongshu.png";
+import userCountImg from "@/assets/images/yonghu.png";
+import zhuanlanImg from "@/assets/images/zhuanlan.png";
+import zhuceImg from "@/assets/images/zhuce.png";
 import { ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
-import pvCountImg from "./images/fangwenliang.png";
-import articleCountImg from "./images/wenzhangzongshu.png";
-import userCountImg from "./images/yonghu.png";
-import yonghuImg from "./images/yonghu.png";
-import zhuanlanImg from "./images/zhuanlan.png";
-import zhuceImg from "./images/zhuce.png";
 
 import "./index.scss";
 

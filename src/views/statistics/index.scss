@@ -32,7 +32,7 @@
 				color: rgb(255, 255, 255);
 				padding: 40px 0px 100px 30px;
 				overflow: hidden;
-				background: url(images/book-bg.png) 0% 0% / 100% 100%;
+				background: url(@/assets/images/book-bg.png) 0% 0% / 100% 100%;
 				border-radius: 20px;
 
 				.left-title {
@@ -115,22 +115,22 @@
 					white-space: nowrap;
 				}
 				.gitee-traffic {
-					background: url("images/1-bg.png");
+					background: url("@/assets/images/1-bg.png");
 					background-color: #e8faea;
 					background-size: 100% 100%;
 				}
 				.gitHub-traffic {
-					background: url("images/2-bg.png");
+					background: url("@/assets/images/2-bg.png");
 					background-color: #e7e1fb;
 					background-size: 100% 100%;
 				}
 				.today-traffic {
-					background: url("images/3-bg.png");
+					background: url("@/assets/images/3-bg.png");
 					background-color: #f4e4d4;
 					background-size: 100% 100%;
 				}
 				.yesterday-traffic {
-					background: url("images/4-bg.png");
+					background: url("@/assets/images/4-bg.png");
 					background-color: #d5e2f1;
 					background-size: 100% 100%;
 				}

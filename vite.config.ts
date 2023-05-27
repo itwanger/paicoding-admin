@@ -96,7 +96,7 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 					// Static resource classification and packaging
 					chunkFileNames: "assets/js/[name]-[hash].js",
 					entryFileNames: "assets/js/[name]-[hash].js",
-					assetFileNames: "assets/[ext]/[name]-[hash].[ext]"
+					assetFileNames: "assets/[name]-[hash].[ext]"
 				}
 			}
 		}
