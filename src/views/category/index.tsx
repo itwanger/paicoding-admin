@@ -1,7 +1,8 @@
+/* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Button, Drawer, Form, Input, InputNumber,message, Modal, Space, Switch,Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delCategoryApi, getCategoryListApi, operateCategoryApi, updateCategoryApi } from "@/api/modules/category";
@@ -13,11 +14,9 @@ import Search from "./components/search";
 import "./index.scss";
 
 interface DataType {
+	categoryId: number;
 	key: string;
 	name: string;
-	age: number;
-	address: string;
-	tags: string[];
 }
 
 interface IProps {}
@@ -38,8 +37,10 @@ const Category: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
-	// 弹窗
-	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+	// 查询表单值
+	const [searchForm, setSearchForm] = useState<IFormType>(defaultInitForm);
+	// 抽屉
+	const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
 	// 刷新函数
@@ -54,50 +55,47 @@ const Category: FC<IProps> = props => {
 
 	const paginationInfo = {
 		showSizeChanger: true,
-		showTotal: total => `共 ${total || 0} 条`,
+		showTotal: (total: number) => `共 ${total || 0} 条`,
 		...pagination,
-		onChange: (current, pageSize) => {
+		onChange: (current: number, pageSize: number) => {
 			setPagination({ current, pageSize });
 		}
 	};
+
+	const { categoryId } = form;
 
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
 
-	// 获取字典值
-	console.log({ props });
-
-	// @ts-ignore
-	const { PushStatus } = props || {};
-
-	const { categoryId } = form;
-
-	// 重置表单
-	const resetBarFrom = () => {
-		setForm(defaultInitForm);
-	};
-
 	// 值改变
 	const handleChange = (item: MapItem) => {
 		setForm({ ...form, ...item });
 	};
+	// 查询表单值改变
+	const handleSearchChange = (item: MapItem) => {
+		setSearchForm({ ...searchForm, ...item });
+	};
+	// 点击搜索按钮时触发搜索
+	const handleSearch = () => {
+		setPagination({ current: 1, pageSize });
+		onSure();
+	};
+	// 抽屉关闭
+	const handleClose = () => {
+		setIsDrawerOpen(false);
+	};
 
-	// 数据请求
-	useEffect(() => {
-		const getSortList = async () => {
-			// @ts-ignore
-			const { status, result } = await getCategoryListApi({ pageNumber: current, pageSize });
-			const { code } = status || {};
-			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
-			setPagination({ current: pageNum, pageSize: resPageSize, total });
-			if (code === 0) {
-				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
-				setTableData(newList);
-			}
-		};
-		getSortList();
-	}, [query, current, pageSize]);
+	// 重置表单
+	const resetFrom = () => {
+		setForm(defaultInitForm);
+	};
+	// 新增触发
+	const handleAdd = () => {
+		resetFrom();
+		setStatus(UpdateEnum.Save);
+		setIsDrawerOpen(true);
+	};
 
 	// 删除
 	const handleDel = (categoryId: number) => {
@@ -107,60 +105,94 @@ const Category: FC<IProps> = props => {
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				// @ts-ignore
 				const { status } = await delCategoryApi(categoryId);
-				const { code } = status || {};
-				console.log();
+				const { code, msg } = status || {};
+	
 				if (code === 0) {
 					message.success("删除成功");
-					setPagination({ current: 1, pageSize });
 					onSure();
+				} else {
+					message.error(msg);
 				}
 			}
 		});
 	};
 
-	// 上线/下线
-	const handleOperate = (categoryId: number, pushStatus: number) => {
-		const operateDesc = pushStatus === 0 ? "下线" : "上线";
-		Modal.warning({
-			title: "确认" + operateDesc + "此配置吗",
-			content: "对线上会有影响，请谨慎操作！",
-			maskClosable: true,
-			closable: true,
-			onOk: async () => {
-				// @ts-ignore
-				const { status } = await operateCategoryApi({ categoryId, pushStatus });
-				const { code } = status || {};
-				console.log();
-				if (code === 0) {
-					message.success("操作成功");
-					onSure();
-				}
-			}
-		});
+	const handleSubmit = async () => {
+		const values = await formRef.validateFields();
+		const newValues = { 
+			...values, 
+			categoryId: status === UpdateEnum.Save ? UpdateEnum.Save : categoryId 
+		};
+
+		const { status: successStatus } = (await updateCategoryApi(newValues)) || {};
+		const { code, msg } = successStatus || {};
+		if (code === 0) {
+			setIsDrawerOpen(false);
+			setPagination({ current: 1, pageSize });
+			onSure();
+		} else {
+			message.error(msg);
+		}
+		
 	};
+
+	// 上线/下线
+	const handleOperate = async (categoryId: number, pushStatus: number) => {
+		const { status } = await operateCategoryApi({ categoryId, pushStatus });
+		const { code, msg } = status || {};
+		if (code === 0) {
+			message.success("操作成功");
+			onSure();
+		} else {
+			message.error(msg);
+		}
+	};
+
+	// 数据请求
+	useEffect(() => {
+		const getSortList = async () => {
+			const { status, result } = await getCategoryListApi({ 
+				...searchForm,
+				pageNumber: current, 
+				pageSize 
+			});
+			const { code } = status || {};
+			const { list, pageNum, pageSize: resPageSize, total } = result || {};
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
+			if (code === 0) {
+				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
+				setTableData(newList);
+			}
+		};
+		getSortList();
+	}, [query, current, pageSize]);
 
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "ID",
-			dataIndex: "categoryId",
-			key: "categoryId"
-		},
-		{
-			title: "分类",
+			title: "分类名称",
 			dataIndex: "category",
 			key: "category"
 		},
-		// 		{
-		// 	title: "状态",
-		// 	dataIndex: "status",
-		// 	key: "status",
-		// 	render(status) {
-		// 		return PushStatus[status];
-		// 	}
-		// },
+		{
+			title: "上下线",
+			dataIndex: "status",
+			key: "status",
+			render(status, item) {
+				// switch 组件
+				return (
+					<Switch
+						checked={status === 1}
+						onChange={() => {
+							const pushStatus = status === 0 ? 1 : 0;
+							handleOperate(item.categoryId, pushStatus);
+						}
+					}
+				/>
+				);
+			}
+		},
 		{
 			title: "排序",
 			dataIndex: "rank",
@@ -169,12 +201,9 @@ const Category: FC<IProps> = props => {
 		{
 			title: "操作",
 			key: "key",
-			width: 400,
+			width: 210,
 			render: (_, item) => {
-				// @ts-ignore
-				const { categoryId, status, rank } = item;
-				const noUp = status === 0;
-				const pushStatus = status === 0 ? 1 : 0;
+				const { categoryId } = item;
 				return (
 					<div className="operation-btn">
 						<Button
@@ -182,7 +211,7 @@ const Category: FC<IProps> = props => {
 							icon={<EditOutlined />}
 							style={{ marginRight: "10px" }}
 							onClick={() => {
-								setIsModalOpen(true);
+								setIsDrawerOpen(true);
 								setStatus(UpdateEnum.Edit);
 								handleChange({ categoryId: categoryId });
 								formRef.setFieldsValue({ ...item });
@@ -190,14 +219,7 @@ const Category: FC<IProps> = props => {
 						>
 							编辑
 						</Button>
-						<Button
-							type={noUp ? "primary" : "default"}
-							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => handleOperate(categoryId, pushStatus)}
-						>
-							{noUp ? "上线" : "下线"}
-						</Button>
+						
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(categoryId)}>
 							删除
 						</Button>
@@ -207,25 +229,14 @@ const Category: FC<IProps> = props => {
 		}
 	];
 
-	const handleSubmit = async () => {
-		try {
-			const values = await formRef.validateFields();
-			const newValues = { ...values, categoryId: status === UpdateEnum.Save ? UpdateEnum.Save : categoryId };
-			// @ts-ignore
-			const { status: successStatus } = (await updateCategoryApi(newValues)) || {};
-			const { code } = successStatus || {};
-			if (code === 0) {
-				setIsModalOpen(false);
-				onSure();
-			}
-		} catch (errorInfo) {
-			console.log("Failed:", errorInfo);
-		}
-	};
-
 	// 编辑表单
-	const reviseModalContent = (
-		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+	const reviseDrawerContent = (
+		<Form 
+			name="basic" 
+			form={formRef} 
+			labelCol={{ span: 4 }} 
+			wrapperCol={{ span: 16 }} 
+			autoComplete="off">
 			<Form.Item label="分类" name="category" rules={[{ required: true, message: "请输入分类!" }]}>
 				<Input
 					allowClear
@@ -235,11 +246,10 @@ const Category: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="排序" name="rank" rules={[{ required: true, message: "请输入排序!" }]}>
-				<Input
-					type="number"
-					allowClear
-					onChange={e => {
-						handleChange({ rank: e.target.value });
+				<InputNumber
+					min={0}
+					onChange={value => {
+						handleChange({ rank: value });
 					}}
 				/>
 			</Form.Item>
@@ -250,16 +260,32 @@ const Category: FC<IProps> = props => {
 		<div className="category">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
+				<Search 
+					handleSearchChange={handleSearchChange} 
+					handleSearch={handleSearch}
+					handleAdd={handleAdd}
+				/>
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
-			{/* 弹窗 */}
-			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
-				{reviseModalContent}
-			</Modal>
+			{/* 抽屉 */}
+			<Drawer 
+				title="添加/修改" 
+				open={isDrawerOpen} 
+				onClose={handleClose}
+				extra={
+          <Space>
+            <Button onClick={handleClose}>取消</Button>
+            <Button type="primary" onClick={handleSubmit}>
+              确定
+            </Button>
+          </Space>
+        }
+				>
+				{reviseDrawerContent}
+			</Drawer>
 		</div>
 	);
 };

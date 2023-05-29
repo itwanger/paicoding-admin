@@ -1,7 +1,8 @@
+/* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Modal, Select, Space, Table, Tag } from "antd";
+import { Button, Drawer, Form, Input, message, Modal, Select, Space, Switch, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delTagListApi, getTagListApi, operateTagApi, updateTagApi } from "@/api/modules/tag";
@@ -11,35 +12,34 @@ import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
 import "./index.scss";
+import { set } from "lodash";
 
 interface DataType {
-	key: string;
-	name: string;
-	age: number;
-	address: string;
-	tags: string[];
+	tagId: number;
+	tag: string;
+	status: number;
 }
 
 interface IProps {}
 
-export interface IFormType {
+interface IFormType {
 	tagId: number; // 为0时，是保存，非0是更新
 	tag: string; // 标签名
-	categoryId: number; // 分类ID
 }
 
 const defaultInitForm: IFormType = {
 	tagId: -1,
-	tag: "",
-	categoryId: -1
+	tag: ""
 };
 
 const Label: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
-	// 弹窗
-	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+	// 查询表单值
+	const [searchForm, setSearchForm] = useState<IFormType>(defaultInitForm);
+	// 抽屉
+	const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
 	// 刷新函数
@@ -54,35 +54,108 @@ const Label: FC<IProps> = props => {
 
 	const paginationInfo = {
 		showSizeChanger: true,
-		showTotal: total => `共 ${total || 0} 条`,
+		showTotal: (total: number) => `共 ${total || 0} 条`,
 		...pagination,
-		onChange: (current, pageSize) => {
+		onChange: (current: number, pageSize: number) => {
 			setPagination({ current, pageSize });
 		}
 	};
+
+	const { PushStatus } = props || {};
+
+	const { tagId } = form;
 
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
 
-	// 获取字典值
-	console.log({ props });
-
-	// @ts-ignore
-	const { PushStatus, CategoryType, CategoryTypeList } = props || {};
-
-	const { tagId } = form;
-
 	// 值改变
 	const handleChange = (item: MapItem) => {
 		setForm({ ...form, ...item });
+	};
+	// 查询表单值改变
+	const handleSearchChange = (item: MapItem) => {
+		setSearchForm({ ...searchForm, ...item });
+	};
+	// 点击搜索按钮时触发搜索
+	const handleSearch = () => {
+		setPagination(initPagination);
+		onSure();
+	};
+	// 抽屉关闭
+	const handleClose = () => {
+		setIsDrawerOpen(false);
+	};
+	// 重置表单
+	const resetForm = () => {
+		setForm(defaultInitForm);
+	};
+	// 新增触发
+	const handleAdd = () => {
+		resetForm();
+		setStatus(UpdateEnum.Save);
+		setIsDrawerOpen(true);
+	};
+
+	// 删除
+	const handleDel = (tagId: number) => {
+		Modal.warning({
+			title: "确认删除此标签吗",
+			content: "删除此标签后无法恢复，请谨慎操作！",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				const { status } = await delTagListApi(tagId);
+				const { code, msg } = status || {};
+				console.log();
+				if (code === 0) {
+					message.success("删除成功");
+					onSure();
+				} else {
+					message.error(msg);
+				}
+			}
+		});
+	};
+
+	const handleSubmit = async () => {
+		const values = await formRef.validateFields();
+		const newValues = { 
+			...values, 
+			tagId: status === UpdateEnum.Save ? UpdateEnum.Save : tagId 
+		};
+		const { status: successStatus } = (await updateTagApi(newValues)) || {};
+		const { code, msg } = successStatus || {};
+		if (code === 0) {
+			setIsDrawerOpen(false);
+			setPagination({ current: 1, pageSize });
+			onSure();
+		} else {
+			message.error(msg);
+		}
+	};
+
+	// 上线/下线
+	const handleOperate = async (tagId: number, pushStatus: number) => {
+			const { status } = await operateTagApi({ tagId, pushStatus });
+			const { code, msg } = status || {};
+			console.log();
+			if (code === 0) {
+				message.success("操作成功");
+				onSure();
+			} else {
+				message.error(msg);
+			}
 	};
 
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			// @ts-ignore
-			const { status, result } = await getTagListApi({ pageNumber: current, pageSize });
+			const { status, result } = await getTagListApi({ 
+				...searchForm,
+				pageNumber: current, 
+				pageSize 
+			});
 			const { code } = status || {};
 			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
@@ -94,77 +167,36 @@ const Label: FC<IProps> = props => {
 		getSortList();
 	}, [query, current, pageSize]);
 
-	// 删除
-	const handleDel = (tagId: number) => {
-		Modal.warning({
-			title: "确认删除此分类吗",
-			content: "删除此分类后无法恢复，请谨慎操作！",
-			maskClosable: true,
-			closable: true,
-			onOk: async () => {
-				// @ts-ignore
-				const { status } = await delTagListApi(tagId);
-				const { code } = status || {};
-				console.log();
-				if (code === 0) {
-					message.success("删除成功");
-					setPagination({ current: 1, pageSize });
-					onSure();
-				}
-			}
-		});
-	};
-
-	// 上线/下线
-	const handleOperate = (tagId: number, pushStatus: number) => {
-		const operateDesc = pushStatus === 0 ? "下线" : "上线";
-		Modal.warning({
-			title: "确认" + operateDesc + "此配置吗",
-			content: "对线上会有影响，请谨慎操作！",
-			maskClosable: true,
-			closable: true,
-			onOk: async () => {
-				// @ts-ignore
-				const { status } = await operateTagApi({ tagId, pushStatus });
-				const { code } = status || {};
-				console.log();
-				if (code === 0) {
-					message.success("操作成功");
-					onSure();
-				}
-			}
-		});
-	};
-
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
-		{
-			title: "ID",
-			dataIndex: "tagId",
-			key: "tagId"
-		},
 		{
 			title: "标签",
 			dataIndex: "tag",
 			key: "tag"
 		},
 		{
-			title: "状态",
+			title: "上下线",
 			dataIndex: "status",
 			key: "status",
-			render(status) {
-				return PushStatus[status];
+			render(status, item) {
+				return (
+					<Switch
+						checked={status === 1}
+						onChange={() => {
+							const pushStatus = status === 0 ? 1 : 0;
+							handleOperate(item.tagId, pushStatus);
+						}
+					}
+				/>
+				);
 			}
 		},
 		{
 			title: "操作",
 			key: "key",
-			width: 400,
+			width: 210,
 			render: (_, item) => {
-				// @ts-ignore
-				const { tagId, status, categoryId } = item;
-				const noUp = status === 0;
-				const pushStatus = status === 0 ? 1 : 0;
+				const { tagId } = item;
 				return (
 					<div className="operation-btn">
 						<Button
@@ -172,7 +204,7 @@ const Label: FC<IProps> = props => {
 							icon={<EditOutlined />}
 							style={{ marginRight: "10px" }}
 							onClick={() => {
-								setIsModalOpen(true);
+								setIsDrawerOpen(true);
 								setStatus(UpdateEnum.Edit);
 								handleChange({ tagId: tagId });
 								formRef.setFieldsValue({ ...item, categoryId: String(categoryId) });
@@ -180,14 +212,7 @@ const Label: FC<IProps> = props => {
 						>
 							编辑
 						</Button>
-						<Button
-							type={noUp ? "primary" : "default"}
-							icon={noUp ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => handleOperate(tagId, pushStatus)}
-						>
-							{noUp ? "上线" : "下线"}
-						</Button>
+
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(tagId)}>
 							删除
 						</Button>
@@ -197,24 +222,8 @@ const Label: FC<IProps> = props => {
 		}
 	];
 
-	const handleSubmit = async () => {
-		try {
-			const values = await formRef.validateFields();
-			const newValues = { ...values, tagId: status === UpdateEnum.Save ? UpdateEnum.Save : tagId };
-			// @ts-ignore
-			const { status: successStatus } = (await updateTagApi(newValues)) || {};
-			const { code } = successStatus || {};
-			if (code === 0) {
-				setIsModalOpen(false);
-				onSure();
-			}
-		} catch (errorInfo) {
-			console.log("Failed:", errorInfo);
-		}
-	};
-
 	// 编辑表单
-	const reviseModalContent = (
+	const reviseDrawerContent = (
 		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
 			<Form.Item label="标签" name="tag" rules={[{ required: true, message: "请输入名称!" }]}>
 				<Input
@@ -231,19 +240,32 @@ const Label: FC<IProps> = props => {
 		<div className="banner">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search handleChange={handleChange} {...{ setStatus, setIsModalOpen }} />
+				<Search 
+					handleSearchChange={handleSearchChange} 
+					handleSearch={handleSearch}
+					handleAdd={handleAdd}
+					/>
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
-			{/* 弹窗 */}
-			<Modal title="详情" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
-				{reviseModalContent}
-			</Modal>
-			<Modal title="添加/修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
-				{reviseModalContent}
-			</Modal>
+			{/* 抽屉 */}
+			<Drawer 
+				title="添加/修改" 
+				open={isDrawerOpen} 
+				onClose={handleClose}
+				extra={
+          <Space>
+            <Button onClick={handleClose}>取消</Button>
+            <Button type="primary" onClick={handleSubmit}>
+              确定
+            </Button>
+          </Space>
+        }
+				>
+				{reviseDrawerContent}
+			</Drawer>
 		</div>
 	);
 };

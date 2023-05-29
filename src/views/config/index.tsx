@@ -25,14 +25,13 @@ interface DataType {
 	id: number,
 	key: string;
 	name: string;
-	age: number;
-	address: string;
-	tags: string[];
+	tags: string;
 	type: number;
 	status: number;
 }
 
-interface IProps {}
+interface IProps {
+}
 
 // 编辑新增表单的值类型
 interface IFormType {
@@ -101,9 +100,9 @@ const Banner: FC<IProps> = props => {
 
 	const paginationInfo = {
 		showSizeChanger: true,
-		showTotal: total => `共 ${total || 0} 条`,
+		showTotal: (total: number) => `共 ${total || 0} 条`,
 		...pagination,
-		onChange: (current, pageSize) => {
+		onChange: (current: number, pageSize: number) => {
 			setPagination({ current, pageSize });
 		}
 	};
@@ -131,7 +130,7 @@ const Banner: FC<IProps> = props => {
 	// 点击搜索按钮时触发搜索
 	const handleSearch = () => {
 		// 重置分页
-		setPagination(initPagination);
+		setPagination({ current: 1, pageSize });
 		onSure();
 	};
 
@@ -167,8 +166,6 @@ const Banner: FC<IProps> = props => {
 				const { code, msg } = status || {};
 				if (code === 0) {
 					message.success("删除成功");
-					// 重置分页
-					setPagination(initPagination);
 					// 触发刷新
 					onSure();
 				} else {
@@ -215,6 +212,7 @@ const Banner: FC<IProps> = props => {
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
 			setIsDrawerOpen(false);
+			setPagination({ current: 1, pageSize });
 			onSure();
 		} else {
 			message.error(msg);
@@ -261,7 +259,7 @@ const Banner: FC<IProps> = props => {
 			width: 400,
 			render(name, item) {
 				return <span>
-					<Tag bordered={false} color="orange">
+					<Tag  color="orange">
 						{ArticleTag[item.tags]}
 					</Tag>
 					{name}
@@ -429,6 +427,7 @@ const Banner: FC<IProps> = props => {
 			</Form.Item>
 			<Form.Item label="排序" name="rank" rules={[{ required: true, message: "请输入排序!" }]}>
 				<InputNumber
+					min={0}
 					onChange={value => {
 						handleChange({ rank: value });
 					}}
@@ -459,9 +458,7 @@ const Banner: FC<IProps> = props => {
 				title="详情" 
 				placement="right"
 				width={500}
-				onClose={() => {
-					setIsOpenDrawerShow(false);
-				}}
+				onClose={handleClose}
 				open={isOpenDrawerShow}>
 				<Descriptions column={1} labelStyle={{ width: "100px" }}>
 					{detailInfo.map(({ label, title }) => (
@@ -471,7 +468,7 @@ const Banner: FC<IProps> = props => {
 					))}
 					{/* 标签显示 */}
 					<Descriptions.Item label="标签" key="tags">
-						<Tag bordered={false} color="orange">
+						<Tag color="orange">
 							{ArticleTag[tags]}
 						</Tag>
 					</Descriptions.Item>

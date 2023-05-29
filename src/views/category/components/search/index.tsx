@@ -1,37 +1,55 @@
-import React, { FC } from "react";
+/* eslint-disable prettier/prettier */
+import { FC } from "react";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+
 import { ContentInterWrap } from "@/components/common-wrap";
-import { UpdateEnum } from "@/enums/common";
 
 import "./index.scss";
 
 interface IProps {
-	handleChange: (e: object) => void;
-	setStatus: (e: UpdateEnum) => void;
-	setIsModalOpen: (e: boolean) => void;
+	handleSearch: (e: object) => void;
+	handleSearchChange: (e: object) => void;
+	handleAdd: () => void;
 }
 
-const Search: FC<IProps> = ({ handleChange, setStatus, setIsModalOpen }) => {
+const Search: FC<IProps> = ({ 
+	handleSearch, 
+	handleSearchChange, 
+	handleAdd 
+}) => {
 	return (
 		<div className="sort-search">
 			<ContentInterWrap className="sort-search__wrap">
 				<div className="sort-search__search">
-					{/* <div className="sort-search__search-item">
-						<span className="sort-search-label">用户</span>
-						<Input onChange={e => handleChange({ id: e.target.value })} style={{ width: 252 }} />
-					</div>*/}
-					<Button
-						type="primary"
-						icon={<PlusOutlined />}
-						style={{ marginRight: "10px" }}
-						onClick={() => {
-							setStatus(UpdateEnum.Save);
-							setIsModalOpen(true);
-						}}
-					>
-						添加
-					</Button>
+					<div className="sort-search__search-wrap">
+						<div className="sort-search__search-item">
+							<label className="sort-search-label">名称</label>
+							<Input
+								allowClear
+								style={{ width: 252 }}
+								placeholder="请输入分类名称"
+								onChange={e => handleSearchChange({ category: e.target.value })}
+							/>
+						</div>
+					</div>
+					<div className="sort-search__search-btn">
+						<Button 
+							type="primary" 
+							icon={<SearchOutlined />} 
+							style={{ marginRight: "10px" }} 
+							onClick={handleSearch}>
+							搜索
+						</Button>
+						<Button
+							type="primary"
+							icon={<PlusOutlined />}
+							style={{ marginRight: "20px" }}
+							onClick={handleAdd}
+						>
+							添加
+						</Button>
+					</div>
 				</div>
 			</ContentInterWrap>
 		</div>

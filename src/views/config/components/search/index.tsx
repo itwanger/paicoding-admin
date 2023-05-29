@@ -1,10 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React, { FC } from "react";
+import { FC } from "react";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Select } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
-import { UpdateEnum } from "@/enums/common";
 
 import "./index.scss";
 

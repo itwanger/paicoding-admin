@@ -11,7 +11,7 @@ import { IFormType } from "@/views/config";
 
 // 获取列表
 export const getCategoryListApi = (data: { pageNumber: number; pageSize: number }) => {
-	return http.get(`${PORT1}/category/list`, data);
+	return http.post(`${PORT1}/category/list`, data);
 };
 
 // 删除操作
