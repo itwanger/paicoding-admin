@@ -1,26 +1,29 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
-import { Avatar, Button, Form, Input, message, Modal, Radio, Select, Space, Switch, Table, Tag } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Avatar, Button, Form, Input, message, Modal, Select, Switch, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { set } from "immer/dist/internal";
 
-import { delArticleApi, examineArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
-import { updateTagApi } from "@/api/modules/tag";
+import { delArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { initPagination, IPagination, PushStatusEnum, pushStatusInfo, UpdateEnum } from "@/enums/common";
+import { initPagination, IPagination } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
 import "./index.scss";
 
 interface DataType {
-	key: string;
-	name: string;
-	age: number;
-	address: string;
-	tags: string[];
+	articleId: number;
+	author: number;
+	authorName: string;
+	authorAvatar: string;
+	title: string;
+	cover: string;
+	status: number;
+	officalStat: number;
+	toppingStat: number;
+	creamStat: number;
 }
 
 interface IProps {}
@@ -65,8 +68,6 @@ const Article: FC<IProps> = props => {
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
 	// 查询表单
 	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
-	// 搜索，目前是根据标题、状态、置顶、推荐搜索
-	const [search, setSearch] = useState<ISearchForm>(defaultSearchForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	// 列表数据
@@ -87,10 +88,12 @@ const Article: FC<IProps> = props => {
 		}
 	};
 
-	// @ts-ignore
+	// 一些配置项
 	const { PushStatusList, ToppingStatusList, OfficalStatusList} = props || {};
 
 	const { articleId } = form;
+
+	const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
@@ -117,31 +120,11 @@ const Article: FC<IProps> = props => {
 	const handleSearch = () => {
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchForm);
-		setSearch(searchForm);
 		// 查询的时候重置分页
-		setPagination(initPagination);
+		setPagination({ current: 1, pageSize });
+		// 重新请求数据
+		onSure();
 	};
-
-	// 数据请求，这是一个钩子，query, current, pageSize, search 有变化的时候就会自动触发
-	useEffect(() => {
-		const getSortList = async () => {
-			
-			const { status, result } = await getArticleListApi({ 
-				pageNumber: current, 
-				pageSize,
-				...searchForm
-			});
-			const { code } = status || {};
-			// @ts-ignore
-			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
-			setPagination({ current: pageNum, pageSize: resPageSize, total });
-			if (code === 0) {
-				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
-				setTableData(newList);
-			}
-		};
-		getSortList();
-	}, [query, current, pageSize, search]);
 
 	// 删除
 	const handleDel = (articleId: number) => {
@@ -151,13 +134,13 @@ const Article: FC<IProps> = props => {
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				// @ts-ignore
 				const { status } = await delArticleApi(articleId);
-				const { code } = status || {};
+				const { code, msg } = status || {};
 				if (code === 0) {
 					message.success("删除成功");
-					setPagination({ current: 1, pageSize });
 					onSure();
+				} else {
+					message.error(msg || "删除失败");
 				}
 			}
 		});
@@ -175,12 +158,14 @@ const Article: FC<IProps> = props => {
 		} else if (operateType === 1) {
 			operateDesc = "推荐";
 		}
-		// @ts-ignore
+		
 		const { status } = await operateArticleApi({ articleId, operateType });
-		const { code } = status || {};
+		const { code, msg } = status || {};
 		if (code === 0) {
 			message.success(operateDesc + "操作成功");
 			onSure();
+		} else {
+			message.error(msg || operateDesc + "操作失败");
 		}
 	};
 
@@ -188,15 +173,53 @@ const Article: FC<IProps> = props => {
 	const handleStatusChange = async (articleId: number, status: number) => {
 		// 将 articleId 和 status 作为参数传递给 updateArticleApi
 		const newValues = { articleId, status };
-		// @ts-ignore
 		const { status: successStatus } = await updateArticleApi(newValues) || {};
-		const { code } = successStatus || {};
+		const { code, msg } = successStatus || {};
 		if (code === 0) {
 			message.success("状态操作成功");
 			console.log("code", code);
 			onSure();
+		} else {
+			message.error(msg || "状态操作失败");
 		}
 	};
+
+	const handleSubmit = async () => {
+		const values = await formRef.validateFields();
+		// 从 form 中取出 status
+		const { status } = form;
+		const newValues = { ...values, articleId, status };
+		console.log("编辑 时提交的 newValues:", newValues);
+		
+		const { status: successStatus } = (await updateArticleApi(newValues)) || {};
+		const { code, msg } = successStatus || {};
+		if (code === 0) {
+			message.success("编辑成功");
+			setIsModalOpen(false);
+			onSure();
+		} else {
+			message.error(msg || "编辑失败");
+		}
+	};
+
+	// 数据请求，这是一个钩子，query, current, pageSize, search 有变化的时候就会自动触发
+	useEffect(() => {
+		const getSortList = async () => {
+			const { status, result } = await getArticleListApi({ 
+				pageNumber: current, 
+				pageSize,
+				...searchForm
+			});
+			const { code } = status || {};
+			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
+			if (code === 0) {
+				const newList = list.map((item: MapItem) => ({ ...item, key: item?.articleId }));
+				setTableData(newList);
+			}
+		};
+		getSortList();
+	}, [query, current, pageSize]);
 
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
@@ -205,7 +228,6 @@ const Article: FC<IProps> = props => {
 			dataIndex: "title",
 			key: "title",
 			render(value, item) {
-				const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 				return (
 					<a 
 						href={`${baseUrl}/article/detail/${item?.articleId}`}
@@ -234,13 +256,15 @@ const Article: FC<IProps> = props => {
 			dataIndex: "toppingStat",
 			key: "toppingStat",
 			render(_, item) {
-				// @ts-ignore
 				const { articleId, toppingStat } = item;
 				// 返回的是 0 和 1
 				const isTopped = toppingStat === 1;
 		
 				const topStatus = isTopped ? 4 : 3; // 3-置顶；4-取消置顶
-				return <Switch checked={isTopped} onChange={() => handleOperate(articleId, topStatus)} />;
+				return <Switch 
+					checked={isTopped} 
+					onChange={() => handleOperate(articleId, topStatus)} 
+					/>;
 			}
 		},
 		{
@@ -249,11 +273,13 @@ const Article: FC<IProps> = props => {
 			key: "officalStat",
 			render(_, item) {
 				// 使用 switch 开关
-				// @ts-ignore
 				const { articleId, officalStat } = item;
 				const isOffical = officalStat === 1;
 				const officalStatus = isOffical ? 2 : 1; // 1-官方推荐；2-取消官方推荐
-				return <Switch checked={isOffical} onChange={() => handleOperate(articleId, officalStatus)} />;
+				return <Switch 
+					checked={isOffical} 
+					onChange={() => handleOperate(articleId, officalStatus)} 
+					/>;
 			}
 		},
 		{
@@ -261,7 +287,6 @@ const Article: FC<IProps> = props => {
 			dataIndex: "status",
 			key: "status",
 			render(_, item) {
-				// @ts-ignore
 				const { articleId, status } = item;
 				return <Select 
 								// 如果 status 为 1 那么 status 为 warning
@@ -278,8 +303,8 @@ const Article: FC<IProps> = props => {
 			key: "key",
 			width: 210,
 			render: (_, item) => {
-				// @ts-ignore
-				const { articleId, status } = item;
+				// 从 item 中取出 articleId
+				const { articleId } = item;
 				return (
 					<div className="operation-btn">
 						<Button
@@ -288,18 +313,19 @@ const Article: FC<IProps> = props => {
 							style={{ marginRight: "10px" }}
 							onClick={() => {
 								setIsModalOpen(true);
-
-								handleChange({ articleId: articleId, status: String(status), ...item });
-
+								handleChange({ ...item });
 								formRef.setFieldsValue({
-									...item,
-									status: String(status)
+									...item
 								});
 							}}
 						>
 							编辑
 						</Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(articleId)}>
+						<Button 
+							type="primary" 
+							danger 
+							icon={<DeleteOutlined />} 
+							onClick={() => handleDel(articleId)}>
 							删除
 						</Button>
 					</div>
@@ -307,31 +333,6 @@ const Article: FC<IProps> = props => {
 			}
 		}
 	];
-
-	// 数据提交
-	const handleOk = () => {
-		console.log("提交");
-	};
-
-	const handleSubmit = async () => {
-		try {
-			const values = await formRef.validateFields();
-			// 从 form 中取出 status
-			const { status } = form;
-			const newValues = { ...values, articleId, status };
-			console.log("编辑 时提交的 newValues:", newValues);
-			// @ts-ignore
-			const { status: successStatus } = (await updateArticleApi(newValues)) || {};
-			const { code } = successStatus || {};
-			if (code === 0) {
-				message.success("编辑成功");
-				setIsModalOpen(false);
-				onSure();
-			}
-		} catch (errorInfo) {
-			console.log("Failed:", errorInfo);
-		}
-	};
 
 	// 编辑表单
 	const reviseModalContent = (
@@ -344,7 +345,12 @@ const Article: FC<IProps> = props => {
 					}}
 				/>
 			</Form.Item>
-			<Form.Item label="短标题" name="shortTitle" rules={[{ required: false, message: "请输入短标题!" }]}>
+			<Form.Item 
+				label="教程名" 
+				name="shortTitle" 
+				tooltip="教程的时候使用"
+				rules={[{ required: false, message: "请输入短标题!" }]}
+				>
 				<Input
 					allowClear
 					onChange={e => {
@@ -356,75 +362,16 @@ const Article: FC<IProps> = props => {
 	);
 
 	return (
-		<div className="banner">
+		<div className="article">
 			<ContentWrap>
 				{/* 搜索 */}
-				<ContentInterWrap className="sort-search__wrap">
-					<div className="sort-search__search">
-						<div className="sort-search__search-item">
-							{/* 增加一个作者的查询条件 */}
-							<Input
-								placeholder="请输入作者名"
-								allowClear
-								style={{ flex: "auto", marginRight: 8 }}
-								onChange={e => {
-									handleSearchChange({ userName: e.target.value });
-								}}
-							/>
-						</div>
-						<div className="sort-search__search-item">
-							<Input 
-								onChange={e => handleSearchChange({ title: e.target.value })} 
-								allowClear 
-								placeholder="请输入标题"
-								/>
-						</div>
-						<div className="sort-search__search-item">
-							<Select
-								// 可以清空
-								allowClear
-								// 默认值
-								placeholder="选择状态"
-								options={PushStatusList}
-								// 触发搜索
-								onChange={(value) => handleSearchChange({ status: Number(value || -1) })}
-								>
-							</Select>
-						</div>
-						<div className="sort-search__search-item">
-							<Select
-								// 可以清空
-								allowClear
-								// 默认值
-								placeholder="是否置顶"
-								options={ToppingStatusList}
-								// 触发搜索
-								onChange={(value) => handleSearchChange({ toppingStat: Number(value || -1) })}
-								>
-							</Select>
-						</div>
-						<div className="sort-search__search-item">
-							<Select
-								// 可以清空
-								allowClear
-								// 默认值
-								placeholder="是否推荐"
-								options={OfficalStatusList}
-								// 触发搜索
-								onChange={(value) => handleSearchChange({ officalStat: Number(value || -1) })}
-								>
-							</Select>
-						</div>
-						<Button 
-							type="primary" 
-							icon={<SearchOutlined />}
-							style={{ marginRight: "25px" }}
-							onClick={() => {handleSearch();}}
-							>
-							搜索
-						</Button>
-					</div>
-				</ContentInterWrap>
+				<Search
+					handleSearchChange={handleSearchChange}
+					handleSearch={handleSearch}
+					PushStatusList={PushStatusList}
+					ToppingStatusList={ToppingStatusList}
+					OfficalStatusList={OfficalStatusList}
+				/>
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
