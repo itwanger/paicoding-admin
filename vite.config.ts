@@ -5,6 +5,7 @@ import { ConfigEnv, defineConfig, loadEnv, UserConfig } from "vite";
 import viteCompression from "vite-plugin-compression";
 import eslintPlugin from "vite-plugin-eslint";
 import { createHtmlPlugin } from "vite-plugin-html";
+import styleImport, { createStyleImportPlugin } from "vite-plugin-style-import";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
 
 import { wrapperEnv } from "./src/utils/getEnv";
@@ -60,6 +61,17 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 			createSvgIconsPlugin({
 				iconDirs: [resolve(process.cwd(), "src/assets/icons")],
 				symbolId: "icon-[dir]-[name]"
+			}),
+			createStyleImportPlugin({
+				libs: [
+					{
+						libraryName: "antd",
+						esModule: true,
+						resolveStyle: (name: any) => {
+							return `antd/es/${name}/style/index`;
+						}
+					}
+				]
 			}),
 			// * EsLint 报错信息显示在浏览器界面上
 			eslintPlugin(),

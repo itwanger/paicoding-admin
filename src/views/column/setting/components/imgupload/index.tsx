@@ -6,7 +6,6 @@ import { UploadOutlined } from "@ant-design/icons";
 import { Button, message, Upload } from "antd";
 
 import { uploadCoverApi } from "@/api/modules/column";
-import { UpdateEnum } from "@/enums/common";
 import { getCompleteUrl } from "@/utils/is";
 
 interface IProps {
@@ -35,6 +34,19 @@ const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange }) => {
 
 		if (code === 0) {
 			console.log("上传图片成功，回调 onsuccess", imagePath);
+			// 把 data 的值赋给 form 的 cover，传递给后端
+			handleChange({ cover: imagePath });
+			const coverUrl = getCompleteUrl(imagePath);
+			// 更新 coverList
+			setCoverList([
+				{
+					uid: "-1",
+					name: "封面图(建议110px*156px)",
+					status: "done",
+					thumbUrl: coverUrl,
+					url: coverUrl
+				}
+			]);
 			onSuccess(imagePath);
 		} else {
 			onError("上传失败");
@@ -47,7 +59,7 @@ const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange }) => {
 			multiple={false}
 			listType="picture"
 			maxCount={1}
-			defaultFileList={[...coverList]}
+			fileList={[...coverList]}
 			accept="image/*"
 			onRemove={() => {
 				console.log("删除封面");
@@ -66,19 +78,6 @@ const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange }) => {
 					console.log("上传封面 onchange !uploading");
 				}
 				if (status === "done") {
-					// 把 data 的值赋给 form 的 cover，传递给后端
-					handleChange({ cover: response });
-					const coverUrl = getCompleteUrl(response);
-					// 更新 coverList
-					setCoverList([
-						{
-							uid: "-1",
-							name: "封面图(建议110px*156px)",
-							status: "done",
-							thumbUrl: coverUrl,
-							url: coverUrl
-						}
-					]);
 					message.success(`${name} 封面上传成功.`);
 				} else if (status === "error") {
 					message.error(`封面上传失败，原因：${info.file.error}`);

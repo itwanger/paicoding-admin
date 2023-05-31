@@ -1,4 +1,4 @@
-.sort-search {
+.category-search {
 	margin-bottom: 16px;
 
 	&__wrap {
@@ -10,7 +10,10 @@
 	&__search {
 		flex: 1;
 		display: flex;
-		justify-content: flex-end;
+		justify-content: space-between;
+		&-wrap {
+			display: flex;
+		}
 	}
 
 	&__search-item {

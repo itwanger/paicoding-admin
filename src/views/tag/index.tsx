@@ -196,7 +196,6 @@ const Label: FC<IProps> = props => {
 			key: "key",
 			width: 210,
 			render: (_, item) => {
-				const { tagId } = item;
 				return (
 					<div className="operation-btn">
 						<Button
@@ -206,8 +205,8 @@ const Label: FC<IProps> = props => {
 							onClick={() => {
 								setIsDrawerOpen(true);
 								setStatus(UpdateEnum.Edit);
-								handleChange({ tagId: tagId });
-								formRef.setFieldsValue({ ...item, categoryId: String(categoryId) });
+								handleChange({ ...item });
+								formRef.setFieldsValue({ ...item });
 							}}
 						>
 							编辑

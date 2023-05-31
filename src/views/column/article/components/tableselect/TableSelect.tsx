@@ -4,7 +4,7 @@ import { Avatar,Button, Checkbox, Divider, Input, Select, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { getArticleListApi } from "@/api/modules/article";
-import { initArticlePagination,IPagination } from "@/enums/common";
+import { initPagination,IPagination } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 
 const { Option } = Select;
@@ -14,6 +14,7 @@ interface DataType {
 	articleId: number;
 	title: string;
 	authorName: string;
+	shortTitle: string;
 }
 
 interface ValueType {
@@ -23,8 +24,11 @@ interface ValueType {
 }
 
 interface IProps {
+	// 是否打开教程下拉框
 	isArticleSelectOpen: boolean;
+	// 什么时候关闭教程下拉框
 	setIsArticleSelectOpen: (e: boolean) => void;
+	// 选中教程后的回调
 	handleChange: (e: object) => void;
 }
 
@@ -60,16 +64,16 @@ const TableSelect: FC<IProps> = ({
 	// 文章列表数据
 	const [tableArticleData, setTableArticleData] = useState<DataType[]>([]);
 
-	// 文章分页
-	const [paginationArticle, setPaginationArticle] = useState<IPagination>(initArticlePagination);
-	const { current: currentArticle, pageSize: pageSizeArticle } = paginationArticle;
+	// 分页
+	const [pagination, setPagination] = useState<IPagination>(initPagination);
+	const { current, pageSize } = pagination;
 
-	const paginationArticleInfo = {
-		showSizeChanger: false,
-		showTotal: (total: number) => `共 ${total || 0} 条`,
-		...paginationArticle,
+	const paginationInfo = {
+		showSizeChanger: true,
+		showTotal: (total: any) => `共 ${total || 0} 条`,
+		...pagination,
 		onChange: (current: number, pageSize: number) => {
-			setPaginationArticle({ current, pageSize });
+			setPagination({ current, pageSize });
 		}
 	};
 	
@@ -85,30 +89,30 @@ const TableSelect: FC<IProps> = ({
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchArticleForm);
 		// 查询的时候把分页重置为第一页
-		setPaginationArticle(initArticlePagination);
+		setPagination({ pageSize, current: 1 });
 		setSearchArticle(searchArticleForm);
 	};
 
 	// 文章数据请求，这是一个钩子，query, current, pageSize, search 有变化的时候就会自动触发
 	useEffect(() => {
 		const getArticleSortList = async () => {
-			console.log("文章查询条件", paginationArticle);
+			console.log("文章查询条件", pagination);
 			const { status, result } = await getArticleListApi({ 
-				pageNumber: currentArticle, 
-				pageSize: pageSizeArticle,
+				pageNumber: current, 
+				pageSize: pageSize,
 				...searchArticleForm
 			});
 			const { code } = status || {};
 			// @ts-ignore
 			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
-			setPaginationArticle({ current: pageNum, pageSize: resPageSize, total });
+			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
 				setTableArticleData(newList);
 			}
 		};
 		getArticleSortList();
-	}, [currentArticle, pageSizeArticle, searchArticle]);
+	}, [current, pageSize, searchArticle]);
 	
 	// 表头设置
 	const columnsArticle: ColumnsType<DataType> = [
@@ -116,6 +120,7 @@ const TableSelect: FC<IProps> = ({
 			title: "教程标题",
 			dataIndex: "shortTitle",
 			key: "shortTitle",
+			width: 300,
 			render(value, item) {
 				return (
 					<span className="cell-text-article">
@@ -129,17 +134,19 @@ const TableSelect: FC<IProps> = ({
 			title: "作者",
 			dataIndex: "authorName",
 			key: "authorName",
+			width: 100,
 			render(value) {
 				return <>
-					<Avatar style={{ backgroundColor: '#87d068' }} size={"small"}>
+					<Avatar style={{ backgroundColor: '#87d068' }}>
 						{value.slice(0, 3)}
 					</Avatar>
 				</>;
 			}
 		},
 		{
-			title: "操作",
+			title: "勾选",
 			key: "key",
+			width: 100,
 			render: (_, item) => {
 				{/* 用 checkbox 来负责选中当前行，把选中行的 articleId 带回到下拉框中 */}
 				return (
@@ -149,7 +156,7 @@ const TableSelect: FC<IProps> = ({
 								const { checked } = e.target;
 								console.log("选中的状态", checked);
 								if (checked) {
-									// @ts-ignore
+									
 									const { articleId, shortTitle, title } = item;
 									console.log("文章当前的 ID", articleId, shortTitle, title);
 
@@ -189,8 +196,7 @@ const TableSelect: FC<IProps> = ({
 			dropdownRender={menu => {
 				return (
 					<div>
-						<div
-							style={{
+						<div style={{
 								display: "flex",
 								flexWrap: "nowrap",
 								padding: 8
@@ -223,14 +229,22 @@ const TableSelect: FC<IProps> = ({
 							>
 								筛选
 							</Button>
+							<Button
+								style={{ marginLeft: 8 }}
+								onClick={() => {
+									setIsArticleSelectOpen(false);
+								}}
+							>	
+								关闭
+							</Button>
 						</div>
-						{/* 添加一个分割线 */}
-						<Divider style={{ margin: "4px 0" }} />
 						{/* 添加一个Table */}
 						<Table 
+							scroll={{ y: 200 }}
 							columns={columnsArticle} 
 							dataSource={tableArticleData} 
-							pagination={paginationArticleInfo} />
+							pagination={paginationInfo} 
+							/>
 					</div>
 				);
 			}}

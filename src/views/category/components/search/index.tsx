@@ -19,12 +19,12 @@ const Search: FC<IProps> = ({
 	handleAdd 
 }) => {
 	return (
-		<div className="sort-search">
-			<ContentInterWrap className="sort-search__wrap">
-				<div className="sort-search__search">
-					<div className="sort-search__search-wrap">
-						<div className="sort-search__search-item">
-							<label className="sort-search-label">名称</label>
+		<div className="category-search">
+			<ContentInterWrap className="category-search__wrap">
+				<div className="category-search__search">
+					<div className="category-search__search-wrap">
+						<div className="category-search__search-item">
+							<label className="category-search-label">名称</label>
 							<Input
 								allowClear
 								style={{ width: 252 }}
@@ -33,7 +33,7 @@ const Search: FC<IProps> = ({
 							/>
 						</div>
 					</div>
-					<div className="sort-search__search-btn">
+					<div className="category-search__search-btn">
 						<Button 
 							type="primary" 
 							icon={<SearchOutlined />} 

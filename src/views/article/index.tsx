@@ -98,12 +98,7 @@ const Article: FC<IProps> = props => {
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
-
-	// 重置表单
-	const resetBarFrom = () => {
-		setForm(defaultInitForm);
-	};
-
+	
 	// 编辑表单值改变
 	const handleChange = (item: MapItem) => {
 		setForm({ ...form, ...item });
@@ -211,7 +206,7 @@ const Article: FC<IProps> = props => {
 				...searchForm
 			});
 			const { code } = status || {};
-			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			const { list, pageNum, pageSize: resPageSize, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.articleId }));
@@ -243,7 +238,7 @@ const Article: FC<IProps> = props => {
 			dataIndex: "authorName",
 			width: 110,
 			key: "authorName",
-			render(value, item) {
+			render(value) {
 				return <>
 					<Avatar style={{ backgroundColor: '#87d068' }} size="large">
 						{value.slice(0, 3)}

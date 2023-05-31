@@ -1,16 +1,13 @@
-import { useEffect } from "react";
 import { connect } from "react-redux";
 import { HashRouter } from "react-router-dom";
 import { ConfigProvider } from "antd";
-import zhCN from "antd/lib/locale-provider/zh_CN";
+import zhCN from "antd/lib/locale/zh_CN";
 
 import useTheme from "@/hooks/useTheme";
 import Router from "@/routers/index";
 import AuthRouter from "@/routers/utils/authRouter";
 
 import "./index.scss";
-
-// import "moment/dist/locale/zh-cn";
 
 const App = (props: any) => {
 	const { assemblySize, themeConfig } = props;

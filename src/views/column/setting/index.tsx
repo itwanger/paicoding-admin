@@ -1,35 +1,42 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, InboxOutlined, PlusOutlined, SearchOutlined, UploadOutlined } from "@ant-design/icons";
-import { Avatar, Button, DatePicker, Descriptions, Divider, Drawer, Form, Image, Input, InputNumber, message, Modal, Select, Space, Table, UploadFile } from "antd";
+import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { Avatar, Button, DatePicker, DatePickerProps, Descriptions, Drawer, Form, Image, Input, InputNumber, message, Modal, Select, Space, Table, UploadFile } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
-import Dragger from "antd/lib/upload/Dragger";
-import Upload from "antd/lib/upload/Upload";
-import { on } from "events";
 import moment from "moment";
 
-import { delColumnApi, getAuthorListApi,getColumnListApi, updateColumnApi,uploadCoverApi } from "@/api/modules/column";
+import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import { getCompleteUrl } from "@/utils/is";
+import AuthorSelect from "./components/authorselect";
+import ImgUpload from "./components/imgupload";
 import Search from "./components/search";
 
-import "./index.scss";
-import ImgUpload from "./components/imgupload";
-
 const { RangePicker } = DatePicker;
-const { Option } = Select;
+
+import locale from 'antd/es/date-picker/locale/zh_CN';
+import dayjs, { Dayjs } from "dayjs";
+import { set } from "lodash";
+
+import "./index.scss";
+
+import 'dayjs/locale/zh-cn';
+
 const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 
 interface DataType {
-	key: string;
-	name: string;
-	age: number;
-	address: string;
-	tags: string[];
+	author: number;
+	columnId: number;
+	state: number;
+	freeEndTime: number;
+	freeStartTime: number;
+	type: number;
+	cover: string;
+	authorName: string;
 }
 
 interface IProps {}
@@ -42,10 +49,12 @@ export interface IFormType {
 	cover: string; // 封面 URL
 	type: number; // 类型 限时免费 2 登录阅读 1 免费 0
 	nums: number; // 连载数量
-	freeEndTime: string; // 限时免费开始时间
-	freeStartTime: string; // 限时免费结束时间
+	freeEndTime: number; // 限时免费开始时间
+	freeStartTime: number; // 限时免费结束时间
 	state: number; // 状态
 	section: number; // 排序
+	authorAvatar: string; // 作者头像
+	authorName: string; // 作者名
 }
 
 const defaultInitForm: IFormType = {
@@ -56,10 +65,12 @@ const defaultInitForm: IFormType = {
 	cover: "",
 	type: -1,
 	nums: -1,
-	freeEndTime: "",
-	freeStartTime: "",
+	freeEndTime: -1,
+	freeStartTime: -1,
 	state: -1,
-	section: -1
+	section: -1,
+	authorAvatar: "",
+	authorName: "",
 };
 
 // 查询表单接口，定义类型
@@ -79,12 +90,7 @@ const Column: FC<IProps> = props => {
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
 	// 表格查询表单
 	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
-	// 触发表格的搜索
-	const [search, setSearch] = useState<ISearchForm>(defaultSearchForm);
-	// 作者列表的查询条件
-	const [authorSearchKey, setAuthorSearchKey] = useState<string>("");
-	// 触发作者列表的搜索，查询条件为作者名
-	const [authorSearch, setAuthorSearch] = useState<string>("");
+	
 	// 抽屉
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 详情抽屉
@@ -102,13 +108,14 @@ const Column: FC<IProps> = props => {
 	const { current, pageSize } = pagination;
 	// 声明一个 coverList
 	const [coverList, setCoverList] = useState<UploadFile[]>([]);
-	// authorList，从后台返回作者列表
-	const [authorList, setAuthorList] = useState<MapItem[]>([]);
 
 	// @ts-ignore
 	const { ColumnStatus, ColumnStatusList, ColumnType, ColumnTypeList } = props || {};
 
-	const { columnId, column, introduction, cover, authorName, authorAvatar, state, section, type, nums, freeEndTime, freeStartTime } = form;
+	const { columnId, column, author, authorName, introduction, cover, authorAvatar, state, section, type, nums, freeEndTime, freeStartTime } = form;
+
+	// 日期默认值
+	const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([dayjs().add(-7, 'd'), dayjs()]);
 
 	const detailInfo = [
 		{ label: "教程名", title: column },
@@ -120,6 +127,18 @@ const Column: FC<IProps> = props => {
 		{ label: "状态", title: ColumnStatus[state] },
 		{ label: "排序", title: section }
 	].map(({ label, title }) => ({ label, title: title || "-" }));
+	
+	const dateFormat = 'YYYY/MM/DD';
+
+	const rangePresets: {
+		label: string;
+		value: [Dayjs, Dayjs];
+	}[] = [
+		{ label: '最近七天', value: [dayjs().add(-7, 'd'), dayjs()] },
+		{ label: '最近 14 天', value: [dayjs().add(-14, 'd'), dayjs()] },
+		{ label: '最近 30 天', value: [dayjs().add(-30, 'd'), dayjs()] },
+		{ label: '最近 90 天', value: [dayjs().add(-90, 'd'), dayjs()] },
+	];
 	
 	const paginationInfo = {
 		showSizeChanger: true,
@@ -147,15 +166,17 @@ const Column: FC<IProps> = props => {
 	 * @returns
 	 */
 	const handleChange = (item: MapItem) => {
-		console.log("handleChange setform before", item);
 		setForm({ ...form, ...item });
-		console.log("handleChange setform after", form);
-	};
-
-	// 作者列表查询条件变化
-	const handleAuthorSearchChange = (value: string) => {
-		console.log("作者列表查询条件变化", value);
-		setAuthorSearchKey(value);
+		console.log("handleChange item setForm", item, form);
+		// 直接从 item 中取出 freeStartTime 和 freeEndTime, state 更新是异步的
+		const { freeStartTime, freeEndTime } = item;
+		setDateRange([
+				dayjs(freeStartTime), 
+				dayjs(freeEndTime) 
+			]);
+		// 更新 formRef
+		// 如果是时间的时候不更新
+		formRef.setFieldsValue({ ...item });
 	};
 
 	// 查询表单值改变
@@ -169,9 +190,46 @@ const Column: FC<IProps> = props => {
 	const handleSearch = () => {
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchForm);
-		setSearch(searchForm);
+		onSure();
 		// 查询的时候重置分页
-		setPagination(initPagination);
+		setPagination({ current: 1, pageSize });
+	};
+
+	// 抽屉关闭
+	const handleClose = () => {
+		setIsOpenDrawerShow(false);
+	};
+
+	const onRangeChange = (dates: null | (Dayjs | null)[], dateStrings: string[]) => {
+		// 从 dates 中取出 freeStartTime 和 freeEndTime
+		let now = dayjs();
+		let freeStartTime = now.valueOf();
+		console.log("freeStartTime", freeStartTime);
+		let freeEndTime = freeStartTime;
+
+		if (dates) {
+			// 从 dates 中取出 freeStartTime 和 freeEndTime
+			freeStartTime = dates[0]?.valueOf();
+			freeEndTime = dates[1]?.valueOf();
+		} else {
+			console.log('Clear');
+			freeStartTime = now.valueOf();
+			freeEndTime = freeStartTime;
+		}
+
+		// 更新到 form 中
+		setForm({ ...form, freeStartTime: freeStartTime, freeEndTime: freeEndTime });
+		setDateRange([
+			dayjs(freeStartTime), 
+			dayjs(freeEndTime) 
+		]);
+	};
+
+	// 重置表单
+	const resetFrom = () => {
+		setForm(defaultInitForm);
+		formRef.resetFields();
+		setCoverList([]);
 	};
 
 	// 删除
@@ -182,12 +240,10 @@ const Column: FC<IProps> = props => {
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				// @ts-ignore
 				const { status } = await delColumnApi(columnId);
 				const { code, msg } = status || {};
 				if (code === 0) {
 					message.success("删除成功");
-					setPagination({ current: 1, pageSize });
 					onSure();
 				} else {
 					message.error(msg);
@@ -198,76 +254,54 @@ const Column: FC<IProps> = props => {
 
 	// 编辑或者新增时提交数据到服务器端
 	const handleSubmit = async () => {
-		try {
-			// 从formRef中获取数据，用户填上去可以直接提交的数据
-			const values = await formRef.validateFields();
-			// 又从form中获取数据，需要转换格式的数据
-			const { freeStartTime, freeEndTime, cover, author } = form;
-			console.log("handleSubmit 时看看form的值", form);
+		// 又从form中获取数据，需要转换格式的数据
+		const { freeStartTime, freeEndTime } = form;
+		console.log("handleSubmit 时看看form的值", form, formRef);
 
-			// 如果 cover 为空，提示用户上传封面
-			if (!cover) {
-				message.error("请上传封面");
-				return;
-			}
+		// 从formRef中获取数据，用户填上去可以直接提交的数据
+		const values = await formRef.validateFields();
+		console.log("handleSubmit 时看看form的值 values", values);
 
-			// 新的值传递到后端
-			const newValues = {
-				...values,
-				cover: cover || "",
-				// author 转换为数字
-				author: Number(author) || "",
-				columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId,
-				freeStartTime: moment(freeStartTime).valueOf() || "",
-				freeEndTime: moment(freeEndTime).valueOf() || ""
-			};
-			console.log("submit 之前的所有值:", newValues);
-			// @ts-ignore 调用后端的 API
-			const { status: successStatus } = (await updateColumnApi(newValues)) || {};
-			const { code } = successStatus || {};
-			if (code === 0) {
-				setIsOpenDrawerShow(false);
-				onSure();
-			}
-		} catch (errorInfo) {
-			console.log("Failed:", errorInfo);
+		// 新的值传递到后端
+		const newValues = {
+			...values,
+			columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId,
+			freeStartTime: freeStartTime || "",
+			freeEndTime: freeEndTime || ""
+		};
+		console.log("submit 之前的所有值:", newValues);
+
+		const { status: successStatus } = (await updateColumnApi(newValues)) || {};
+		const { code, msg } = successStatus || {};
+		if (code === 0) {
+			setIsOpenDrawerShow(false);
+			setPagination({ current: 1, pageSize });
+			message.success("提交成功");
+			onSure();
+		} else {
+			message.error(msg || "提交失败");
 		}
+
 	};
 
 	// 列表数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			// @ts-ignore
 			const { status, result } = await getColumnListApi({ 
 				pageNumber: current, 
 				pageSize,
 				...searchForm
 			});
 			const { code } = status || {};
-			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
+			const { list, pageNum, pageSize: resPageSize, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
-				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
+				const newList = list.map((item: MapItem) => ({ ...item, key: item?.columnId }));
 				setTableData(newList);
 			}
 		};
 		getSortList();
-	}, [query, current, pageSize, search]);
-
-	// 获取作者列表
-	useEffect(() => {
-		const getAuthorList = async () => {
-			// @ts-ignore
-			const { status, result } = await getAuthorListApi(authorSearchKey);
-			const { code } = status || {};
-			const { items } = result || {};
-			if (code === 0) {
-				const newList = items.map((item: MapItem) => ({ ...item, key: item?.userId }));
-				setAuthorList(newList);
-			}
-		};
-		getAuthorList();
-	}, [authorSearch]);
+	}, [query, current, pageSize]);
 
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
@@ -308,8 +342,11 @@ const Column: FC<IProps> = props => {
 			key: "authorName",
 			render(value) {
 				return <>
-					<Avatar style={{ backgroundColor: '#87d068' }} size="large">
-						{value.slice(0, 3)}
+					<Avatar 
+						style={{ backgroundColor: '#1890ff', color: '#fff' }} 
+						size={54}
+						>
+						{value.slice(0, 4)}
 					</Avatar>
 				</>;
 			}
@@ -345,7 +382,6 @@ const Column: FC<IProps> = props => {
 			key: "key",
 			width: 300,
 			render: (_, item) => {
-				// @ts-ignore
 				const { columnId, state } = item;
 				
 				return (
@@ -372,37 +408,36 @@ const Column: FC<IProps> = props => {
 								setIsOpenDrawerShow(true);
 								// 设置为更新的状态
 								setStatus(UpdateEnum.Edit);
-								console.log("item", item);
 
 								// 从列表中获取数据，需要转换一下时间格式
-								const { freeEndTime, freeStartTime, type, cover } = item;
-								const newFreeStartTime = moment(freeStartTime);
-								const newFreeEndTime = moment(freeEndTime);
-
+								const { cover } = item;
+								
 								// 此时不能直接从 form 中取出来，所以我们从 item 中取出来了。
 								let coverUrl = getCompleteUrl(cover);
-								
 								// 需要把 cover 放到 coverList 中，默认显示
-								setCoverList([{ uid: "-1", name: "封面图(建议110px*156px)", status: "done", thumbUrl: coverUrl, url: coverUrl }]);
-								console.log("coverList", coverList);
+								setCoverList([{ 
+									uid: "-1", 
+									name: "封面图(建议110px*156px)", 
+									status: "done", 
+									thumbUrl: coverUrl, 
+									url: coverUrl 
+								}]);
 
 								// 设置form的值，主要是时间格式的转换，以及 type
 								// 等于说把行的值全部放到 form 中
-								handleChange({ ...item, type: String(type), freeEndTime: newFreeEndTime, freeStartTime: newFreeStartTime });
-
-								// formRef 为转换格式后的值
-								formRef.setFieldsValue({
-									...item,
-									state: String(state),
-									type: String(type),
-									freeEndTime: newFreeEndTime,
-									freeStartTime: newFreeStartTime
+								handleChange({ 
+									...item
 								});
 							}}
 						>
 							编辑
 						</Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}>
+						<Button 
+							type="primary" 
+							danger 
+							icon={<DeleteOutlined />} 
+							onClick={() => handleDel(columnId)}
+							>
 							删除
 						</Button>
 					</div>
@@ -439,75 +474,11 @@ const Column: FC<IProps> = props => {
 					handleChange={handleChange}
 					/>
 			</Form.Item>
-			<Form.Item label="作者" name="authorName" rules={[{ required: true, message: "请选择作者!" }]}>
-				{/* 使用 select 选择器实现一个可以查找的作者列表供选择 */}
-				<Select
-					// value 会从 item 中的 name 中取出来，所以这里不需要设置
-					placeholder="请选择作者"
-					size="large"
-					onChange={(value, option) => {
-						// 需要把作者 ID 传递给后端
-						console.log("选择的作者", option);
-						console.log("选择的作者 value", value);
-						// 取出 key
-						const { key } = option || {};
-						handleChange({ author: key });
-					}}
-					// render
-					dropdownRender={menu => {
-						return (
-							<div>
-								<div
-									style={{
-										display: "flex",
-										flexWrap: "nowrap",
-										padding: 8
-									}}
-								>
-									<Input
-										placeholder="请输入你想要查找的作者名"
-										allowClear
-										style={{ flex: "auto" }}
-										onChange={e => {
-											handleAuthorSearchChange(e.target.value);
-										}}
-									/>
-									<Button
-										type="primary"
-										style={{ marginLeft: 8 }}
-										// 触发搜索authorSearch
-										onClick={() => {
-											setAuthorSearch(authorSearchKey);
-										}}
-									>
-										筛选
-									</Button>
-								</div>
-								{/* 添加一个分割线 */}
-								<Divider style={{ margin: "4px 0" }} />
-								{menu}
-							</div>
-						);
-					}}
-					// 下拉框展开时触发
-					onDropdownVisibleChange={() => {
-						console.log("下拉框展开")
-					}}
-				>
-					{authorList.map(item => {
-						return (
-							// 如果当前Option key = 作者 ID，那么就选中这个 Option
-							<Option
-								key={item.userId} 
-								value={item.name}
-								>
-								{/* 作者头像和作者名字 */}
-								<img src={item.avatar} alt="avatar" className="avatar" />
-								{item.name}
-							</Option>
-						);
-					})}
-				</Select>
+			<Form.Item label="作者" name="author" rules={[{ required: true, message: "请选择作者!" }]}>
+				<AuthorSelect 
+					authorName={authorName}
+					handleChange={handleChange} 
+				/>
 			</Form.Item>
 			<Form.Item label="状态" name="state" rules={[{ required: true, message: "请选择状态!" }]}>
 				<Select
@@ -535,20 +506,13 @@ const Column: FC<IProps> = props => {
 					options={ColumnTypeList}
 				/>
 			</Form.Item>
-			<Form.Item label="开始时间" name="freeStartTime" rules={[{ required: false, message: "请选择开始时间!" }]}>
-				<DatePicker
-					onChange={e => {
-						const freeStartTime = moment(e).valueOf();
-						handleChange({ freeStartTime: freeStartTime });
-					}}
-				/>
-			</Form.Item>
-			<Form.Item label="结束时间" name="freeEndTime" rules={[{ required: false, message: "请选择结束时间!" }]}>
-				<DatePicker
-					onChange={e => {
-						const freeEndTime = moment(e).valueOf();
-						handleChange({ freeEndTime });
-					}}
+			<Form.Item label="开始结束日期">
+				<RangePicker
+					locale={locale}
+					presets={rangePresets}
+					format={dateFormat}
+					value={dateRange}
+					onChange={onRangeChange}
 				/>
 			</Form.Item>
 			
@@ -587,7 +551,7 @@ const Column: FC<IProps> = props => {
 				onClose={() => setIsDetailDrawerShow(false)} 
 				open={isDetailDrawerShow}>
 				<Descriptions column={1} labelStyle={{ width: "100px" }}>
-				<Descriptions.Item label="作者头像">
+					<Descriptions.Item label="头像">
 						<Avatar 
 							size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }}
 						 	src={getCompleteUrl(authorAvatar)} 
@@ -611,13 +575,13 @@ const Column: FC<IProps> = props => {
 				size="large"
 				extra={
           <Space>
-            <Button onClick={() => setIsOpenDrawerShow(false)}>取消</Button>
+            <Button onClick={resetFrom}>重置</Button>
             <Button type="primary" onClick={handleSubmit}>
               OK
             </Button>
           </Space>
         }
-				onClose={() => setIsOpenDrawerShow(false)} 
+				onClose={handleClose} 
 				open={isOpenDrawerShow}>
 				{reviseModalContent}
 			</Drawer>

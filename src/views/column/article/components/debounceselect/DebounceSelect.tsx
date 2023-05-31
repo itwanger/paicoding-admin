@@ -2,6 +2,9 @@ import { useMemo, useRef, useState } from "react";
 import { Select, SelectProps, Spin } from "antd";
 import { debounce } from "lodash";
 
+// 导入 index.scss 文件
+import "./index.scss";
+
 export interface DebounceSelectProps<ValueType = any> extends Omit<SelectProps<ValueType | ValueType[]>, "options" | "children"> {
 	fetchOptions: (search: string) => Promise<ValueType[]>;
 	debounceTimeout?: number;

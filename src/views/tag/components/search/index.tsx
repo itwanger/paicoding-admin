@@ -1,10 +1,9 @@
 /* eslint-disable prettier/prettier */
-import React, { FC } from "react";
+import { FC } from "react";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
-import { UpdateEnum } from "@/enums/common";
 
 import "./index.scss";
 
@@ -20,12 +19,12 @@ const Search: FC<IProps> = ({
 	handleAdd 
 }) => {
 	return (
-		<div className="sort-search">
-			<ContentInterWrap className="sort-search__wrap">
-				<div className="sort-search__search">
-					<div className="sort-search__search-wrap">
-						<div className="sort-search__search-item">
-							<label className="sort-search-label">名称</label>
+		<div className="tag-search">
+			<ContentInterWrap className="tag-search__wrap">
+				<div className="tag-search__search">
+					<div className="tag-search__search-wrap">
+						<div className="tag-search__search-item">
+							<label className="tag-search-label">名称</label>
 							<Input
 								allowClear
 								style={{ width: 252 }}
@@ -34,7 +33,7 @@ const Search: FC<IProps> = ({
 							/>
 						</div>
 					</div>
-					<div className="sort-search__search-btn">
+					<div className="tag-search__search-btn">
 						<Button
 							type="primary"
 							icon={<SearchOutlined />}

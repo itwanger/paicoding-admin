@@ -22,11 +22,11 @@ const Search: FC<IProps> = ({
 	setIsOpenDrawerShow 
 }) => {
 	return (
-		<div className="sort-search">
-			<ContentInterWrap className="sort-search__wrap">
-				<div className="sort-search__search">
-					<div className="sort-search__search-item">
-						<span className="sort-search-label">专栏名</span>
+		<div className="column-setting-search">
+			<ContentInterWrap className="column-setting-search__wrap">
+				<div className="column-setting-search__search">
+					<div className="column-setting-search__search-item">
+						<span className="column-setting-search-label">专栏名</span>
 						<Input 
 							allowClear 
 							onChange={e => handleSearchChange({ column: e.target.value })} 

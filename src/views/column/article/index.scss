@@ -15,6 +15,10 @@
   -webkit-box-orient: vertical;
 }
 
+.sort {
+  height: 100%;
+}
+
 .cell-text-article {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -25,9 +29,16 @@
 
 .cover-select {
 	// 放在下拉框中的封面图
-	width: 50px;
-	height: 70px;
+	width: 50px !important;
+	height: 70px !important;
 	background-size: cover;
 	background-position: center;
 	margin-right: 4px;
+}
+
+.ant-table-measure-row {
+  height: 0 !important;
+  font-size: 0 !important;
+  padding: 0 !important;
+  border: none !important;
 }

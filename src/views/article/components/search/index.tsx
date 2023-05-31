@@ -24,32 +24,32 @@ const Search: FC<IProps> = ({
 	OfficalStatusList,
 }) => {
 	return (
-		<div className="sort-search">
+		<div className="article-search">
 			{/* 搜索 */}
-			<ContentInterWrap className="sort-search__wrap">
-				<div className="sort-search__search">
-					<div className="sort-search__search-item">
+			<ContentInterWrap className="article-search__wrap">
+				<div className="article-search__search">
+					<div className="article-search__search-item">
 						{/* 增加一个作者的查询条件 */}
 						<Input
 							allowClear
 							placeholder="请输入作者名"
-							style={{ width: 202 }}
+							style={{ width: 142 }}
 							onChange={e => {
 								handleSearchChange({ userName: e.target.value });
 							}}
 						/>
 					</div>
-					<div className="sort-search__search-item">
+					<div className="article-search__search-item">
 						<Input 
 							allowClear 
 							placeholder="请输入标题"
-							style={{ width: 202 }}
+							style={{ width: 142 }}
 							onChange={e => 
 								handleSearchChange({ title: e.target.value })
 							} 
 							/>
 					</div>
-					<div className="sort-search__search-item">
+					<div className="article-search__search-item">
 						<Select
 							// 可以清空
 							allowClear
@@ -64,7 +64,7 @@ const Search: FC<IProps> = ({
 							>
 						</Select>
 					</div>
-					<div className="sort-search__search-item">
+					<div className="article-search__search-item">
 						<Select
 							// 可以清空
 							allowClear
@@ -79,7 +79,7 @@ const Search: FC<IProps> = ({
 							>
 						</Select>
 					</div>
-					<div className="sort-search__search-item">
+					<div className="article-search__search-item">
 						<Select
 							// 可以清空
 							allowClear
@@ -94,14 +94,16 @@ const Search: FC<IProps> = ({
 							>
 						</Select>
 					</div>
-					<Button 
-						type="primary" 
-						icon={<SearchOutlined />}
-						style={{ marginRight: "25px" }}
-						onClick={handleSearch}
-						>
-						搜索
-					</Button>
+					<div className="article-search__search-btn">
+						<Button 
+							type="primary" 
+							icon={<SearchOutlined />}
+							style={{ marginRight: "25px" }}
+							onClick={handleSearch}
+							>
+							搜索
+						</Button>
+					</div>
 				</div>
 			</ContentInterWrap>
 		</div>

@@ -1,4 +1,4 @@
-.sort-search {
+.column-article-search {
   margin-bottom: 16px;
 
   &__wrap {
@@ -10,6 +10,9 @@
   &__search {
     flex: 1;
     display: flex;
+		&-wrap {
+			display: flex;
+		}
   }
 
   &__search-item {
