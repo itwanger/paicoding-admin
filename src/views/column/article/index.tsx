@@ -380,13 +380,13 @@ const ColumnArticle: FC<IProps> = props => {
 			</Form.Item>
 
 			<Form.Item 
-				label="教程标题"
+				label="标题"
 				name="shortTitle"
-				rules={[{ required: true, message: "请输入教程标题!" }]}
+				rules={[{ required: true, message: "请输入标题!" }]}
 				>
 				<Input
 					allowClear
-					placeholder="请输入教程标题"
+					placeholder="请输入标题"
 					value={shortTitle}
 					onChange={e => handleChange({ shortTitle: e.target.value })}
 				/>

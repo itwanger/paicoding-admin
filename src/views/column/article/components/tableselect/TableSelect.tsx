@@ -6,6 +6,7 @@ import type { ColumnsType } from "antd/es/table";
 import { getArticleListApi } from "@/api/modules/article";
 import { initPagination,IPagination } from "@/enums/common";
 import { MapItem } from "@/typings/common";
+import { PoweroffOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -117,10 +118,9 @@ const TableSelect: FC<IProps> = ({
 	// 表头设置
 	const columnsArticle: ColumnsType<DataType> = [
 		{
-			title: "教程标题",
+			title: "教程",
 			dataIndex: "shortTitle",
 			key: "shortTitle",
-			width: 300,
 			render(value, item) {
 				return (
 					<span className="cell-text-article">
@@ -134,11 +134,11 @@ const TableSelect: FC<IProps> = ({
 			title: "作者",
 			dataIndex: "authorName",
 			key: "authorName",
-			width: 100,
+			width: 60,
 			render(value) {
 				return <>
-					<Avatar style={{ backgroundColor: '#87d068' }}>
-						{value.slice(0, 3)}
+					<Avatar style={{ backgroundColor: '#1890ff', color: '#fff' }}>
+						{value.slice(0, 2)}
 					</Avatar>
 				</>;
 			}
@@ -146,7 +146,7 @@ const TableSelect: FC<IProps> = ({
 		{
 			title: "勾选",
 			key: "key",
-			width: 100,
+			width: 60,
 			render: (_, item) => {
 				{/* 用 checkbox 来负责选中当前行，把选中行的 articleId 带回到下拉框中 */}
 				return (
@@ -231,6 +231,7 @@ const TableSelect: FC<IProps> = ({
 							</Button>
 							<Button
 								style={{ marginLeft: 8 }}
+								icon={<PoweroffOutlined />}
 								onClick={() => {
 									setIsArticleSelectOpen(false);
 								}}
@@ -240,7 +241,7 @@ const TableSelect: FC<IProps> = ({
 						</div>
 						{/* 添加一个Table */}
 						<Table 
-							scroll={{ y: 200 }}
+							scroll={{ y: 300 }}
 							columns={columnsArticle} 
 							dataSource={tableArticleData} 
 							pagination={paginationInfo} 
