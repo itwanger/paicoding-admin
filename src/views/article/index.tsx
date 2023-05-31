@@ -240,7 +240,7 @@ const Article: FC<IProps> = props => {
 			key: "authorName",
 			render(value) {
 				return <>
-					<Avatar style={{ backgroundColor: '#87d068' }} size="large">
+					<Avatar style={{ backgroundColor: '#1890ff', color: '#fff' }} size="large">
 						{value.slice(0, 3)}
 					</Avatar>
 				</>;
