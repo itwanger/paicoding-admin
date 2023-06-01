@@ -37,7 +37,7 @@ interface ISearchForm {
 	columnId: number;
 }
 
-interface IFormType {
+export interface IFormType {
 	id: number; // 主键id
 	articleId: number; // 文章ID
 	title: string; // 文章标题
@@ -237,6 +237,7 @@ const ColumnArticle: FC<IProps> = props => {
 		console.log('根据教程名查询', key);
 		const { status, result } = await getColumnByNameListApi(key);
 		const { code } = status || {};
+		//@ts-ignore
 		const { items } = result || {};
 		if (code === 0) {
 			const newList = items.map((item: MapItem) => ({
@@ -355,10 +356,8 @@ const ColumnArticle: FC<IProps> = props => {
 						(value, option) => {
 							console.log("添加教程文章时教程搜索的值改变", value, option)
 						if(option)
-							handleChange({ 
-								columnId: option.key,
-								columnName: option.value
-							})
+							//@ts-ignore
+							handleChange({ columnId: option.key, columnName: option.value})
 						else
 							handleChange({ columnId: -1 })
 						}

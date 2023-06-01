@@ -34,7 +34,7 @@ interface IProps {
 }
 
 // 编辑新增表单的值类型
-interface IFormType {
+export interface IFormType {
 	configId: number; // ID
 	type: number; // 类型
 	name: string; // 名称
@@ -94,6 +94,7 @@ const Banner: FC<IProps> = props => {
 	const [pagination, setPagination] = useState<IPagination>(initPagination);
 	const { current, pageSize } = pagination;
 
+	//@ts-ignore
 	const { ConfigType, ConfigTypeList, ArticleTag, ArticleTagList } = props || {};
 
 	const { configId, type, name, content, bannerUrl, jumpUrl, rank, tags } = form;
@@ -240,6 +241,7 @@ const Banner: FC<IProps> = props => {
 				pageSize 
 			});
 			const { code } = status || {};
+			//@ts-ignore
 			const { list, pageNum, pageSize: resPageSize, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {

@@ -9,7 +9,7 @@ export interface RouteObject {
 	caseSensitive?: boolean;
 	children?: RouteObject[];
 	element?: React.ReactNode;
-	index?: boolean;
+	index?: false;
 	path?: string;
 	meta?: MetaProps;
 	isLink?: string;

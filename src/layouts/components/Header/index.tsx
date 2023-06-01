@@ -11,7 +11,7 @@ import Theme from "./components/Theme";
 
 import "./index.less";
 
-const LayoutHeader = props => {
+const LayoutHeader = (props: any) => {
 	const { userInfo } = props || {};
 	const { userName } = userInfo || {};
 

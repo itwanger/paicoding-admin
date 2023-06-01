@@ -89,6 +89,7 @@ const Article: FC<IProps> = props => {
 	};
 
 	// 一些配置项
+	//@ts-ignore
 	const { PushStatusList, ToppingStatusList, OfficalStatusList} = props || {};
 
 	const { articleId } = form;
@@ -206,6 +207,7 @@ const Article: FC<IProps> = props => {
 				...searchForm
 			});
 			const { code } = status || {};
+			//@ts-ignore
 			const { list, pageNum, pageSize: resPageSize, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {

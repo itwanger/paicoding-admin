@@ -38,6 +38,7 @@ const AuthorSelect: FC<IProps> = ({
 		const getAuthorList = async () => {
 			const { status, result } = await getAuthorListApi(authorSearchKey);
 			const { code } = status || {};
+			//@ts-ignore
 			const { items } = result || {};
 			if (code === 0) {
 				const newList = items.map((item: MapItem) => ({
@@ -70,6 +71,7 @@ const AuthorSelect: FC<IProps> = ({
 				console.log("选择的作者", option);
 				console.log("选择的作者 value", value);
 				// 取出 key
+				//@ts-ignore
 				const { key } = option || {};
 				handleChange({ author: key, authorName: value });
 			}}

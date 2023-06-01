@@ -5,12 +5,13 @@ import { ConfigEnv, defineConfig, loadEnv, UserConfig } from "vite";
 import viteCompression from "vite-plugin-compression";
 import eslintPlugin from "vite-plugin-eslint";
 import { createHtmlPlugin } from "vite-plugin-html";
-import styleImport, { createStyleImportPlugin } from "vite-plugin-style-import";
+import { createStyleImportPlugin } from "vite-plugin-style-import";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
 
 import { wrapperEnv } from "./src/utils/getEnv";
 
 // @see: https://vitejs.dev/config/
+/** @type {import('vite').UserConfig} */
 export default defineConfig((mode: ConfigEnv): UserConfig => {
 	const env = loadEnv(mode.mode, process.cwd());
 	const viteEnv = wrapperEnv(env);

@@ -2,10 +2,11 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
-import { Avatar, Button, DatePicker, DatePickerProps, Descriptions, Drawer, Form, Image, Input, InputNumber, message, Modal, Select, Space, Table, UploadFile } from "antd";
+import { Avatar, Button, DatePicker, Descriptions, Drawer, Form, Image, Input, InputNumber, message, Modal, Select, Space, Table, UploadFile } from "antd";
+import locale from 'antd/es/date-picker/locale/zh_CN';
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
-import moment from "moment";
+import dayjs, { Dayjs } from "dayjs";
 
 import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
@@ -16,15 +17,7 @@ import AuthorSelect from "./components/authorselect";
 import ImgUpload from "./components/imgupload";
 import Search from "./components/search";
 
-const { RangePicker } = DatePicker;
-
-import locale from 'antd/es/date-picker/locale/zh_CN';
-import dayjs, { Dayjs } from "dayjs";
-import { set } from "lodash";
-
 import "./index.scss";
-
-import 'dayjs/locale/zh-cn';
 
 const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 
@@ -117,18 +110,20 @@ const Column: FC<IProps> = props => {
 	// 日期默认值
 	const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([dayjs().add(-7, 'd'), dayjs()]);
 
+	const dateFormat = 'YYYY/MM/DD';
+
+	const { RangePicker } = DatePicker;
+
 	const detailInfo = [
 		{ label: "教程名", title: column },
 		{ label: "简介", title: introduction },
 		{ label: "连载数量", title: nums },
 		{ label: "类型", title: ColumnType[type] },
-		{ label: "开始时间", title: moment(freeStartTime).format("YYYY-MM-DD HH:mm:ss") },
-		{ label: "结束时间", title: moment(freeEndTime).format("YYYY-MM-DD HH:mm:ss") },
+		{ label: "开始时间", title: dayjs(freeStartTime).format(dateFormat) },
+		{ label: "结束时间", title: dayjs(freeEndTime).format(dateFormat) },
 		{ label: "状态", title: ColumnStatus[state] },
 		{ label: "排序", title: section }
 	].map(({ label, title }) => ({ label, title: title || "-" }));
-	
-	const dateFormat = 'YYYY/MM/DD';
 
 	const rangePresets: {
 		label: string;
@@ -209,8 +204,8 @@ const Column: FC<IProps> = props => {
 
 		if (dates) {
 			// 从 dates 中取出 freeStartTime 和 freeEndTime
-			freeStartTime = dates[0]?.valueOf();
-			freeEndTime = dates[1]?.valueOf();
+			freeStartTime = dates[0]?.valueOf() ?? 0;
+			freeEndTime = dates[1]?.valueOf() ?? 0;
 		} else {
 			console.log('Clear');
 			freeStartTime = now.valueOf();
@@ -293,6 +288,7 @@ const Column: FC<IProps> = props => {
 				...searchForm
 			});
 			const { code } = status || {};
+			//@ts-ignore
 			const { list, pageNum, pageSize: resPageSize, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {

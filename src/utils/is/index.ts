@@ -117,15 +117,13 @@ export function isNullOrUnDef(val: unknown): val is null | undefined {
 	return isUnDef(val) || isNull(val);
 }
 
-export const getCompleteUrl = (partialUrl: string) => {
+export const getCompleteUrl = (partialUrl: string | undefined) => {
 	// 域名，展示图片的时候用
 	const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 	let completeUrl = partialUrl;
-	// 如果partialUrl未 null 或者 undefined，直接返回
-	if (isUnDef(partialUrl)) {
-		return completeUrl;
-	}
-	if (partialUrl.indexOf("http") === -1 && partialUrl.indexOf("https") === -1) {
+
+	// 如果partialUrl为绝对路径，直接返回
+	if (partialUrl && partialUrl.indexOf("http") === -1 && partialUrl.indexOf("https") === -1) {
 		completeUrl = baseUrl + partialUrl;
 	}
 	return completeUrl;

@@ -1,8 +1,8 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Drawer, Form, Input, message, Modal, Select, Space, Switch, Table, Tag } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Button, Drawer, Form, Input, message, Modal, Space, Switch, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delTagListApi, getTagListApi, operateTagApi, updateTagApi } from "@/api/modules/tag";
@@ -12,7 +12,6 @@ import { MapItem } from "@/typings/common";
 import Search from "./components/search";
 
 import "./index.scss";
-import { set } from "lodash";
 
 interface DataType {
 	tagId: number;
@@ -22,7 +21,7 @@ interface DataType {
 
 interface IProps {}
 
-interface IFormType {
+export interface IFormType {
 	tagId: number; // 为0时，是保存，非0是更新
 	tag: string; // 标签名
 }
@@ -60,8 +59,6 @@ const Label: FC<IProps> = props => {
 			setPagination({ current, pageSize });
 		}
 	};
-
-	const { PushStatus } = props || {};
 
 	const { tagId } = form;
 
@@ -157,6 +154,7 @@ const Label: FC<IProps> = props => {
 				pageSize 
 			});
 			const { code } = status || {};
+			//@ts-ignore
 			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {

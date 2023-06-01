@@ -21,7 +21,7 @@ interface DataType {
 
 interface IProps {}
 
-interface IFormType {
+export interface IFormType {
 	categoryId: number; // 为0时，是保存，非0是更新
 	category: string; // 分类名
 	rank: number; // 排名
@@ -158,6 +158,7 @@ const Category: FC<IProps> = props => {
 				pageSize 
 			});
 			const { code } = status || {};
+			//@ts-ignore
 			const { list, pageNum, pageSize: resPageSize, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {

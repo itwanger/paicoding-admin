@@ -52,9 +52,8 @@ const Statistics: FC<IProps> = props => {
 	useEffect(() => {
 		const getAllInfo = async () => {
 			const { status, result } = await getAllApi();
-			// @ts-ignore
-			if (status.code === 0) {
-				setAllInfo(result);
+			if (status && status.code === 0) {
+				setAllInfo(result as MapItem[]);
 			}
 		};
 		getAllInfo();
@@ -62,10 +61,10 @@ const Statistics: FC<IProps> = props => {
 
 	useEffect(() => {
 		const getPvUv = async () => {
-			const { status, result } = await getPvUvApi(pvUvDay);
-			if (status.code === 0) {
+			const { status, result } = await getPvUvApi(Number(pvUvDay));
+			if (status && status.code === 0) {
 				// 对 result 进行倒序
-				setPvUvInfo(result.reverse());
+				setPvUvInfo((result as any[]).reverse());
 			}
 		};
 		getPvUv();
@@ -75,11 +74,11 @@ const Statistics: FC<IProps> = props => {
 	useEffect(() => {
 		const getPieRef = () => {
 		// 构建饼图
-		if (echarts.getInstanceByDom(pieChartRef.current)) {
+		if (pieChartRef.current && echarts.getInstanceByDom(pieChartRef.current)) {
 			echarts.dispose(pieChartRef.current);
 		}
 		
-		let myPieChart = echarts.init(pieChartRef.current,
+		let myPieChart = echarts.init(pieChartRef.current as HTMLElement,
 			isDarkTheme ? 'dark' : 'light');
 		let option = {
 			title: {
@@ -130,10 +129,10 @@ const Statistics: FC<IProps> = props => {
 	useEffect(() => {
 		const getPvUvRef = () => {
 			console.log("当前的主题是", isDarkTheme ? "dark" : "light");
-			if (echarts.getInstanceByDom(chartRef.current)) {
+			if (chartRef.current && echarts.getInstanceByDom(chartRef.current)) {
 					echarts.dispose(chartRef.current);
 			}
-			let myChart = echarts.init(chartRef.current, 
+			let myChart = echarts.init(chartRef.current as HTMLElement, 
 				isDarkTheme ? 'dark' : 'light');
 
 			let option = {

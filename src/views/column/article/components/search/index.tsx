@@ -42,6 +42,7 @@ const Search: FC<IProps> = ({
 							onChange={(value, option) => {
 								console.log("教程搜索的值改变", value, option);
 								if (option) 
+									//@ts-ignore
 									handleSearchChange({ columnId: option.key });
 								else 
 									handleSearchChange({ columnId: -1 });

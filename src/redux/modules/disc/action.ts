@@ -23,10 +23,11 @@ const dictTransform = (dict = {}, keys = ["id", "title"]) => {
 
 export const getDiscListAction = async () => {
 	const { result } = (await getDiscListApi()) || {};
-	const dictionaryMap = {};
+	let dictionaryMap: { [key: string]: any } = {};
 
-	for (const key in result) {
+	for (const key in result as object) {
 		if (Object.getOwnPropertyDescriptor(result, key)) {
+			// @ts-ignore
 			dictionaryMap[key] = result[key];
 			// @ts-ignore
 			dictionaryMap[`${key}List`] = dictTransform(result[key], ["value", "label"]);
