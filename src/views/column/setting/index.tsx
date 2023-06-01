@@ -20,6 +20,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
+import dayjs, { Dayjs } from "dayjs";
 
 import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
@@ -133,6 +134,9 @@ const Column: FC<IProps> = props => {
 		freeStartTime
 	} = form;
 
+	// 日期默认值
+	const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([dayjs().add(-7, "d"), dayjs()]);
+
 	const dateFormat = "YYYY/MM/DD";
 
 	const { RangePicker } = DatePicker;
@@ -142,9 +146,21 @@ const Column: FC<IProps> = props => {
 		{ label: "简介", title: introduction },
 		{ label: "连载数量", title: nums },
 		{ label: "类型", title: ColumnType[type] },
+		{ label: "开始时间", title: dayjs(freeStartTime).format(dateFormat) },
+		{ label: "结束时间", title: dayjs(freeEndTime).format(dateFormat) },
 		{ label: "状态", title: ColumnStatus[state] },
 		{ label: "排序", title: section }
 	].map(({ label, title }) => ({ label, title: title || "-" }));
+
+	const rangePresets: {
+		label: string;
+		value: [Dayjs, Dayjs];
+	}[] = [
+		{ label: "最近七天", value: [dayjs().add(-7, "d"), dayjs()] },
+		{ label: "最近 14 天", value: [dayjs().add(-14, "d"), dayjs()] },
+		{ label: "最近 30 天", value: [dayjs().add(-30, "d"), dayjs()] },
+		{ label: "最近 90 天", value: [dayjs().add(-90, "d"), dayjs()] }
+	];
 
 	const paginationInfo = {
 		showSizeChanger: true,
@@ -176,6 +192,7 @@ const Column: FC<IProps> = props => {
 		console.log("handleChange item setForm", item, form);
 		// 直接从 item 中取出 freeStartTime 和 freeEndTime, state 更新是异步的
 		const { freeStartTime, freeEndTime } = item;
+		setDateRange([dayjs(freeStartTime), dayjs(freeEndTime)]);
 		// 更新 formRef
 		// 如果是时间的时候不更新
 		formRef.setFieldsValue({ ...item });
@@ -200,6 +217,28 @@ const Column: FC<IProps> = props => {
 	// 抽屉关闭
 	const handleClose = () => {
 		setIsOpenDrawerShow(false);
+	};
+
+	const onRangeChange = (dates: null | (Dayjs | null)[]) => {
+		// 从 dates 中取出 freeStartTime 和 freeEndTime
+		let now = dayjs();
+		let freeStartTime = now.valueOf();
+		console.log("freeStartTime", freeStartTime);
+		let freeEndTime = freeStartTime;
+
+		if (dates) {
+			// 从 dates 中取出 freeStartTime 和 freeEndTime
+			freeStartTime = dates[0]?.valueOf() ?? 0;
+			freeEndTime = dates[1]?.valueOf() ?? 0;
+		} else {
+			console.log("Clear");
+			freeStartTime = now.valueOf();
+			freeEndTime = freeStartTime;
+		}
+
+		// 更新到 form 中
+		setForm({ ...form, freeStartTime: freeStartTime, freeEndTime: freeEndTime });
+		setDateRange([dayjs(freeStartTime), dayjs(freeEndTime)]);
 	};
 
 	// 重置表单
@@ -466,6 +505,9 @@ const Column: FC<IProps> = props => {
 					}}
 					options={ColumnTypeList}
 				/>
+			</Form.Item>
+			<Form.Item label="开始结束日期">
+				<RangePicker presets={rangePresets} format={dateFormat} value={dateRange} onChange={onRangeChange} />
 			</Form.Item>
 
 			<Form.Item label="排序" name="section" rules={[{ required: true, message: "请输入排序" }]}>
