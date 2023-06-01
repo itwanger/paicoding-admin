@@ -31,6 +31,9 @@ import AuthorSelect from "./components/authorselect";
 import ImgUpload from "./components/imgupload";
 import Search from "./components/search";
 
+import "dayjs/locale/zh-cn";
+dayjs.locale("zh-cn");
+
 import "./index.scss";
 
 const baseUrl = import.meta.env.VITE_APP_BASE_URL;
