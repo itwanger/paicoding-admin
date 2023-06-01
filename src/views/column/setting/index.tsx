@@ -1,12 +1,25 @@
-/* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
-import { Avatar, Button, DatePicker, Descriptions, Drawer, Form, Image, Input, InputNumber, message, Modal, Select, Space, Table, UploadFile } from "antd";
-import locale from 'antd/es/date-picker/locale/zh_CN';
+import {
+	Avatar,
+	Button,
+	DatePicker,
+	Descriptions,
+	Drawer,
+	Form,
+	Image,
+	Input,
+	InputNumber,
+	message,
+	Modal,
+	Select,
+	Space,
+	Table,
+	UploadFile
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
-import dayjs, { Dayjs } from "dayjs";
 
 import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
@@ -63,7 +76,7 @@ const defaultInitForm: IFormType = {
 	state: -1,
 	section: -1,
 	authorAvatar: "",
-	authorName: "",
+	authorName: ""
 };
 
 // 查询表单接口，定义类型
@@ -73,7 +86,7 @@ interface ISearchForm {
 
 // 查询表单默认值
 const defaultSearchForm = {
-	column: "",
+	column: ""
 };
 
 const Column: FC<IProps> = props => {
@@ -83,7 +96,7 @@ const Column: FC<IProps> = props => {
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
 	// 表格查询表单
 	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
-	
+
 	// 抽屉
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 详情抽屉
@@ -105,12 +118,22 @@ const Column: FC<IProps> = props => {
 	// @ts-ignore
 	const { ColumnStatus, ColumnStatusList, ColumnType, ColumnTypeList } = props || {};
 
-	const { columnId, column, author, authorName, introduction, cover, authorAvatar, state, section, type, nums, freeEndTime, freeStartTime } = form;
+	const {
+		columnId,
+		column,
+		authorName,
+		introduction,
+		cover,
+		authorAvatar,
+		state,
+		section,
+		type,
+		nums,
+		freeEndTime,
+		freeStartTime
+	} = form;
 
-	// 日期默认值
-	const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([dayjs().add(-7, 'd'), dayjs()]);
-
-	const dateFormat = 'YYYY/MM/DD';
+	const dateFormat = "YYYY/MM/DD";
 
 	const { RangePicker } = DatePicker;
 
@@ -119,22 +142,10 @@ const Column: FC<IProps> = props => {
 		{ label: "简介", title: introduction },
 		{ label: "连载数量", title: nums },
 		{ label: "类型", title: ColumnType[type] },
-		{ label: "开始时间", title: dayjs(freeStartTime).format(dateFormat) },
-		{ label: "结束时间", title: dayjs(freeEndTime).format(dateFormat) },
 		{ label: "状态", title: ColumnStatus[state] },
 		{ label: "排序", title: section }
 	].map(({ label, title }) => ({ label, title: title || "-" }));
 
-	const rangePresets: {
-		label: string;
-		value: [Dayjs, Dayjs];
-	}[] = [
-		{ label: '最近七天', value: [dayjs().add(-7, 'd'), dayjs()] },
-		{ label: '最近 14 天', value: [dayjs().add(-14, 'd'), dayjs()] },
-		{ label: '最近 30 天', value: [dayjs().add(-30, 'd'), dayjs()] },
-		{ label: '最近 90 天', value: [dayjs().add(-90, 'd'), dayjs()] },
-	];
-	
 	const paginationInfo = {
 		showSizeChanger: true,
 		showTotal: (total: number) => `共 ${total || 0} 条`,
@@ -156,7 +167,7 @@ const Column: FC<IProps> = props => {
 	 * 当你调用 setForm 函数更新状态后，React 会将这个更新任务放入队列中，
 	 * 然后在未来的某个时间点执行。
 	 * 这意味着在调用 setForm 之后立即打印 form，你将看到的是旧的状态。
-	 * 
+	 *
 	 * @param item
 	 * @returns
 	 */
@@ -165,10 +176,6 @@ const Column: FC<IProps> = props => {
 		console.log("handleChange item setForm", item, form);
 		// 直接从 item 中取出 freeStartTime 和 freeEndTime, state 更新是异步的
 		const { freeStartTime, freeEndTime } = item;
-		setDateRange([
-				dayjs(freeStartTime), 
-				dayjs(freeEndTime) 
-			]);
 		// 更新 formRef
 		// 如果是时间的时候不更新
 		formRef.setFieldsValue({ ...item });
@@ -178,7 +185,7 @@ const Column: FC<IProps> = props => {
 	const handleSearchChange = (item: MapItem) => {
 		// 当 status 的值为 -1 时，重新显示
 		setSearchForm({ ...searchForm, ...item });
-		console.log("查询条件变化了",searchForm);
+		console.log("查询条件变化了", searchForm);
 	};
 
 	// 当点击查询按钮的时候触发
@@ -193,31 +200,6 @@ const Column: FC<IProps> = props => {
 	// 抽屉关闭
 	const handleClose = () => {
 		setIsOpenDrawerShow(false);
-	};
-
-	const onRangeChange = (dates: null | (Dayjs | null)[], dateStrings: string[]) => {
-		// 从 dates 中取出 freeStartTime 和 freeEndTime
-		let now = dayjs();
-		let freeStartTime = now.valueOf();
-		console.log("freeStartTime", freeStartTime);
-		let freeEndTime = freeStartTime;
-
-		if (dates) {
-			// 从 dates 中取出 freeStartTime 和 freeEndTime
-			freeStartTime = dates[0]?.valueOf() ?? 0;
-			freeEndTime = dates[1]?.valueOf() ?? 0;
-		} else {
-			console.log('Clear');
-			freeStartTime = now.valueOf();
-			freeEndTime = freeStartTime;
-		}
-
-		// 更新到 form 中
-		setForm({ ...form, freeStartTime: freeStartTime, freeEndTime: freeEndTime });
-		setDateRange([
-			dayjs(freeStartTime), 
-			dayjs(freeEndTime) 
-		]);
 	};
 
 	// 重置表单
@@ -276,14 +258,13 @@ const Column: FC<IProps> = props => {
 		} else {
 			message.error(msg || "提交失败");
 		}
-
 	};
 
 	// 列表数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			const { status, result } = await getColumnListApi({ 
-				pageNumber: current, 
+			const { status, result } = await getColumnListApi({
+				pageNumber: current,
 				pageSize,
 				...searchForm
 			});
@@ -308,12 +289,11 @@ const Column: FC<IProps> = props => {
 			width: 100,
 			render(value) {
 				const coverUrl = getCompleteUrl(value);
-				return <div>
-						<Image
-							className="cover"
-							src={coverUrl}
-						/>
+				return (
+					<div>
+						<Image className="cover" src={coverUrl} />
 					</div>
+				);
 			}
 		},
 		{
@@ -322,29 +302,25 @@ const Column: FC<IProps> = props => {
 			key: "column",
 			render(value, item) {
 				return (
-					<a 
-						href={`${baseUrl}/column/${item?.columnId}/1`}
-						className="cell-text"
-						target="_blank" rel="noreferrer">
+					<a href={`${baseUrl}/column/${item?.columnId}/1`} className="cell-text" target="_blank" rel="noreferrer">
 						{value}
 					</a>
 				);
 			}
 		},
-		
+
 		{
 			title: "作者",
 			dataIndex: "authorName",
 			key: "authorName",
 			render(value) {
-				return <>
-					<Avatar 
-						style={{ backgroundColor: '#1890ff', color: '#fff' }} 
-						size={54}
-						>
-						{value.slice(0, 4)}
-					</Avatar>
-				</>;
+				return (
+					<>
+						<Avatar style={{ backgroundColor: "#1890ff", color: "#fff" }} size={54}>
+							{value.slice(0, 4)}
+						</Avatar>
+					</>
+				);
 			}
 		},
 		{
@@ -378,8 +354,8 @@ const Column: FC<IProps> = props => {
 			key: "key",
 			width: 300,
 			render: (_, item) => {
-				const { columnId, state } = item;
-				
+				const { columnId } = item;
+
 				return (
 					<div className="operation-btn">
 						<Button
@@ -392,7 +368,7 @@ const Column: FC<IProps> = props => {
 								// 把行的值赋给 form，这样详情的时候就可以展示了
 								handleChange({ ...item });
 							}}
-							>
+						>
 							详情
 						</Button>
 						<Button
@@ -407,33 +383,30 @@ const Column: FC<IProps> = props => {
 
 								// 从列表中获取数据，需要转换一下时间格式
 								const { cover } = item;
-								
+
 								// 此时不能直接从 form 中取出来，所以我们从 item 中取出来了。
 								let coverUrl = getCompleteUrl(cover);
 								// 需要把 cover 放到 coverList 中，默认显示
-								setCoverList([{ 
-									uid: "-1", 
-									name: "封面图(建议110px*156px)", 
-									status: "done", 
-									thumbUrl: coverUrl, 
-									url: coverUrl 
-								}]);
+								setCoverList([
+									{
+										uid: "-1",
+										name: "封面图(建议110px*156px)",
+										status: "done",
+										thumbUrl: coverUrl,
+										url: coverUrl
+									}
+								]);
 
 								// 设置form的值，主要是时间格式的转换，以及 type
 								// 等于说把行的值全部放到 form 中
-								handleChange({ 
+								handleChange({
 									...item
 								});
 							}}
 						>
 							编辑
 						</Button>
-						<Button 
-							type="primary" 
-							danger 
-							icon={<DeleteOutlined />} 
-							onClick={() => handleDel(columnId)}
-							>
+						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}>
 							删除
 						</Button>
 					</div>
@@ -464,17 +437,10 @@ const Column: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="封面" name="cover" rules={[{ required: true, message: "请上传封面!" }]}>
-				<ImgUpload 
-					coverList={coverList} 
-					setCoverList={setCoverList} 
-					handleChange={handleChange}
-					/>
+				<ImgUpload coverList={coverList} setCoverList={setCoverList} handleChange={handleChange} />
 			</Form.Item>
 			<Form.Item label="作者" name="author" rules={[{ required: true, message: "请选择作者!" }]}>
-				<AuthorSelect 
-					authorName={authorName}
-					handleChange={handleChange} 
-				/>
+				<AuthorSelect authorName={authorName} handleChange={handleChange} />
 			</Form.Item>
 			<Form.Item label="状态" name="state" rules={[{ required: true, message: "请选择状态!" }]}>
 				<Select
@@ -488,9 +454,8 @@ const Column: FC<IProps> = props => {
 			<Form.Item label="连载数量" name="nums" rules={[{ required: true, message: "请选择连载数量!" }]}>
 				<InputNumber
 					onChange={value => {
-							handleChange({ nums: value });
-						}
-					}
+						handleChange({ nums: value });
+					}}
 				/>
 			</Form.Item>
 			<Form.Item label="类型" name="type" rules={[{ required: true, message: "请选择类型!" }]}>
@@ -502,23 +467,12 @@ const Column: FC<IProps> = props => {
 					options={ColumnTypeList}
 				/>
 			</Form.Item>
-			<Form.Item label="开始结束日期">
-				<RangePicker
-					locale={locale}
-					presets={rangePresets}
-					format={dateFormat}
-					value={dateRange}
-					onChange={onRangeChange}
-				/>
-			</Form.Item>
-			
+
 			<Form.Item label="排序" name="section" rules={[{ required: true, message: "请输入排序" }]}>
-				
 				<InputNumber
 					onChange={value => {
-							handleChange({ section: value });
-						}
-					}
+						handleChange({ section: value });
+					}}
 				/>
 			</Form.Item>
 		</Form>
@@ -528,7 +482,7 @@ const Column: FC<IProps> = props => {
 		<div className="Column">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search 
+				<Search
 					handleSearch={handleSearch}
 					handleSearchChange={handleSearchChange}
 					setStatus={setStatus}
@@ -541,17 +495,10 @@ const Column: FC<IProps> = props => {
 			</ContentWrap>
 
 			{/* 抽屉 */}
-			<Drawer 
-				title="详情" 
-				placement="right" 
-				onClose={() => setIsDetailDrawerShow(false)} 
-				open={isDetailDrawerShow}>
+			<Drawer title="详情" placement="right" onClose={() => setIsDetailDrawerShow(false)} open={isDetailDrawerShow}>
 				<Descriptions column={1} labelStyle={{ width: "100px" }}>
 					<Descriptions.Item label="头像">
-						<Avatar 
-							size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }}
-						 	src={getCompleteUrl(authorAvatar)} 
-						/>
+						<Avatar size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }} src={getCompleteUrl(authorAvatar)} />
 					</Descriptions.Item>
 					<Descriptions.Item label="教程封面">
 						<Image src={getCompleteUrl(cover)} />
@@ -565,20 +512,21 @@ const Column: FC<IProps> = props => {
 			</Drawer>
 
 			{/* 把弹窗修改为抽屉 */}
-			<Drawer 
-				title="添加/修改" 
-				placement="right" 
+			<Drawer
+				title="添加/修改"
+				placement="right"
 				size="large"
 				extra={
-          <Space>
-            <Button onClick={resetFrom}>重置</Button>
-            <Button type="primary" onClick={handleSubmit}>
-              OK
-            </Button>
-          </Space>
-        }
-				onClose={handleClose} 
-				open={isOpenDrawerShow}>
+					<Space>
+						<Button onClick={resetFrom}>重置</Button>
+						<Button type="primary" onClick={handleSubmit}>
+							OK
+						</Button>
+					</Space>
+				}
+				onClose={handleClose}
+				open={isOpenDrawerShow}
+			>
 				{reviseModalContent}
 			</Drawer>
 		</div>
@@ -588,4 +536,3 @@ const Column: FC<IProps> = props => {
 const mapStateToProps = (state: any) => state.disc.disc;
 const mapDispatchToProps = {};
 export default connect(mapStateToProps, mapDispatchToProps)(Column);
-
