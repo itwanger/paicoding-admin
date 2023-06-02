@@ -1,46 +1,53 @@
 # paicoding-admin 🚀
 
-### 介绍 📖
+## 介绍 📖
 
-🚀🚀🚀 paicoding-admin，基于 React18、React-Router v6、React-Hooks、Redux && Redux-Toolkit、TypeScript、Vite2、Ant-Design、hook admin 的一套社区管理系统。
+<p align="center">
+  <a href="https://paicoding.com/">
+    <img src="https://cdn.tobebetterjavaer.com/images/README/1681354262213.png" alt="技术派" width="400">
+  </a>
+</p>
+🚀🚀🚀 paicoding-admin，技术派管理端，基于 React18、React-Router v6、React-Hooks、Redux、TypeScript、Vite3、Ant-Design 5.x、Hook Admin、ECharts 的一套社区管理系统，够惊艳哦。
+<br><br>
+<p align="center">
+  <a href="https://paicoding.com/article/detail/15"><img src="https://img.shields.io/badge/技术派-学习圈子-green.svg?style=for-the-badge"></a>
+  <a href="https://paicoding.com/" target="_blank"><img src="https://img.shields.io/badge/技术派-首页-critical?style=for-the-badge"></a>
+  <a href="https://github.com/itwanger/paicoding-admin" target="_blank"><img src="https://img.shields.io/badge/技术派-管理端-yellow.svg?style=for-the-badge"></a>
+  <a href="https://gitee.com/itwanger/paicoding-admin" target="_blank"><img src="https://img.shields.io/badge/码云-项目地址-blue.svg?style=for-the-badge"></a>
+</p>
 
-### 项目相关文档 📚
-
-- 项目更新日志：[CHANGELOG.md](./CHANGELOG.md)
-
-### 一、在线预览地址 👀
+## 一、在线预览地址 👀
 
 - Link：[https://paicoding.com/admin-view/](https://paicoding.com/admin-view/)
 
-### 二、Git 仓库地址 (欢迎 Star⭐)
+## 二、Git 仓库地址 (欢迎 Star⭐)
 
 - GitHub：[https://github.com/itwanger/paicoding-admin](https://github.com/itwanger/paicoding-admin)
 - 码云：[https://gitee.com/itwanger/paicoding-admin](https://gitee.com/itwanger/paicoding-admin)
 
-### 三、🔨🔨🔨 项目功能
+## 三、🔨🔨🔨 项目功能
 
-- 🚀 采用最新技术找开发：React18、React-Router v6、React-Hooks、TypeScript、Vite2
-- 🚀 采用 Vite2 作为项目开发、打包工具（配置了 Gzip 打包、跨域代理、打包预览工具……）
-- 🚀 整个项目集成了 TypeScript （完全是为了想学习 🤣）
+- 🚀 采用最新技术找开发：React18、React-Router v6、React-Hooks、TypeScript、Vite3
+- 🚀 采用 Vite3 作为项目开发、打包工具（配置了 Gzip 打包、跨域代理、打包预览工具……）
+- 🚀 整个项目集成了 TypeScript （学期来很酷哦 🤣）
 - 🚀 使用 redux 做状态管理，集成 immer、react-redux、redux-persist 开发
-- 🚀 集成了两套状态管理，master 分支使用的是 redux || redux-toolkit 分支使用的是 redux-toolkit
 - 🚀 使用 TypeScript 对 Axios 整个二次封装 （全局错误拦截、常用请求封装、全局请求 Loading、取消重复请求……）
-- 🚀 支持 Antd 组件大小切换、暗黑 && 灰色 && 色弱模式、i18n 国际化（i18n 暂时没配置所有文件，根据项目自行配置）
+- 🚀 支持 Antd 组件大小切换、暗黑 && 灰色 && 色弱模式
 - 🚀 使用 自定义高阶组件 进行路由权限拦截（403 页面）、页面按钮权限配置
 - 🚀 支持 React-Router v6 路由懒加载配置、菜单手风琴模式、无限级菜单、多标签页、面包屑导航
 - 🚀 使用 Prettier 统一格式化代码，集成 Eslint、Stylelint 代码校验规范（项目规范配置）
 - 🚀 使用 husky、lint-staged、commitlint、commitizen、cz-git 规范提交信息（项目规范配置）
 
-### 四、安装使用步骤 📑
+## 四、安装使用步骤 📑
 
-- **Clone：**
+### Clone：
 
 ```text
 # GitHub
 git clone https://github.com/itwanger/paicoding-admin.git
 ```
 
-- **Install：**
+### Install：
 
 ```text
 npm install
@@ -53,66 +60,49 @@ npm install --registry=https://registry.npm.taobao.org
 npm config set registry http://registry.npmjs.org/
 ```
 
-- **Run：**
+### Run：
 
 ```text
 npm run dev
-npm run serve
 ```
 
-- **Build：**
+### Build：
 
 ```text
-# 开发环境
-npm run build:dev
-
-# 测试环境
-npm run build:test
-
 # 生产环境
 npm run build:pro
 ```
 
+## 五、项目截图
 
+### 1、数据统计页（ECharts 真强大）：
 
-- **Lint：**
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20230602150500.png)
 
-```text
-# eslint 检测代码
-npm run lint:eslint
+### 2、运营配置页（Ant 的图片上传组件不错哦）：
 
-# prettier 格式化代码
-npm run lint:prettier
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20230602150909.png)
 
-# stylelint 格式化样式
-lint:stylelint
-```
+### 3、文章管理页：
 
-- **commit：**
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20230602154026.png)
 
-```text
-# 提交代码（会自动执行 lint:lint-staged 命令）
-npm run commit
-```
+### 4、专栏配置页（自定义下拉框挺好玩的）：
 
-### 五、项目截图
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20230602154134.png)
 
-#### 1、登录页：
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20230602154222.png)
 
-![hooks-login-light](https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/img/20220914150533.png)
+### 5、教程配置页（防抖支持搜索的下拉框、自定义支持分页、搜索的下拉框不错哦）
 
-![hooks-login-dark](https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/img/20220914150544.png)
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20230602154904.png)
 
-#### 2、首页：
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20230602155018.png)
 
-![hooks-home-light](https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/img/20220914150552.png)
-
-![hooks-home-dark](https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/img/20220914150559.png)
-
-### 六、文件资源目录 📚
+## 六、文件资源目录 📚
 
 ```text
-quick-forum-admin
+pacoding-admin
 ├─ .vscode                # vscode推荐配置
 ├─ public                 # 静态资源文件（忽略打包）
 ├─ src
@@ -158,24 +148,39 @@ quick-forum-admin
 └─ vite.config.ts         # vite 配置
 ```
 
-### 七、浏览器支持
+## 七、项目后台接口 🧩
 
-> 默认支持以下浏览器。更多浏览器可以查看 [Can I Use Es Module](https://caniuse.com/?search=ESModule)
->
-> **💢 请不要使用 QQ 浏览器开发，QQ 浏览器 不识别 某些 ES6 以上语法**
+> 依托于技术派项目，一个基于 Spring Boot、MyBatis-Plus、MySQL、Redis、ElasticSearch、MongoDB、Docker、RabbitMQ 等技术栈实现的社区系统，采用主流的互联网技术架构、全新的 UI 设计、支持一键源码部署，拥有完整的文章&教程发布/搜索/评论/统计流程等，代码完全开源，没有任何二次封装，是一个非常适合二次开发/实战的现代化社区项目 👍 。
 
-| ![Edge](https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/md/Edge.png) | ![Firefox](https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/md/Firefox.png) | ![Chrome](https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/md/Chrome.png) | ![Safari](https://iamge-1259297738.cos.ap-chengdu.myqcloud.com/md/Safari.png) |
-| :-----------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :---------------------------------------------------------------------------: | :---------------------------------------------------------------------------: |
-|                              last 2 versions                              |                                 last 2 versions                                 |                                last 2 versions                                |                                last 2 versions                                |
+- 网站首页：[https://paicoding.com/](https://paicoding.com/)
+- 源码地址：[https://github.com/itwanger/paicoding](https://github.com/itwanger/paicoding)
 
-### 八、项目后台接口 🧩
+## 八、生产环境部署
 
-- FastMock： https://www.fastmock.site/
-- EasyMock：https://mock.mengxuegu.com/
+1、执行 `npm run build:pro`，生成 dist 目录
 
-### 九、生产环境部署
+2、将 dist 目录上传到服务器的 `/home/admin/` 目录下
 
- 1、执行 `npm run build:pro`，生成 dist 目录
+3、如果采用 Nginx 的话，请在 server 节点下进行 location 配置。
 
- 2、将 dist 目录上传到服务器的 /home/admin/ 目录下（请先删除原有的 dist 目录）
+```
+location ^~ /admin-view {
+		alias /home/admin/dist/; # 根 目 录
+		index index.html;
+}
+```
 
+## 九、友情链接
+
+- [toBeBetterjavaer](https://github.com/itwanger/toBeBetterJavaer) ：一份通俗易懂、风趣幽默的 Java 学习指南，内容涵盖 Java 基础、Java 并发编程、Java 虚拟机、Java 企业级开发、Java 面试等核心知识点。学 Java，就认准二哥的 Java 进阶之路 😄
+- [paicoding](https://github.com/itwanger/paicoding) ：⭐️ 一款好用又强大的开源社区，基于 Spring Boot、MyBatis-Plus、MySQL、Redis、ElasticSearch、MongoDB、Docker、RabbitMQ 等主流技术栈，附详细教程，包括 Java、Spring、MySQL、Redis、微服务&分布式、消息队列等核心知识点。学编程，就上技术派 😁。
+
+## 十、star 趋势图
+
+[![Star History Chart](https://api.star-history.com/svg?repos=itwanger/paicoding-admin&type=Date)](https://star-history.com/#itwanger/paicoding-admin&Date)
+
+## 十一、许可证
+
+[Apache License 2.0](https://github.com/itwanger/paicoding/blob/main/License)
+
+Copyright (c) 2022-2023 技术派（沉默王二、楼仔、一灰、小超）
