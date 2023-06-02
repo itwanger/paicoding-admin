@@ -165,8 +165,8 @@ pacoding-admin
 
 ```
 location ^~ /admin-view {
-		alias /home/admin/dist/; # 根 目 录
-		index index.html;
+	alias /home/admin/dist/; # 根 目 录
+	index index.html;
 }
 ```
 
