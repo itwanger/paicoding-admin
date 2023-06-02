@@ -1,10 +1,10 @@
+/* eslint-disable prettier/prettier */
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { connect } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { CloseCircleOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message } from "antd";
-import md5 from "js-md5";
 
 import { Login } from "@/api/interface";
 import { loginApi } from "@/api/modules/login";
@@ -59,10 +59,14 @@ const LoginForm = (props: any) => {
 			autoComplete="off"
 		>
 			<Form.Item name="username" rules={[{ required: true, message: "请输入用户名" }]}>
-				<Input placeholder="用户名（左图有获取登录方式）" prefix={<UserOutlined />} />
+				<Input placeholder="用户名（admin）" prefix={<UserOutlined />} />
 			</Form.Item>
 			<Form.Item name="password" rules={[{ required: true, message: "请输入密码" }]}>
-				<Input.Password autoComplete="new-password" placeholder="密码（左图有获取登录方式）" prefix={<LockOutlined />} />
+				<Input.Password 
+					autoComplete="new-password" 
+					placeholder="密码（微信搜 楼仔 回复 001）" 
+					prefix={<LockOutlined />} 
+					/>
 			</Form.Item>
 			<Form.Item className="login-btn">
 				<Button
