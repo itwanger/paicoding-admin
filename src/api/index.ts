@@ -59,16 +59,19 @@ class RequestHttp {
 				// * 在请求结束后，移除本次请求(关闭loading)
 				axiosCanceler.removePending(config);
 				tryHideFullScreenLoading();
+				const dataStatus = data.status;
+				console.log("this.service.interceptors.response.use", dataStatus);
 				// * 登录失效（code == 599）
-				if (data.code == ResultEnum.OVERDUE) {
+				if (dataStatus && dataStatus.code == ResultEnum.NOT_LOGIN) {
+					// 未登录，重定向到登录页面
 					store.dispatch(setToken(""));
-					message.error(data.msg);
+					message.error(dataStatus.msg);
 					window.location.hash = "/login";
 					return Promise.reject(data);
 				}
 				// * 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）
-				if (data.code && data.code !== ResultEnum.SUCCESS) {
-					message.error(data.msg);
+				if (dataStatus.code && dataStatus.code !== ResultEnum.SUCCESS) {
+					message.error(dataStatus.msg);
 					return Promise.reject(data);
 				}
 				// * 成功请求（在页面上除非特殊情况，否则不用处理失败逻辑）

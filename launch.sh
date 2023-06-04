@@ -5,16 +5,16 @@ WEB_PKG="dist.tar.gz"
 WEB_PKG_BK="dist_bk.tar.gz"
 TMP_WEB_PKG="tmp.tar.gz"
 
-DEPLOY_SCRIPT="deploy.sh"
+DEPLOY_SCRIPT="launch.sh"
 START_FUNC_NAME="start"
 INSTALL_FUNC_NAME="install"
 SERVER_FUNC_NAME="server"
 
 #env, ssh remote, work dir
-ENV_PRO="prod"
+ENV_PRO="pro"
 SSH_HOST_PRO=("admin@39.105.208.175")
-WORK_DIR_PRO="/home/admin/workspace/"
-ADMIN_WORKSPACE="admin"
+WORK_DIR_PRO="/home/admin/workspace/admin/"
+ADMIN_WORKSPACE="dist"
 
 
 
@@ -54,17 +54,17 @@ function server() {
 }
 
 function start() {
+		cd ${WORK_DIR_PRO}
 		mv ${WEB_PKG} ${WEB_PKG_BK}
 		mv ${ADMIN_WORKSPACE} "${ADMIN_WORKSPACE}_bk"
 		mv ${TMP_WEB_PKG} ${WEB_PKG}
-		tar -zxcf ${WEB_PKG}
-		mv dist ${ADMIN_WORKSPACE}
+		tar -zxvf ${WEB_PKG}
 }
 
 function deploy() {
     # package
     echo "*******Start to package*******"
-    compile $1
+    build $1
     ret=$?
     if [[ ${ret} -ne 0 ]] ; then
         echo 'Failed to compile'
@@ -113,6 +113,6 @@ else
     echo "安装依赖:  ./launch.sh install"
     echo "本地启动:  ./launch.sh server"
     echo "=========== 上传服务器 & 服务器解压使用 =============="
-    echo "打包静态资源并上传到服务器 & 解压执行:  ./launch.sh prod"
+    echo "打包静态资源并上传到服务器 & 解压执行:  ./launch.sh pro"
     echo "服务器上资源启用: ./launch.sh start"
 fi

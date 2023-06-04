@@ -9,6 +9,7 @@ import { HOME_URL } from "@/config/config";
 import { setToken } from "@/redux/modules/global/action";
 import InfoModal from "./InfoModal";
 import PasswordModal from "./PasswordModal";
+import { logoutApi } from "@/api/modules/login";
 
 const AvatarIcon = (props: any) => {
 	const { setToken, userInfo } = props;
@@ -30,8 +31,13 @@ const AvatarIcon = (props: any) => {
 			cancelText: "取消",
 			onOk: () => {
 				setToken("");
-				message.success("退出登录成功！");
-				navigate("/login");
+				const doLogout = async () => {
+					const { status, result } = await logoutApi();
+					console.log("登录: ", status, result);
+					message.success("退出登录成功！");
+					navigate("/login");
+				};
+				doLogout();
 			}
 		});
 	};
