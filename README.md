@@ -164,11 +164,38 @@ pacoding-admin
 3、如果采用 Nginx 的话，请在 server 节点下进行 location 配置。
 
 ```
-location ^~ /admin-view {
+location ^~ /admin {
 	alias /home/admin/dist/; # 根 目 录
 	index index.html;
 }
 ```
+
+### launch.sh
+
+辅助shell脚本，针对mac/linux用户而言，提供更好的使用姿势
+
+1.安装依赖：
+
+```bash
+./launch.sh install
+```
+
+2.本地启动：
+
+```bash
+./launch.sh server
+```
+
+3.打包上传服务器，并使他生效
+
+```bash
+# 下面这个动作，包含以下几步
+# 1. 打包 -> 生成 dist 目录， 压缩为 dist.tar.gz 包
+# 2. 上传到服务器
+# 3. 将之前旧的静态资源备份，然后解压新的上传包
+./launch.sh pro
+```
+
 
 ## 九、友情链接
 
