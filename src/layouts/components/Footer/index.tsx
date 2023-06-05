@@ -1,4 +1,5 @@
 import { connect } from "react-redux";
+
 import "./index.less";
 
 const LayoutFooter = (props: any) => {
@@ -7,8 +8,8 @@ const LayoutFooter = (props: any) => {
 		<>
 			{!themeConfig.footer && (
 				<div className="footer">
-					<a href="http://www.spicyboy.cn/" target="_blank" rel="noreferrer">
-						2022 © quick-forum-admin By Hooks Technology.
+					<a href="https://paicoding.com/" target="_blank" rel="noreferrer">
+						2023 © paicoding-admin By 技术派团队.
 					</a>
 				</div>
 			)}

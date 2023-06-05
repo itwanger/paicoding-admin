@@ -1,5 +1,3 @@
-import qs from "qs";
-
 import http from "@/api";
 import { PORT1 } from "@/api/config/servicePort";
 

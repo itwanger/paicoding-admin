@@ -2,7 +2,6 @@ import React from "react";
 
 import { LayoutIndex } from "@/routers/constant";
 import { RouteObject } from "@/routers/interface";
-import Column from "@/views/column/article";
 import lazyLoad from "../utils/lazyLoad";
 
 const columnRouter: Array<RouteObject> = [

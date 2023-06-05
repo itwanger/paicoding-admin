@@ -1,7 +1,6 @@
 import { connect } from "react-redux";
 import { Layout } from "antd";
 
-import { store } from "@/redux";
 import AssemblySize from "./components/AssemblySize";
 import AvatarIcon from "./components/AvatarIcon";
 import BreadcrumbNav from "./components/BreadcrumbNav";

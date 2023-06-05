@@ -1,6 +1,7 @@
-import { Dropdown, Menu } from "antd";
-import { setAssemblySize } from "@/redux/modules/global/action";
 import { connect } from "react-redux";
+import { Dropdown, Menu } from "antd";
+
+import { setAssemblySize } from "@/redux/modules/global/action";
 
 const AssemblySize = (props: any) => {
 	const { assemblySize, setAssemblySize } = props;

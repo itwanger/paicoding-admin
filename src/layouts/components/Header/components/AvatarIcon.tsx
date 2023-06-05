@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, Menu, message, Modal } from "antd";
 
+import { logoutApi } from "@/api/modules/login";
 import loginPng from "@/assets/images/logo_md.png";
 import { HOME_URL } from "@/config/config";
 import { setToken } from "@/redux/modules/global/action";
 import InfoModal from "./InfoModal";
 import PasswordModal from "./PasswordModal";
-import { logoutApi } from "@/api/modules/login";
 
 const AvatarIcon = (props: any) => {
 	const { setToken, userInfo } = props;

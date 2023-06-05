@@ -8,20 +8,18 @@ import * as Icons from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Menu, Spin } from "antd";
 
-import { getMenuList } from "@/api/modules/login";
 import { setAuthRouter } from "@/redux/modules/auth/action";
 import { setBreadcrumbList } from "@/redux/modules/breadcrumb/action";
 import { setMenuList } from "@/redux/modules/menu/action";
-import { routerArray } from "@/routers";
 import { currentMenuList } from "@/routers/route";
-import { findAllBreadcrumb, getOpenKeys, handleRouter, searchRoute } from "@/utils/util";
+import { getOpenKeys, searchRoute } from "@/utils/util";
 import Logo from "./components/Logo";
 
 import "./index.less";
 
 const LayoutMenu = (props: any) => {
 	const { pathname } = useLocation();
-	const { isCollapse, setBreadcrumbList, setAuthRouter, setMenuList: setMenuListAction } = props;
+	const { isCollapse } = props;
 	const [selectedKeys, setSelectedKeys] = useState<string[]>([pathname]);
 	const [openKeys, setOpenKeys] = useState<string[]>([]);
 
@@ -41,27 +39,9 @@ const LayoutMenu = (props: any) => {
 
 	// 定义 menu 类型
 	type MenuItem = Required<MenuProps>["items"][number];
-	const getItem = (
-		label: React.ReactNode,
-		key?: React.Key | null,
-		icon?: React.ReactNode,
-		children?: MenuItem[],
-		type?: "group"
-	): MenuItem => {
-		return {
-			key,
-			icon,
-			children,
-			label,
-			type
-		} as MenuItem;
-	};
 
 	// 动态渲染 Icon 图标
 	const customIcons: { [key: string]: any } = Icons;
-	const addIcon = (name: string) => {
-		return React.createElement(customIcons[name]);
-	};
 
 	// 处理后台返回菜单 key 值为 antd 菜单需要的 key 值
 	// const deepLoopFloat = (menuList: Menu.MenuOptions[], newArr: MenuItem[] = []) => {

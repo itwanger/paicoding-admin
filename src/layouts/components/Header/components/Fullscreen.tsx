@@ -1,6 +1,6 @@
-import screenfull from "screenfull";
-import { message } from "antd";
 import { useEffect, useState } from "react";
+import { message } from "antd";
+import screenfull from "screenfull";
 
 const Fullscreen = () => {
 	const [fullScreen, setFullScreen] = useState<boolean>(screenfull.isFullscreen);
