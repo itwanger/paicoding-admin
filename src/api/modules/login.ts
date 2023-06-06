@@ -15,6 +15,13 @@ export const loginApi = (params: Login.ReqLoginForm) => {
 	// return http.post<Login.ResLogin>(PORT1 + `/login`, params, { headers: { noLoading: true } }); // 控制当前请求不显示 loading
 };
 
+/**
+ * 查询当前登录的用户信息
+ */
+export const loginUserInfo = () => {
+	return http.get(PORT1 + `/user/info`, {});
+};
+
 export const logoutApi = () => {
 	return http.get(PORT1 + `/logout`, {});
 };
