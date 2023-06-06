@@ -14,7 +14,7 @@ import "./index.less";
 
 const LayoutHeader = (props: any) => {
 	let { userInfo } = props || {};
-	if (!userInfo) {
+	if (!userInfo || JSON.stringify(userInfo) === "{}") {
 		let fetchUsrInfo = async () => {
 			const { status, result } = await loginUserInfo();
 			if (status && status.code == 0 && result && result?.userId > 0) {

@@ -7,6 +7,7 @@ TMP_WEB_PKG="tmp.tar.gz"
 
 DEPLOY_SCRIPT="launch.sh"
 START_FUNC_NAME="start"
+BUILD_FUNC_NAME="build"
 INSTALL_FUNC_NAME="install"
 SERVER_FUNC_NAME="server"
 
@@ -54,11 +55,13 @@ function server() {
 }
 
 function start() {
+    echo "---- 开始部署 ----"
 		cd ${WORK_DIR_PRO}
 		mv ${WEB_PKG} ${WEB_PKG_BK}
 		mv ${ADMIN_WORKSPACE} "${ADMIN_WORKSPACE}_bk"
 		mv ${TMP_WEB_PKG} ${WEB_PKG}
 		tar -zxvf ${WEB_PKG}
+		echo "---- 部署完成 ----"
 }
 
 function deploy() {
@@ -102,6 +105,8 @@ function deploy() {
 
 if [ "$1" = "${START_FUNC_NAME}" ]; then
     start "$@"
+elif [ "$1" = "${BUILD_FUNC_NAME}" ]; then
+    build $1
 elif [ "$1" = "${INSTALL_FUNC_NAME}" ]; then
     install $1
 elif [ "$1" = "${SERVER_FUNC_NAME}" ]; then
@@ -113,6 +118,7 @@ else
     echo "安装依赖:  ./launch.sh install"
     echo "本地启动:  ./launch.sh server"
     echo "=========== 上传服务器 & 服务器解压使用 =============="
+    echo "打包 dist.tar.gz:  ./launch.sh build"
     echo "打包静态资源并上传到服务器 & 解压执行:  ./launch.sh pro"
     echo "服务器上资源启用: ./launch.sh start"
 fi
