@@ -1,6 +1,8 @@
-import { Button, Result } from "antd";
 import { useNavigate } from "react-router-dom";
+import { Button, Result } from "antd";
+
 import { HOME_URL } from "@/config/config";
+
 import "./index.less";
 
 const NotFound = () => {

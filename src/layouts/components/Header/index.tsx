@@ -13,16 +13,23 @@ import Theme from "./components/Theme";
 import "./index.less";
 
 const LayoutHeader = (props: any) => {
+	const { setToken, setUserInfo } = props;
 	let { userInfo } = props || {};
-	if (!userInfo || JSON.stringify(userInfo) === "{}") {
+	let toCheck = !userInfo || JSON.stringify(userInfo) === "{}";
+	if (toCheck) {
 		let fetchUsrInfo = async () => {
-			const { status, result } = await loginUserInfo();
-			if (status && status.code == 0 && result && result?.userId > 0) {
-				// fixme 拿登录的用户名、用户头像来替换默认的用户名头像
-				setToken(result?.userId);
+			try {
+				const { status, result } = await loginUserInfo();
+				console.log("请求用户信息: ", result);
+				if (status && status.code == 0 && result && result?.userId > 0) {
+					// fixme 拿登录的用户名、用户头像来替换默认的用户名头像
+					setToken(result?.userId);
 
-				setUserInfo(result);
-				userInfo = result;
+					setUserInfo(result);
+					userInfo = result;
+				}
+			} catch (e) {
+				console.log("初始化用户身份异常!", e);
 			}
 		};
 		// 未拿到用户信息时，主动去拿一下
@@ -51,5 +58,5 @@ const LayoutHeader = (props: any) => {
 };
 
 const mapStateToProps = (state: any) => state.global;
-const mapDispatchToProps = {};
+const mapDispatchToProps = { setToken, setUserInfo };
 export default connect(mapStateToProps, mapDispatchToProps)(LayoutHeader);
