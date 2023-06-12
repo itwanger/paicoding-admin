@@ -174,6 +174,20 @@ location ^~ /admin {
 
 辅助shell脚本，针对mac/linux用户而言，提供更好的使用姿势
 
+0. 前提说明
+
+当launch.sh 执行时，提示 `$‘\r‘: command not found`时，主要原因是windows系统编写的shell脚本，每行结尾是`\r\n`， 而linux的结尾是`\n`，可以通过下面几种方式进行处理
+
+```bash
+# case1
+sed -i 's/\r//' launch.sh
+
+# case2
+# sudo apt-get install -y dos2unix
+sudo yum install -y dos2unix
+dos2unix launch.sh
+```
+
 1.安装依赖：
 
 ```bash

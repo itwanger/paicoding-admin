@@ -11,9 +11,11 @@ import Fullscreen from "./components/Fullscreen";
 import Theme from "./components/Theme";
 
 import "./index.less";
+import { getDiscListAction } from "@/redux/modules/disc/action";
+import { setTabsList } from "@/redux/modules/tabs/action";
 
 const LayoutHeader = (props: any) => {
-	const { setToken, setUserInfo } = props;
+	const { setToken, setTabsList, setUserInfo, getDiscListAction } = props;
 	let { userInfo } = props || {};
 	let toCheck = !userInfo || JSON.stringify(userInfo) === "{}";
 	if (toCheck) {
@@ -27,6 +29,8 @@ const LayoutHeader = (props: any) => {
 
 					setUserInfo(result);
 					userInfo = result;
+					setTabsList([]);
+					getDiscListAction();
 				}
 			} catch (e) {
 				console.log("初始化用户身份异常!", e);
@@ -36,7 +40,7 @@ const LayoutHeader = (props: any) => {
 		fetchUsrInfo();
 	}
 	const { userName } = userInfo || {};
-	console.log("userInfo:", userInfo, userName);
+	console.log("userInfo:", toCheck, userInfo, userName);
 
 	const { Header } = Layout;
 
@@ -58,5 +62,5 @@ const LayoutHeader = (props: any) => {
 };
 
 const mapStateToProps = (state: any) => state.global;
-const mapDispatchToProps = { setToken, setUserInfo };
+const mapDispatchToProps = { setToken, setUserInfo, getDiscListAction, setTabsList };
 export default connect(mapStateToProps, mapDispatchToProps)(LayoutHeader);

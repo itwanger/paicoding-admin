@@ -24,6 +24,7 @@ function build() {
     echo "npm run build:pro"
     npm run build:pro
   	tar -zcvf ${WEB_PKG} dist
+
     echo "---------- 静态资源包dist.tar.gz已打包完成 -------------"
 }
 
