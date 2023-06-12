@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { connect } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { CloseCircleOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message } from "antd";
@@ -20,6 +21,8 @@ const LoginForm = (props: any) => {
 	const [form] = Form.useForm();
 	const [loading, setLoading] = useState<boolean>(false);
 
+	const dispatch = useDispatch();
+
 	// 登录
 	const onFinish = async (loginForm: Login.ReqLoginForm) => {
 		try {
@@ -28,7 +31,9 @@ const LoginForm = (props: any) => {
 			if (status && status.code == 0 && result && result.userId > 0) {
 				// fixme 拿登录的用户名、用户头像来替换默认的用户名头像
 				message.success("登录成功");
-				setToken(result?.userId);
+
+				// 使用 dispatch 来调用 setToken action，将 token 保存到 Redux 的状态中
+				dispatch(setToken(result.userId));
 
 				setUserInfo(result);
 				setTabsList([]);
@@ -62,11 +67,7 @@ const LoginForm = (props: any) => {
 				<Input placeholder="用户名（admin）" prefix={<UserOutlined />} />
 			</Form.Item>
 			<Form.Item name="password" rules={[{ required: true, message: "请输入密码" }]}>
-				<Input.Password 
-					autoComplete="new-password" 
-					placeholder="密码（微信搜 楼仔 回复 001）" 
-					prefix={<LockOutlined />} 
-					/>
+				<Input.Password autoComplete="new-password" placeholder="密码（微信搜 楼仔 回复 001）" prefix={<LockOutlined />} />
 			</Form.Item>
 			<Form.Item className="login-btn">
 				<Button
