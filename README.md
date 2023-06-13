@@ -18,7 +18,7 @@
 
 ## 一、在线预览地址 👀
 
-- Link：[https://paicoding.com/admin-view/](https://paicoding.com/admin-view/)
+- Link：[https://paicoding.com/admin](https://paicoding.com/admin)
 
 ## 二、Git 仓库地址 (欢迎 Star⭐)
 
@@ -62,9 +62,19 @@ npm config set registry http://registry.npmjs.org/
 
 ### Run：
 
+将技术派的后端代码和前端代码拉到本地后，先启动 Redis 和服务端端。然后再启动 admin 端，可以通过 VSCode 来进行开发。
+
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20230605110431.png)
+
 ```text
 npm run dev
 ```
+
+会自动在浏览器打开 [http://localhost:3301](http://localhost:3301)，如下所示。
+
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20230605110616.png)
+
+本地的用户名和密码均为 amdin 和 admin 。
 
 ### Build：
 
@@ -172,7 +182,7 @@ location ^~ /admin {
 
 ### launch.sh
 
-辅助shell脚本，针对mac/linux用户而言，提供更好的使用姿势
+辅助 shell 脚本，针对 mac/linux 用户而言，提供更好的使用姿势
 
 0. 前提说明
 
@@ -209,7 +219,6 @@ dos2unix launch.sh
 # 3. 将之前旧的静态资源备份，然后解压新的上传包
 ./launch.sh pro
 ```
-
 
 ## 九、友情链接
 
