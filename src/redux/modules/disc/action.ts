@@ -21,6 +21,8 @@ const dictTransform = (dict = {}, keys = ["id", "title"]) => {
 	});
 };
 
+// * redux-thunk
+// 获取字典数据
 export const getDiscListAction = async () => {
 	const { result } = (await getDiscListApi()) || {};
 	let dictionaryMap: { [key: string]: any } = {};

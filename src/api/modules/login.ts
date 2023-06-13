@@ -21,7 +21,7 @@ export const logoutApi = () => {
  * 查询当前登录的用户信息
  */
 export const loginUserInfo = () => {
-	return http.get(PORT1 + `/user/info`, {});
+	return http.get<Login.ResLogin>(PORT1 + `/info`);
 };
 
 // * 获取按钮权限

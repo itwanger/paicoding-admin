@@ -2,6 +2,7 @@ import { message } from "antd";
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import { PaiRes, ResultData } from "@/api/interface";
+import { LOGIN_URL } from "@/config/config";
 import NProgress from "@/config/nprogress";
 import { showFullScreenLoading, tryHideFullScreenLoading } from "@/config/serviceLoading";
 import { ResultEnum } from "@/enums/httpEnum";
@@ -13,7 +14,7 @@ import { checkStatus } from "./helper/checkStatus";
 const axiosCanceler = new AxiosCanceler();
 
 const config = {
-	// 默认地址请求地址，可在 .env 开头文件中修改
+	// 默认地址请求地址，可在 .env 开头文件中修改，在 Axios 中使用
 	baseURL: import.meta.env.VITE_API_URL as string,
 	// 设置超时时间（10s）
 	timeout: 10000,
@@ -40,6 +41,7 @@ class RequestHttp {
 				// * 如果当前请求不需要显示 loading,在api服务中通过指定的第三个参数: { headers: { noLoading: true } }来控制不显示loading，参见loginApi
 				config.headers!.noLoading || showFullScreenLoading();
 				const token: string = store.getState().global.token;
+				console.log("this.service.interceptors.request.use", token);
 
 				return { ...config, headers: { ...config.headers, "x-access-token": token } };
 			},
@@ -54,6 +56,8 @@ class RequestHttp {
 		 */
 		this.service.interceptors.response.use(
 			(response: AxiosResponse) => {
+				console.log("response", response);
+
 				const { data, config } = response;
 				NProgress.done();
 				// * 在请求结束后，移除本次请求(关闭loading)
@@ -66,7 +70,7 @@ class RequestHttp {
 					// 未登录，重定向到登录页面
 					store.dispatch(setToken(""));
 					message.error(dataStatus.msg);
-					window.location.hash = "/login";
+					window.location.hash = LOGIN_URL;
 					return Promise.reject(data);
 				}
 				// * 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）

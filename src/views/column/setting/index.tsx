@@ -26,7 +26,7 @@ import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/c
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
-import { getCompleteUrl } from "@/utils/is";
+import { baseDomain, getCompleteUrl } from "@/utils/util";
 import AuthorSelect from "./components/authorselect";
 import ImgUpload from "./components/imgupload";
 import Search from "./components/search";
@@ -35,8 +35,6 @@ import "dayjs/locale/zh-cn";
 dayjs.locale("zh-cn");
 
 import "./index.scss";
-
-const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 
 interface DataType {
 	author: number;
@@ -344,7 +342,7 @@ const Column: FC<IProps> = props => {
 			key: "column",
 			render(value, item) {
 				return (
-					<a href={`${baseUrl}/column/${item?.columnId}/1`} className="cell-text" target="_blank" rel="noreferrer">
+					<a href={`${baseDomain}/column/${item?.columnId}/1`} className="cell-text" target="_blank" rel="noreferrer">
 						{value}
 					</a>
 				);

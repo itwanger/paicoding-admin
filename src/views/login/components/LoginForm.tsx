@@ -15,13 +15,12 @@ import { setToken, setUserInfo } from "@/redux/modules/global/action";
 import { setTabsList } from "@/redux/modules/tabs/action";
 
 const LoginForm = (props: any) => {
-	const { t } = useTranslation();
 	const { setToken, setTabsList, setUserInfo, getDiscListAction } = props;
+	console.log("loginForm setToken", setToken);
+
 	const navigate = useNavigate();
 	const [form] = Form.useForm();
 	const [loading, setLoading] = useState<boolean>(false);
-
-	const dispatch = useDispatch();
 
 	// 登录
 	const onFinish = async (loginForm: Login.ReqLoginForm) => {
@@ -29,16 +28,19 @@ const LoginForm = (props: any) => {
 			setLoading(true);
 			const { status, result } = await loginApi(loginForm);
 			if (status && status.code == 0 && result && result.userId > 0) {
-				// fixme 拿登录的用户名、用户头像来替换默认的用户名头像
 				message.success("登录成功");
 
 				// 使用 dispatch 来调用 setToken action，将 token 保存到 Redux 的状态中
-				dispatch(setToken(result.userId));
+				setToken(result.userId);
 
+				// 用户登录信息
 				setUserInfo(result);
+				// tab 清空，可以采用 tab 的方式打开页面
 				setTabsList([]);
+				// 获取字典数据
 				getDiscListAction();
 
+				// 跳转到首页
 				navigate(HOME_URL);
 			} else {
 				message.success("登录失败:" + status?.msg);

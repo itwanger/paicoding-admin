@@ -1,6 +1,11 @@
 import { RouteObject } from "@/routers/interface";
 
 /**
+ * @description 获取当前域名
+ */
+export const baseDomain = import.meta.env.VITE_DOMAIN;
+
+/**
  * @description 获取localStorage
  * @param {String} key Storage名称
  * @return string
@@ -182,3 +187,14 @@ export function randomNum(min: number, max: number): number {
 	let num = Math.floor(Math.random() * (min - max) + max);
 	return num;
 }
+
+export const getCompleteUrl = (partialUrl: string | undefined) => {
+	// 域名，展示图片的时候用
+	let completeUrl = partialUrl;
+
+	// 如果partialUrl为绝对路径，直接返回
+	if (partialUrl && partialUrl.indexOf("http") === -1 && partialUrl.indexOf("https") === -1) {
+		completeUrl = baseDomain + partialUrl;
+	}
+	return completeUrl;
+};

@@ -26,7 +26,7 @@ import { delConfigApi, getConfigListApi, operateConfigApi, updateConfigApi } fro
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
-import { getCompleteUrl } from "@/utils/is";
+import { getCompleteUrl } from "@/utils/util";
 import ImgUpload from "./components/imgupload";
 import Search from "./components/search";
 

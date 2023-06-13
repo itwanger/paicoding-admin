@@ -3,7 +3,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 
 import { AxiosCanceler } from "@/api/helper/axiosCancel";
-import { HOME_URL } from "@/config/config";
+import { HOME_URL, LOGIN_URL } from "@/config/config";
 import { store } from "@/redux/index";
 import { rootRouter } from "@/routers/index";
 import { searchRoute } from "@/utils/util";
@@ -27,7 +27,7 @@ const AuthRouter = (props: { children: JSX.Element }) => {
 
 	// * 判断是否有Token
 	const token = store.getState().global.token;
-	if (!token) return <Navigate to="/login" replace />;
+	if (!token) return <Navigate to={LOGIN_URL} replace />;
 
 	// * Dynamic Router(动态路由，根据后端返回的菜单数据生成的一维数组)
 	const dynamicRouter = store.getState().auth.authRouter;

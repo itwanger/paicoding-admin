@@ -1,23 +1,28 @@
+/* eslint-disable prettier/prettier */
 import { useRef } from "react";
-import { connect } from "react-redux";
+import { connect, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, MenuProps, message, Modal } from "antd";
 
 import { logoutApi } from "@/api/modules/login";
 import loginPng from "@/assets/images/logo_md.png";
-import { HOME_URL } from "@/config/config";
-import { setToken } from "@/redux/modules/global/action";
+import { HOME_URL, LOGIN_URL } from "@/config/config";
+import { setToken, setUserInfo } from "@/redux/modules/global/action";
 import InfoModal from "./InfoModal";
 import PasswordModal from "./PasswordModal";
 
 const AvatarIcon = (props: any) => {
-	const { setToken, userInfo } = props;
+	const { userInfo, setToken, setUserInfo } = props;
+	console.log("AvatarIcon setToken setUserInfo", setToken, setUserInfo);
+	console.log("AvatarIcon userInfo", userInfo );
+
 	const navigate = useNavigate();
-	const { photo } = userInfo || {};
+
 	interface ModalProps {
-		showModal: (params: { name: number }) => void;
+		showModal: (params: Record<string, any>) => void;
 	}
+
 	const passRef = useRef<ModalProps>(null);
 	const infoRef = useRef<ModalProps>(null);
 
@@ -33,10 +38,11 @@ const AvatarIcon = (props: any) => {
 				// 此时需要请求服务器端退出登录接口
 				const { status, result } = await logoutApi();
 				if (status && status.code == 0 && result) {
-					// 退出跳转到登录页
+					// 退出，清除 token，清除用户信息，跳转到登录页
 					setToken("");
+					setUserInfo({});
 					message.success("退出登录成功！");
-					navigate("/login");
+					navigate(LOGIN_URL);
 				} else {
 					message.success("退出登录失败:" + status?.msg);
 				}
@@ -53,7 +59,12 @@ const AvatarIcon = (props: any) => {
 		{
 			key: "2",
 			label: <span className="dropdown-item">个人信息</span>,
-			onClick: () => infoRef.current!.showModal({ name: 11 })
+			onClick: () => infoRef.current!.showModal({ 
+				photo: userInfo.photo,
+				profile: userInfo.profile,
+				role: userInfo.role,
+				userName: userInfo.userName,
+			})
 		},
 		{
 			key: "3",
@@ -72,7 +83,7 @@ const AvatarIcon = (props: any) => {
 	return (
 		<>
 			<Dropdown menu={{ items }} placement="bottom" arrow trigger={["click"]}>
-				<Avatar size="large" src={photo || loginPng} />
+				<Avatar size="large" src={userInfo.photo || loginPng} />
 			</Dropdown>
 			<InfoModal innerRef={infoRef}></InfoModal>
 			<PasswordModal innerRef={passRef}></PasswordModal>
@@ -80,5 +91,5 @@ const AvatarIcon = (props: any) => {
 	);
 };
 
-const mapDispatchToProps = { setToken };
+const mapDispatchToProps = { setToken, setUserInfo };
 export default connect(null, mapDispatchToProps)(AvatarIcon);

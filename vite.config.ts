@@ -35,7 +35,7 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 		},
 		// server config
 		server: {
-			host: "0.0.0.0", // 服务器主机名，如果允许外部访问，可设置为"0.0.0.0"
+			host: "127.0.0.1", // 服务器主机名，如果允许外部访问，可设置为"0.0.0.0"
 			port: viteEnv.VITE_PORT,
 			open: viteEnv.VITE_OPEN,
 			// cors: false,

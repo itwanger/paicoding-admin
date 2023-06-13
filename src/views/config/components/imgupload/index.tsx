@@ -6,7 +6,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import { Button, message, Upload } from "antd";
 
 import { uploadCoverApi } from "@/api/modules/column";
-import { getCompleteUrl } from "@/utils/is";
+import { getCompleteUrl } from "@/utils/util";
 
 interface IProps {
 	coverList: any[];

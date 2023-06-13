@@ -70,7 +70,7 @@ npm config set registry http://registry.npmjs.org/
 npm run dev
 ```
 
-会自动在浏览器打开 [http://localhost:3301](http://localhost:3301)，如下所示。
+会自动在浏览器打开 [http://127.0.0.1:3301](http://127.0.0.1:3301)，如下所示。
 
 ![](https://cdn.tobebetterjavaer.com/stutymore/README-20230605110616.png)
 
@@ -186,7 +186,7 @@ location ^~ /admin {
 
 0. 前提说明
 
-当launch.sh 执行时，提示 `$‘\r‘: command not found`时，主要原因是windows系统编写的shell脚本，每行结尾是`\r\n`， 而linux的结尾是`\n`，可以通过下面几种方式进行处理
+当 launch.sh 执行时，提示 `$‘\r‘: command not found`时，主要原因是 windows 系统编写的 shell 脚本，每行结尾是`\r\n`， 而 linux 的结尾是`\n`，可以通过下面几种方式进行处理
 
 ```bash
 # case1

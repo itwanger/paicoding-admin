@@ -5,13 +5,13 @@ import { connect } from "react-redux";
 import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { Button, Descriptions, Drawer, Form, Image,Input, message, Modal, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { on } from "events";
 
 import { delColumnArticleApi, getColumnArticleListApi, getColumnByNameListApi, updateColumnArticleApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
-import { getCompleteUrl } from "@/utils/is";
+import { baseDomain } from "@/utils/util";
+import { getCompleteUrl } from "@/utils/util";
 import DebounceSelect from "./components/debounceselect/DebounceSelect";
 import Search from "./components/search";
 import TableSelect from "./components/tableselect/TableSelect";
@@ -69,8 +69,6 @@ interface ColumnValue {
 	label: string;
 	value: string;
 }
-
-const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 
 const ColumnArticle: FC<IProps> = props => {
 
@@ -268,7 +266,7 @@ const ColumnArticle: FC<IProps> = props => {
 			render(value, item) {
 				return (
 					<a 
-						href={`${baseUrl}/column/${item?.columnId}/1`}
+						href={`${baseDomain}/column/${item?.columnId}/1`}
 						className="cell-text"
 						target="_blank" rel="noreferrer">
 						{value}
@@ -283,7 +281,7 @@ const ColumnArticle: FC<IProps> = props => {
 			render(value, item) {
 				return (
 					<a 
-						href={`${baseUrl}/column/${item?.columnId}/${item?.sort}`}
+						href={`${baseDomain}/column/${item?.columnId}/${item?.sort}`}
 						className="cell-text"
 						target="_blank" rel="noreferrer">
 						{value}

@@ -9,6 +9,7 @@ import { delArticleApi, getArticleListApi, operateArticleApi, updateArticleApi }
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination } from "@/enums/common";
 import { MapItem } from "@/typings/common";
+import { baseDomain } from "@/utils/util";
 import Search from "./components/search";
 
 import "./index.scss";
@@ -93,8 +94,6 @@ const Article: FC<IProps> = props => {
 	const { PushStatusList, ToppingStatusList, OfficalStatusList} = props || {};
 
 	const { articleId } = form;
-
-	const baseUrl = import.meta.env.VITE_APP_BASE_URL;
 
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
@@ -227,7 +226,7 @@ const Article: FC<IProps> = props => {
 			render(value, item) {
 				return (
 					<a 
-						href={`${baseUrl}/article/detail/${item?.articleId}`}
+						href={`${baseDomain}/article/detail/${item?.articleId}`}
 						className="cell-text"
 						target="_blank" rel="noreferrer">
 						{value}
