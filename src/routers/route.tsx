@@ -4,10 +4,11 @@ import {
 	FileAddOutlined,
 	FilePptOutlined,
 	FileTextOutlined,
-	HomeOutlined,
 	LineChartOutlined,
 	ReadOutlined,
-	TagsOutlined
+	SmileOutlined,
+	TagsOutlined,
+	UserOutlined
 } from "@ant-design/icons";
 
 export const currentMenuList = [
@@ -16,6 +17,12 @@ export const currentMenuList = [
 	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },
 	{ key: "/tag/index", icon: <TagsOutlined />, children: undefined, label: "标签管理" },
 	{ key: "/article/index", icon: <FileTextOutlined />, children: undefined, label: "文章管理" },
+	{
+		key: "/author",
+		icon: <UserOutlined />,
+		children: [{ key: "/author/whitelist/index", icon: <SmileOutlined />, children: undefined, label: "白名单配置" }],
+		label: "作者管理"
+	},
 	{
 		key: "/column",
 		icon: <ReadOutlined />,
