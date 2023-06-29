@@ -13,16 +13,9 @@ interface IProps {
 	PushStatusList: Array<{ label: string; value: number }>;
 	ToppingStatusList: Array<{ label: string; value: number }>;
 	OfficalStatusList: Array<{ label: string; value: number }>;
-	
 }
 
-const Search: FC<IProps> = ({ 
-	handleSearchChange,
-	handleSearch,
-	PushStatusList,
-	ToppingStatusList,
-	OfficalStatusList,
-}) => {
+const Search: FC<IProps> = ({ handleSearchChange, handleSearch, PushStatusList, ToppingStatusList, OfficalStatusList }) => {
 	return (
 		<div className="article-search">
 			{/* 搜索 */}
@@ -40,14 +33,12 @@ const Search: FC<IProps> = ({
 						/>
 					</div>
 					<div className="article-search__search-item">
-						<Input 
-							allowClear 
+						<Input
+							allowClear
 							placeholder="请输入标题"
 							style={{ width: 142 }}
-							onChange={e => 
-								handleSearchChange({ title: e.target.value })
-							} 
-							/>
+							onChange={e => handleSearchChange({ title: e.target.value })}
+						/>
 					</div>
 					<div className="article-search__search-item">
 						<Select
@@ -58,11 +49,8 @@ const Search: FC<IProps> = ({
 							options={PushStatusList}
 							style={{ width: 100 }}
 							// 触发搜索
-							onChange={(value) => 
-								handleSearchChange({ status: Number(value || -1) })
-							}
-							>
-						</Select>
+							onChange={value => handleSearchChange({ status: Number(value || -1) })}
+						></Select>
 					</div>
 					<div className="article-search__search-item">
 						<Select
@@ -73,11 +61,8 @@ const Search: FC<IProps> = ({
 							options={ToppingStatusList}
 							style={{ width: 100 }}
 							// 触发搜索
-							onChange={(value) => 
-								handleSearchChange({ toppingStat: Number(value || -1) })
-							}
-							>
-						</Select>
+							onChange={value => handleSearchChange({ toppingStat: Number(value || -1) })}
+						></Select>
 					</div>
 					<div className="article-search__search-item">
 						<Select
@@ -88,19 +73,11 @@ const Search: FC<IProps> = ({
 							options={OfficalStatusList}
 							style={{ width: 100 }}
 							// 触发搜索
-							onChange={(value) => 
-								handleSearchChange({ officalStat: Number(value || -1) })
-							}
-							>
-						</Select>
+							onChange={value => handleSearchChange({ officalStat: Number(value || -1) })}
+						></Select>
 					</div>
 					<div className="article-search__search-btn">
-						<Button 
-							type="primary" 
-							icon={<SearchOutlined />}
-							style={{ marginRight: "25px" }}
-							onClick={handleSearch}
-							>
+						<Button type="primary" icon={<SearchOutlined />} style={{ marginRight: "25px" }} onClick={handleSearch}>
 							搜索
 						</Button>
 					</div>

@@ -11,7 +11,7 @@ import * as types from "@/redux/mutation-types";
 // });
 // * redux-promise《async/await》
 const dictTransform = (dict = {}, keys = ["id", "title"]) => {
-	console.log("d", dict);
+	console.log("字典 d", dict);
 
 	return toPairs(dict).map(item => {
 		return {

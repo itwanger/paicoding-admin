@@ -20,8 +20,16 @@ const columnRouter: Array<RouteObject> = [
 						path: "/author/whitelist/index",
 						element: lazyLoad(React.lazy(() => import("@/views/author/whitelist/index"))),
 						meta: {
-							title: "白名单配置",
+							title: "作者白名单",
 							key: "/author/whitelist/index"
+						}
+					},
+					{
+						path: "/author/zsxqlist/index",
+						element: lazyLoad(React.lazy(() => import("@/views/author/zsxqlist/index"))),
+						meta: {
+							title: "作者白名单",
+							key: "/author/zsxqlist/index"
 						}
 					}
 				]

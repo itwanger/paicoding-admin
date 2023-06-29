@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
 	BarsOutlined,
 	CalendarOutlined,
@@ -20,8 +21,11 @@ export const currentMenuList = [
 	{
 		key: "/author",
 		icon: <UserOutlined />,
-		children: [{ key: "/author/whitelist/index", icon: <SmileOutlined />, children: undefined, label: "白名单配置" }],
-		label: "作者管理"
+		children: [
+			{ key: "/author/whitelist/index", icon: <SmileOutlined />, children: undefined, label: "作者白名单" },
+			{ key: "/author/zsxqlist/index", icon: <SmileOutlined />, children: undefined, label: "星球白名单" }
+		],
+		label: "用户管理"
 	},
 	{
 		key: "/column",
