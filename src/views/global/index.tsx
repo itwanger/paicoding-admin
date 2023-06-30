@@ -5,7 +5,7 @@ import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Drawer, Form, Input, message, Modal, Space, Switch, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delTagApi, getTagListApi, operateTagApi, updateTagApi } from "@/api/modules/tag";
+import { delGlobalConfigApi, getGlobalConfigListApi, updateGlobalConfigApi } from "@/api/modules/global";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -14,24 +14,29 @@ import Search from "./components/search";
 import "./index.scss";
 
 interface DataType {
-	tagId: number;
-	tag: string;
-	status: number;
+	id: number;
+	keywords: string;
+	value: string;
+	comment: string;
 }
 
 interface IProps {}
 
 export interface IFormType {
-	tagId: number; // 为0时，是保存，非0是更新
-	tag: string; // 标签名
+	id: number; // 为0时，是保存，非0是更新
+	keywords: string; // 键名
+	value: string; // 键值
+	comment: string; // 备注
 }
 
 const defaultInitForm: IFormType = {
-	tagId: -1,
-	tag: ""
+	id: -1,
+	keywords: "",
+	value: "",
+	comment: ""
 };
 
-const Tag: FC<IProps> = props => {
+const GlobalConfig: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
@@ -60,7 +65,7 @@ const Tag: FC<IProps> = props => {
 		}
 	};
 
-	const { tagId } = form;
+	const { id } = form;
 
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
@@ -69,6 +74,7 @@ const Tag: FC<IProps> = props => {
 	// 值改变
 	const handleChange = (item: MapItem) => {
 		setForm({ ...form, ...item });
+		console.log(form, item);
 	};
 	// 查询表单值改变
 	const handleSearchChange = (item: MapItem) => {
@@ -95,14 +101,14 @@ const Tag: FC<IProps> = props => {
 	};
 
 	// 删除
-	const handleDel = (tagId: number) => {
+	const handleDel = (id: number) => {
 		Modal.warning({
-			title: "确认删除此标签吗",
-			content: "删除此标签后无法恢复，请谨慎操作！",
+			title: "确认删除此全局配置项吗",
+			content: "删除此全局配置项后无法恢复，请谨慎操作！",
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				const { status } = await delTagApi(tagId);
+				const { status } = await delGlobalConfigApi(id);
 				const { code, msg } = status || {};
 				console.log();
 				if (code === 0) {
@@ -119,9 +125,10 @@ const Tag: FC<IProps> = props => {
 		const values = await formRef.validateFields();
 		const newValues = {
 			...values,
-			tagId: status === UpdateEnum.Save ? UpdateEnum.Save : tagId
+			id: status === UpdateEnum.Save ? UpdateEnum.Save : id
 		};
-		const { status: successStatus } = (await updateTagApi(newValues)) || {};
+		console.log("提交的时候", newValues);
+		const { status: successStatus } = (await updateGlobalConfigApi(newValues)) || {};
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
 			setIsDrawerOpen(false);
@@ -132,23 +139,10 @@ const Tag: FC<IProps> = props => {
 		}
 	};
 
-	// 上线/下线
-	const handleOperate = async (tagId: number, pushStatus: number) => {
-		const { status } = await operateTagApi({ tagId, pushStatus });
-		const { code, msg } = status || {};
-		console.log();
-		if (code === 0) {
-			message.success("操作成功");
-			onSure();
-		} else {
-			message.error(msg);
-		}
-	};
-
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			const { status, result } = await getTagListApi({
+			const { status, result } = await getGlobalConfigListApi({
 				...searchForm,
 				pageNumber: current,
 				pageSize
@@ -158,7 +152,7 @@ const Tag: FC<IProps> = props => {
 			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
 			setPagination({ current: pageNum, pageSize: resPageSize, total });
 			if (code === 0) {
-				const newList = list.map((item: MapItem) => ({ ...item, key: item?.tagId }));
+				const newList = list.map((item: MapItem) => ({ ...item, key: item?.id }));
 				setTableData(newList);
 			}
 		};
@@ -168,25 +162,19 @@ const Tag: FC<IProps> = props => {
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
 		{
-			title: "标签",
-			dataIndex: "tag",
-			key: "tag"
+			title: "配置项名",
+			dataIndex: "keywords",
+			key: "keywords"
 		},
 		{
-			title: "上下线",
-			dataIndex: "status",
-			key: "status",
-			render(status, item) {
-				return (
-					<Switch
-						checked={status === 1}
-						onChange={() => {
-							const pushStatus = status === 0 ? 1 : 0;
-							handleOperate(item.tagId, pushStatus);
-						}}
-					/>
-				);
-			}
+			title: "配置项值",
+			dataIndex: "value",
+			key: "value"
+		},
+		{
+			title: "备注",
+			dataIndex: "comment",
+			key: "comment"
 		},
 		{
 			title: "操作",
@@ -209,7 +197,7 @@ const Tag: FC<IProps> = props => {
 							编辑
 						</Button>
 
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(tagId)}>
+						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(item.id)}>
 							删除
 						</Button>
 					</div>
@@ -221,11 +209,27 @@ const Tag: FC<IProps> = props => {
 	// 编辑表单
 	const reviseDrawerContent = (
 		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="标签" name="tag" rules={[{ required: true, message: "请输入名称!" }]}>
+			<Form.Item label="配置项名" name="keywords" rules={[{ required: true, message: "请输入配置项名称!" }]}>
 				<Input
 					allowClear
 					onChange={e => {
-						handleChange({ tag: e.target.value });
+						handleChange({ keywords: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="配置项值" name="value" rules={[{ required: true, message: "请输入配置项值!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ value: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="备注" name="comment" rules={[{ required: true, message: "请输入备注!" }]}>
+				<Input
+					allowClear
+					onChange={e => {
+						handleChange({ comment: e.target.value });
 					}}
 				/>
 			</Form.Item>
@@ -246,6 +250,7 @@ const Tag: FC<IProps> = props => {
 			<Drawer
 				title="添加/修改"
 				open={isDrawerOpen}
+				size="large"
 				onClose={handleClose}
 				extra={
 					<Space>
@@ -264,4 +269,4 @@ const Tag: FC<IProps> = props => {
 
 const mapStateToProps = (state: any) => state.disc.disc;
 const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(Tag);
+export default connect(mapStateToProps, mapDispatchToProps)(GlobalConfig);

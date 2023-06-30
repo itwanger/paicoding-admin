@@ -7,6 +7,7 @@ import {
 	FileTextOutlined,
 	LineChartOutlined,
 	ReadOutlined,
+	SettingOutlined,
 	SmileOutlined,
 	TagsOutlined,
 	UserOutlined
@@ -15,6 +16,7 @@ import {
 export const currentMenuList = [
 	{ key: "/statistics/index", icon: <LineChartOutlined />, children: undefined, label: "数据统计" },
 	{ key: "/config/index", icon: <CalendarOutlined />, children: undefined, label: "运营配置" },
+	{ key: "/global/index", icon: <SettingOutlined />, children: undefined, label: "全局配置" },
 	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },
 	{ key: "/tag/index", icon: <TagsOutlined />, children: undefined, label: "标签管理" },
 	{ key: "/article/index", icon: <FileTextOutlined />, children: undefined, label: "文章管理" },

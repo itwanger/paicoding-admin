@@ -13,7 +13,7 @@ export const getTagListApi = (data: { pageNumber: number; pageSize: number }) =>
 };
 
 // 删除操作
-export const delTagListApi = (tagId: number) => {
+export const delTagApi = (tagId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/tag/delete`, { tagId });
 };
 
