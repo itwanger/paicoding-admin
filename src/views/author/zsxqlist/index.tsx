@@ -247,7 +247,7 @@ const Zsxqlist: FC<IProps> = props => {
 			key: "userCode",
 			render(value, item) {
 				return (
-					<a href={`${baseDomain}/user/home?userId=/${item?.userId}`} className="cell-text" target="_blank" rel="noreferrer">
+					<a href={`${baseDomain}/user/home?userId=${item?.userId}`} className="cell-text" target="_blank" rel="noreferrer">
 						{value}
 					</a>
 				);
