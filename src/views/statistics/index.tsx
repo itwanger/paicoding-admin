@@ -218,7 +218,7 @@ const Statistics: FC<IProps> = props => {
 							<div className="traffic-img">
 								<img src={userCountImg} />
 							</div>
-							<span className="item-value">2400</span>
+							<span className="item-value">3100</span>
 							<span className="traffic-name sle">星球用户</span>
 						</div>
 						<div className="gitHub-traffic traffic-box">

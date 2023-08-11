@@ -69,7 +69,7 @@ const LoginForm = (props: any) => {
 				<Input placeholder="用户名（admin）" prefix={<UserOutlined />} />
 			</Form.Item>
 			<Form.Item name="password" rules={[{ required: true, message: "请输入密码" }]}>
-				<Input.Password autoComplete="new-password" placeholder="密码（微信搜 楼仔 回复 001）" prefix={<LockOutlined />} />
+				<Input.Password autoComplete="new-password" placeholder="密码（微信搜 沉默王二 回复 002）" prefix={<LockOutlined />} />
 			</Form.Item>
 			<Form.Item className="login-btn">
 				<Button
