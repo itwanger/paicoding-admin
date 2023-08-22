@@ -169,8 +169,23 @@ const GlobalConfig: FC<IProps> = props => {
 		{
 			title: "配置项值",
 			dataIndex: "value",
-			key: "value"
-		},
+			width: 400,
+			key: "value",
+			render: (text) => (
+				<div style={{
+					wordWrap: 'break-word',
+					wordBreak: 'break-all',
+					maxHeight: '4rem', // 3行的高度，可以根据字体大小调整
+					overflow: 'hidden',
+					textOverflow: 'ellipsis',
+					display: '-webkit-box',
+					WebkitLineClamp: 3, // 限制显示3行
+					WebkitBoxOrient: 'vertical',
+				}}>
+					{text}
+				</div>
+			)
+		},		
 		{
 			title: "备注",
 			dataIndex: "comment",
@@ -218,7 +233,7 @@ const GlobalConfig: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="配置项值" name="value" rules={[{ required: true, message: "请输入配置项值!" }]}>
-				<Input
+				<Input.TextArea
 					allowClear
 					onChange={e => {
 						handleChange({ value: e.target.value });
