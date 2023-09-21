@@ -273,18 +273,22 @@ const Column: FC<IProps> = props => {
 	const handleSubmit = async () => {
 		// 又从form中获取数据，需要转换格式的数据
 		const { freeStartTime, freeEndTime } = form;
+		// 当 freeStartTime 为 -1 的时候，取当前 dateRange 的值
 		console.log("handleSubmit 时看看form的值", form, formRef);
 
 		// 从formRef中获取数据，用户填上去可以直接提交的数据
 		const values = await formRef.validateFields();
 		console.log("handleSubmit 时看看form的值 values", values);
 
+		const [start, end] = dateRange;
+		console.log("默认的时间", start.valueOf(), end.valueOf());
+
 		// 新的值传递到后端
 		const newValues = {
 			...values,
 			columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId,
-			freeStartTime: freeStartTime || "",
-			freeEndTime: freeEndTime || ""
+			freeStartTime: (freeStartTime && freeStartTime !== -1) || start.valueOf(),
+			freeEndTime: (freeEndTime && freeEndTime !== -1) || end.valueOf()
 		};
 		console.log("submit 之前的所有值:", newValues);
 
