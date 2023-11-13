@@ -12,9 +12,10 @@ interface IProps {
 	coverList: any[];
 	setCoverList: (e: any[]) => void;
 	handleChange: (e: any) => void;
+	handleFormRefChange: (e: any) => void;
 }
 
-const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange }) => {
+const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange, handleFormRefChange }) => {
 	const customCoverUpload = async (options: any) => {
 		const { onSuccess, onProgress, onError, file } = options;
 		console.log("上传图片", options);
@@ -36,6 +37,7 @@ const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange }) => {
 			console.log("上传图片成功，回调 onsuccess", imagePath);
 			// 把 data 的值赋给 form 的 cover，传递给后端
 			handleChange({ cover: imagePath });
+			handleFormRefChange({ cover: imagePath });
 			const coverUrl = getCompleteUrl(imagePath);
 			// 更新 coverList
 			setCoverList([

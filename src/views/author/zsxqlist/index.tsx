@@ -278,8 +278,8 @@ const Zsxqlist: FC<IProps> = props => {
 			render(value) {
 				return (
 					<>
-						<Avatar style={{ backgroundColor: "#1890ff", color: "#fff" }} size="large">
-							{value.slice(0, 3)}
+						<Avatar style={{ backgroundColor: "#1890ff", color: "#fff" }} size="large" gap={1}>
+							{value.slice(0, 4)}
 						</Avatar>
 					</>
 				);

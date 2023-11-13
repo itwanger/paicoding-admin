@@ -13,11 +13,13 @@ import "./index.scss";
 
 interface IProps {
 	handleChange: (e: any) => void;
+	handleFormRefChange: (e: any) => void;
 	authorName:string;
 }
 
 const AuthorSelect: FC<IProps> = ({ 
 	handleChange,
+	handleFormRefChange,
 	authorName
 }) => {
 	// 作者列表的查询条件
@@ -74,6 +76,7 @@ const AuthorSelect: FC<IProps> = ({
 				//@ts-ignore
 				const { key } = option || {};
 				handleChange({ author: key, authorName: value });
+				handleFormRefChange({author: key});
 			}}
 			// render
 			dropdownRender={menu => {

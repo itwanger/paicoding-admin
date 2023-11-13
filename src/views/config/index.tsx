@@ -136,6 +136,7 @@ const Banner: FC<IProps> = props => {
 
 	// 编辑新增表单值改变
 	const handleChange = (item: MapItem) => {
+		console.log("ConfigTypeList", ConfigTypeList);
 		setForm({ ...form, ...item });
 	};
 	// 查询表单值改变
@@ -153,6 +154,7 @@ const Banner: FC<IProps> = props => {
 	// 点击取消关闭按钮时触发，关闭抽屉
 	const handleClose = () => {
 		setIsOpenDrawerShow(false);
+		setIsDrawerOpen(false);
 	};
 
 	// 重置表单
@@ -327,7 +329,6 @@ const Banner: FC<IProps> = props => {
 							style={{ marginRight: "10px" }}
 							onClick={() => {
 								setIsOpenDrawerShow(true);
-								setStatus(UpdateEnum.Edit);
 								handleChange({ configId: id, ...item });
 							}}
 						>

@@ -92,10 +92,42 @@ const defaultSearchForm = {
 };
 
 const Column: FC<IProps> = props => {
-	// 用户填值的 Form 表单，有些格式可能和后端不一样，需要转换
-	const [formRef] = Form.useForm();
+	const dateFormat = "YYYY/MM/DD";
+	// @ts-ignore
+	const { ColumnStatus, ColumnStatusList, ColumnType, ColumnTypeList } = props || {};
+
 	// form值，临时保存一些值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
+	// 详情的时候，会把信息放到 form 中
+	const {
+		columnId,
+		column,
+		introduction,
+		cover,
+		authorAvatar,
+		authorName,
+		state,
+		section,
+		type,
+		nums,
+		freeEndTime,
+		freeStartTime
+	} = form;
+
+	const detailInfo = [
+		{ label: "教程名", title: column },
+		{ label: "简介", title: introduction },
+		{ label: "连载数量", title: nums },
+		{ label: "类型", title: ColumnType[type] },
+		{ label: "开始时间", title: dayjs(freeStartTime).format(dateFormat) },
+		{ label: "结束时间", title: dayjs(freeEndTime).format(dateFormat) },
+		{ label: "状态", title: ColumnStatus[state] },
+		{ label: "排序", title: section }
+	].map(({ label, title }) => ({ label, title: title || "-" }));
+
+	// 用户填值的 Form 表单，有些格式可能和后端不一样，需要转换
+	const [formRef] = Form.useForm();
+
 	// 表格查询表单
 	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
 
@@ -117,41 +149,11 @@ const Column: FC<IProps> = props => {
 	// 声明一个 coverList
 	const [coverList, setCoverList] = useState<UploadFile[]>([]);
 
-	// @ts-ignore
-	const { ColumnStatus, ColumnStatusList, ColumnType, ColumnTypeList } = props || {};
-
-	const {
-		columnId,
-		column,
-		authorName,
-		introduction,
-		cover,
-		authorAvatar,
-		state,
-		section,
-		type,
-		nums,
-		freeEndTime,
-		freeStartTime
-	} = form;
-
-	// 日期默认值
+	// 日期默认值，或者点击编辑时，把 table 中的日期时间赋值给 dateRange
 	const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([dayjs().add(-7, "d"), dayjs()]);
 
-	const dateFormat = "YYYY/MM/DD";
-
+	// 日期范围组件
 	const { RangePicker } = DatePicker;
-
-	const detailInfo = [
-		{ label: "教程名", title: column },
-		{ label: "简介", title: introduction },
-		{ label: "连载数量", title: nums },
-		{ label: "类型", title: ColumnType[type] },
-		{ label: "开始时间", title: dayjs(freeStartTime).format(dateFormat) },
-		{ label: "结束时间", title: dayjs(freeEndTime).format(dateFormat) },
-		{ label: "状态", title: ColumnStatus[state] },
-		{ label: "排序", title: section }
-	].map(({ label, title }) => ({ label, title: title || "-" }));
 
 	const rangePresets: {
 		label: string;
@@ -189,13 +191,14 @@ const Column: FC<IProps> = props => {
 	 * @returns
 	 */
 	const handleChange = (item: MapItem) => {
+		// 把变化的值放到 form 表单中，item 可以是 table 的一行数据（详情、编辑），也可以是单独的表单值发生变化
 		setForm({ ...form, ...item });
-		console.log("handleChange item setForm", item, form);
-		// 直接从 item 中取出 freeStartTime 和 freeEndTime, state 更新是异步的
-		const { freeStartTime, freeEndTime } = item;
-		setDateRange([dayjs(freeStartTime), dayjs(freeEndTime)]);
-		// 更新 formRef
-		// 如果是时间的时候不更新
+		console.log("handleChange 时看看form的值", item);
+	};
+
+	const handleFormRefChange = (item: MapItem) => {
+		// 当自定义组件更新时，对 formRef 也进行更新
+		console.log("handleFormRefChange 时看看form的值", item);
 		formRef.setFieldsValue({ ...item });
 	};
 
@@ -222,6 +225,7 @@ const Column: FC<IProps> = props => {
 
 	const onRangeChange = (dates: null | (Dayjs | null)[]) => {
 		// 从 dates 中取出 freeStartTime 和 freeEndTime
+		// 日期选择范围框变动的时候，更新 form 中的 freeStartTime 和 freeEndTime
 		let now = dayjs();
 		let freeStartTime = now.valueOf();
 		console.log("freeStartTime", freeStartTime);
@@ -236,6 +240,7 @@ const Column: FC<IProps> = props => {
 			freeStartTime = now.valueOf();
 			freeEndTime = freeStartTime;
 		}
+		console.log("freeEndTime", freeEndTime);
 
 		// 更新到 form 中
 		setForm({ ...form, freeStartTime: freeStartTime, freeEndTime: freeEndTime });
@@ -272,23 +277,22 @@ const Column: FC<IProps> = props => {
 	// 编辑或者新增时提交数据到服务器端
 	const handleSubmit = async () => {
 		// 又从form中获取数据，需要转换格式的数据
-		const { freeStartTime, freeEndTime } = form;
+		const { freeStartTime, freeEndTime, cover, author } = form;
 		// 当 freeStartTime 为 -1 的时候，取当前 dateRange 的值
-		console.log("handleSubmit 时看看form的值", form, formRef);
+		console.log("handleSubmit 时看看form的值", form);
 
 		// 从formRef中获取数据，用户填上去可以直接提交的数据
 		const values = await formRef.validateFields();
 		console.log("handleSubmit 时看看form的值 values", values);
 
-		const [start, end] = dateRange;
-		console.log("默认的时间", start.valueOf(), end.valueOf());
-
 		// 新的值传递到后端
 		const newValues = {
 			...values,
+			cover: cover,
+			author: author,
 			columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId,
-			freeStartTime: (freeStartTime && freeStartTime !== -1) || start.valueOf(),
-			freeEndTime: (freeEndTime && freeEndTime !== -1) || end.valueOf()
+			freeStartTime: freeStartTime,
+			freeEndTime: freeEndTime
 		};
 		console.log("submit 之前的所有值:", newValues);
 
@@ -398,7 +402,7 @@ const Column: FC<IProps> = props => {
 			key: "key",
 			width: 300,
 			render: (_, item) => {
-				const { columnId } = item;
+				const { columnId, type, state, cover, authorName, author, freeStartTime, freeEndTime } = item;
 
 				return (
 					<div className="operation-btn">
@@ -408,7 +412,6 @@ const Column: FC<IProps> = props => {
 							style={{ marginRight: "10px" }}
 							onClick={() => {
 								setIsDetailDrawerShow(true);
-								setStatus(UpdateEnum.Edit);
 								// 把行的值赋给 form，这样详情的时候就可以展示了
 								handleChange({ ...item });
 							}}
@@ -426,8 +429,6 @@ const Column: FC<IProps> = props => {
 								setStatus(UpdateEnum.Edit);
 
 								// 从列表中获取数据，需要转换一下时间格式
-								const { cover } = item;
-
 								// 此时不能直接从 form 中取出来，所以我们从 item 中取出来了。
 								let coverUrl = getCompleteUrl(cover);
 								// 需要把 cover 放到 coverList 中，默认显示
@@ -441,8 +442,12 @@ const Column: FC<IProps> = props => {
 									}
 								]);
 
-								// 设置form的值，主要是时间格式的转换，以及 type
-								// 等于说把行的值全部放到 form 中
+								formRef.setFieldsValue({ ...item, type: String(type), state: String(state) });
+
+								// 从 item 中取出 freeStartTime 和 freeEndTime, 转换成 Dayjs，编辑的时候，需要显示
+								setDateRange([dayjs(freeStartTime), dayjs(freeEndTime)]);
+
+								// 注意把 ID 传过去（更新时需要），还有作者名（显示的时候有用），日期（提交的时候保证有值）
 								handleChange({
 									...item
 								});
@@ -481,27 +486,17 @@ const Column: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="封面" name="cover" rules={[{ required: true, message: "请上传封面!" }]}>
-				<ImgUpload coverList={coverList} setCoverList={setCoverList} handleChange={handleChange} />
+				<ImgUpload
+					coverList={coverList}
+					setCoverList={setCoverList}
+					handleChange={handleChange}
+					handleFormRefChange={handleFormRefChange}
+				/>
 			</Form.Item>
 			<Form.Item label="作者" name="author" rules={[{ required: true, message: "请选择作者!" }]}>
-				<AuthorSelect authorName={authorName} handleChange={handleChange} />
+				<AuthorSelect authorName={authorName} handleChange={handleChange} handleFormRefChange={handleFormRefChange} />
 			</Form.Item>
-			<Form.Item label="状态" name="state" rules={[{ required: true, message: "请选择状态!" }]}>
-				<Select
-					allowClear
-					onChange={value => {
-						handleChange({ state: value });
-					}}
-					options={ColumnStatusList}
-				/>
-			</Form.Item>
-			<Form.Item label="连载数量" name="nums" rules={[{ required: true, message: "请选择连载数量!" }]}>
-				<InputNumber
-					onChange={value => {
-						handleChange({ nums: value });
-					}}
-				/>
-			</Form.Item>
+
 			<Form.Item label="类型" name="type" rules={[{ required: true, message: "请选择类型!" }]}>
 				<Select
 					allowClear
@@ -511,8 +506,27 @@ const Column: FC<IProps> = props => {
 					options={ColumnTypeList}
 				/>
 			</Form.Item>
+
 			<Form.Item label="开始结束日期">
 				<RangePicker presets={rangePresets} format={dateFormat} value={dateRange} onChange={onRangeChange} />
+			</Form.Item>
+
+			<Form.Item label="状态" name="state" rules={[{ required: true, message: "请选择状态!" }]}>
+				<Select
+					allowClear
+					onChange={value => {
+						handleChange({ state: value });
+					}}
+					options={ColumnStatusList}
+				/>
+			</Form.Item>
+
+			<Form.Item label="连载数量" name="nums" rules={[{ required: true, message: "请选择连载数量!" }]}>
+				<InputNumber
+					onChange={value => {
+						handleChange({ nums: value });
+					}}
+				/>
 			</Form.Item>
 
 			<Form.Item label="排序" name="section" rules={[{ required: true, message: "请输入排序" }]}>
