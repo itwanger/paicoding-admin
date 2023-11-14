@@ -35,6 +35,7 @@ import "dayjs/locale/zh-cn";
 dayjs.locale("zh-cn");
 
 import "./index.scss";
+import { set } from "lodash";
 
 interface DataType {
 	author: number;
@@ -119,8 +120,8 @@ const Column: FC<IProps> = props => {
 		{ label: "简介", title: introduction },
 		{ label: "连载数量", title: nums },
 		{ label: "类型", title: ColumnType[type] },
-		{ label: "开始时间", title: dayjs(freeStartTime).format(dateFormat) },
-		{ label: "结束时间", title: dayjs(freeEndTime).format(dateFormat) },
+		{ label: "开始时间", title: dayjs.unix(freeStartTime / 1000).format(dateFormat) },
+		{ label: "结束时间", title: dayjs.unix(freeEndTime / 1000).format(dateFormat) },
 		{ label: "状态", title: ColumnStatus[state] },
 		{ label: "排序", title: section }
 	].map(({ label, title }) => ({ label, title: title || "-" }));
@@ -227,24 +228,24 @@ const Column: FC<IProps> = props => {
 		// 从 dates 中取出 freeStartTime 和 freeEndTime
 		// 日期选择范围框变动的时候，更新 form 中的 freeStartTime 和 freeEndTime
 		let now = dayjs();
-		let freeStartTime = now.valueOf();
-		console.log("freeStartTime", freeStartTime);
+		let freeStartTime = now.unix();
 		let freeEndTime = freeStartTime;
 
 		if (dates) {
 			// 从 dates 中取出 freeStartTime 和 freeEndTime
-			freeStartTime = dates[0]?.valueOf() ?? 0;
-			freeEndTime = dates[1]?.valueOf() ?? 0;
+			freeStartTime = dates[0]?.unix() ?? 0;
+			freeEndTime = dates[1]?.unix() ?? 0;
 		} else {
 			console.log("Clear");
-			freeStartTime = now.valueOf();
+			freeStartTime = now.unix();
 			freeEndTime = freeStartTime;
 		}
+		console.log("freeStartTime", freeStartTime);
 		console.log("freeEndTime", freeEndTime);
 
 		// 更新到 form 中
-		setForm({ ...form, freeStartTime: freeStartTime, freeEndTime: freeEndTime });
-		setDateRange([dayjs(freeStartTime), dayjs(freeEndTime)]);
+		setForm({ ...form, freeStartTime: freeStartTime * 1000, freeEndTime: freeEndTime * 1000 });
+		setDateRange([dayjs(freeStartTime * 1000), dayjs(freeEndTime * 1000)]);
 	};
 
 	// 重置表单
@@ -402,7 +403,7 @@ const Column: FC<IProps> = props => {
 			key: "key",
 			width: 300,
 			render: (_, item) => {
-				const { columnId, type, state, cover, authorName, author, freeStartTime, freeEndTime } = item;
+				const { columnId, type, state, cover, freeStartTime, freeEndTime } = item;
 
 				return (
 					<div className="operation-btn">
@@ -411,9 +412,10 @@ const Column: FC<IProps> = props => {
 							icon={<EyeOutlined />}
 							style={{ marginRight: "10px" }}
 							onClick={() => {
+								handleChange({
+									...item
+								});
 								setIsDetailDrawerShow(true);
-								// 把行的值赋给 form，这样详情的时候就可以展示了
-								handleChange({ ...item });
 							}}
 						>
 							详情
@@ -444,13 +446,12 @@ const Column: FC<IProps> = props => {
 
 								formRef.setFieldsValue({ ...item, type: String(type), state: String(state) });
 
-								// 从 item 中取出 freeStartTime 和 freeEndTime, 转换成 Dayjs，编辑的时候，需要显示
-								setDateRange([dayjs(freeStartTime), dayjs(freeEndTime)]);
-
 								// 注意把 ID 传过去（更新时需要），还有作者名（显示的时候有用），日期（提交的时候保证有值）
 								handleChange({
 									...item
 								});
+
+								setDateRange([dayjs.unix(freeStartTime / 1000), dayjs.unix(freeEndTime / 1000)]);
 							}}
 						>
 							编辑
