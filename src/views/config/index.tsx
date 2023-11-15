@@ -260,7 +260,7 @@ const Banner: FC<IProps> = props => {
 			const { code } = status || {};
 			//@ts-ignore
 			const { list, pageNum, pageSize: resPageSize, total } = result || {};
-			setPagination({ current: pageNum, pageSize: resPageSize, total });
+			setPagination({ current: Number(pageNum), pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item.id }));
 				setTableData(newList);

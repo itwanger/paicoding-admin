@@ -54,9 +54,9 @@ const Category: FC<IProps> = props => {
 	const { current, pageSize } = pagination;
 
 	const paginationInfo = {
+		...pagination,
 		showSizeChanger: true,
 		showTotal: (total: number) => `共 ${total || 0} 条`,
-		...pagination,
 		onChange: (current: number, pageSize: number) => {
 			setPagination({ current, pageSize });
 		}
@@ -160,7 +160,8 @@ const Category: FC<IProps> = props => {
 			const { code } = status || {};
 			//@ts-ignore
 			const { list, pageNum, pageSize: resPageSize, total } = result || {};
-			setPagination({ current: pageNum, pageSize: resPageSize, total });
+			console.log("result", result);
+			setPagination({ current: Number(pageNum), pageSize: resPageSize, total });
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.categoryId }));
 				setTableData(newList);
