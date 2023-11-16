@@ -74,7 +74,25 @@ npm run dev
 
 ![](https://cdn.tobebetterjavaer.com/stutymore/README-20230605110616.png)
 
-本地的用户名和密码均为 amdin 和 admin 。
+本地的用户名和密码均为 admin 和 admin 。
+
+如果遇到 nodejs 环境的问题实在无法启动，可能是一些依赖包的问题，可以尝试删除 node_modules 文件夹，重新安装依赖包。如果仍然无法解决，可以通过以下方式获取我已经打包好的 node_modules 安装包。
+
+异常堆栈：
+
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20231116201935.png)
+
+解决方法 1：升级 nodejs 到 18 以上，升级 npm 到 9 以上，然后重新 install。
+
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20231116202024.png)
+
+解决方法 2：删除 node_modules 文件夹，在「沉默王二」公众号后台回复「node」下载 node_modules 依赖包。
+
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20231116202230.png)
+
+然后覆盖你本地的 node_modules 包，然后再执行 `npm run dev` 就可以运行起来了。
+
+![](https://cdn.tobebetterjavaer.com/stutymore/README-20231116202239.png)
 
 ### Build：
 
