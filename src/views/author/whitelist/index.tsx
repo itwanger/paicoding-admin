@@ -7,7 +7,7 @@ import { Avatar, Button, Drawer, Form, Input, InputRef, message, Modal, Space, T
 import type { ColumnsType,ColumnType } from "antd/es/table";
 import { FilterConfirmProps } from "antd/es/table/interface";
 
-import { delAuthorWhiteApi, getAuthorWhiteListApi, updateAuthorWhiteApi } from "@/api/modules/author";
+import { getAuthorWhiteListApi, resetAuthorWhiteApi, updateAuthorWhiteApi } from "@/api/modules/author";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { MapItem } from "@/typings/common";
 import AuthorSelect from "@/views/column/setting/components/authorselect";

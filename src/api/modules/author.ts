@@ -27,7 +27,7 @@ export const operateBatchZsxqWhiteApi = (params: object | undefined) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/zsxq/whitelist/batchOperate`, params);
 };
 
-// 删除操作
+// 重置操作
 export const resetAuthorWhiteApi = (authorId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/zsxq/whitelist/reset`, { authorId });
 };
