@@ -82,7 +82,7 @@ const GlobalConfig: FC<IProps> = props => {
 	};
 	// 点击搜索按钮时触发搜索
 	const handleSearch = () => {
-		setPagination(initPagination);
+		setPagination({ current: 1, pageSize });
 		onSure();
 	};
 	// 抽屉关闭
@@ -142,6 +142,7 @@ const GlobalConfig: FC<IProps> = props => {
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
+			console.log("searchForm", searchForm);
 			const { status, result } = await getGlobalConfigListApi({
 				...searchForm,
 				pageNumber: current,

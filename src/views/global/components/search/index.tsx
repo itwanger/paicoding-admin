@@ -24,7 +24,7 @@ const Search: FC<IProps> = ({ handleSearch, handleSearchChange, handleAdd }) => 
 								allowClear
 								style={{ width: 152 }}
 								placeholder="请输入配置项名称"
-								onChange={e => handleSearchChange({ key: e.target.value })}
+								onChange={e => handleSearchChange({ keywords: e.target.value })}
 							/>
 						</div>
 						<div className="global-config-search__search-item">

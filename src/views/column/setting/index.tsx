@@ -34,8 +34,9 @@ import Search from "./components/search";
 import "dayjs/locale/zh-cn";
 dayjs.locale("zh-cn");
 
-import "./index.scss";
 import { set } from "lodash";
+
+import "./index.scss";
 
 interface DataType {
 	author: number;

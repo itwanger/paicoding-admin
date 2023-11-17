@@ -193,6 +193,7 @@ const Tag: FC<IProps> = props => {
 			key: "key",
 			width: 210,
 			render: (_, item) => {
+				const { tagId } = item;
 				return (
 					<div className="operation-btn">
 						<Button

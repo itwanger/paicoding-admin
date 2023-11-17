@@ -1,12 +1,11 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Avatar, Button, Form, Input, message, Modal, RadioChangeEvent, Select, Switch, Table } from "antd";
+import { DeleteOutlined, EditOutlined, UndoOutlined } from "@ant-design/icons";
+import { Avatar, Badge, Button, Form, Input, message, Modal, RadioChangeEvent, Select, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { on } from "events";
 
-import { getZsxqWhiteListApi, operateBatchZsxqWhiteApi, operateZsxqWhiteApi, updateZsxqWhiteApi } from "@/api/modules/author";
+import { getZsxqWhiteListApi, operateBatchZsxqWhiteApi, operateZsxqWhiteApi, resetAuthorWhiteApi, updateZsxqWhiteApi } from "@/api/modules/author";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -25,6 +24,7 @@ interface DataType {
 	inviteCode: string;
 	inviteNum: number;
 	state: number;
+	strategy: number;
 }
 
 interface IProps {}
@@ -43,6 +43,7 @@ interface IInitForm {
 	name: string;
 	starNumber: string;
 	state: number;
+	strategy: number;
 	userCode: string;
 }
 
@@ -52,6 +53,7 @@ const defaultInitForm = {
 	name: "",
 	starNumber: "",
 	state: -1,
+	strategy: 0,
 	userCode: ""
 };
 
@@ -93,9 +95,23 @@ const Zsxqlist: FC<IProps> = props => {
 		}
 	};
 
-	// 一些配置项
+	// 一些配置项，从字典里取出来
 	//@ts-ignore
-	const { UserAIStatList } = props || {};
+	const { UserAIStatList, UserAiStrategy, UserAiStrategyList, LoginType, LoginTypeList } = props || {};
+	console.log("UserAiStrategyList", UserAiStrategyList);
+
+	const colorStrategys = ["#f50", "#2db7f5", "#87d068", "#108ee9"];
+	const colorLoginTypes = ["#1890ff", "#7265e6"];
+	//@ts-ignore
+	const colorStrategyMap = UserAiStrategyList.reduce((acc, strategy, index) => {
+    acc[strategy.value] = colorStrategys[index % colorStrategys.length];
+    return acc;
+	}, {} as { [key: string]: string });
+	//@ts-ignore
+	const colorLoginTypeMap = LoginTypeList.reduce((acc, loginType, index) => {
+    acc[loginType.value] = colorLoginTypes[index % colorLoginTypes.length];
+    return acc;
+	}, {} as { [key: string]: string });
 
 	const { id } = form;
 
@@ -203,6 +219,27 @@ const Zsxqlist: FC<IProps> = props => {
 		});
 	};
 
+	// 重置
+	const handleReset = (zsxqAId: number) => {
+		Modal.warning({
+			title: "确认重置此星球用户吗",
+			content: "重置此星球用户后无法恢复，请谨慎操作！",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				const { status } = await resetAuthorWhiteApi(zsxqAId);
+				const { code, msg } = status || {};
+				console.log();
+				if (code === 0) {
+					message.success("重置成功");
+					onSure();
+				} else {
+					message.error(msg);
+				}
+			}
+		});
+	};
+
 	const handleSubmit = async () => {
 		const values = await formRef.validateFields();
 		const newValues = { ...values, id };
@@ -275,25 +312,50 @@ const Zsxqlist: FC<IProps> = props => {
 			dataIndex: "name",
 			width: 110,
 			key: "name",
+		},
+		{
+			title: "注册类型",
+			dataIndex: "loginType",
+			key: "loginType",
 			render(value) {
 				return (
 					<>
-						<Avatar style={{ backgroundColor: "#1890ff", color: "#fff" }} size="large" gap={1}>
-							{value.slice(0, 4)}
+						<Avatar style={{ backgroundColor: colorLoginTypeMap[value], color: "#fff" }} size={50} gap={1}>
+							{LoginType[value].slice(0, 5)}
 						</Avatar>
 					</>
 				);
 			}
 		},
 		{
-			title: "邀请码",
-			dataIndex: "inviteCode",
-			key: "inviteCode"
+			title: "AI策略",
+			dataIndex: "strategy",
+			key: "strategy",
+			render(value) {
+				const desc = UserAiStrategy[value] || "绑定";
+				// 如果 desc 的长度大于 5，那么就截取前 5 个字符
+				let len = desc.length;
+				if (len > 8) {
+					len = 8
+				}
+				return (
+					<>
+						<Tag color={colorStrategyMap[value]}>{desc.slice(2, len)}</Tag>
+					</>
+				);
+			}
 		},
 		{
 			title: "邀请人数",
 			dataIndex: "inviteNum",
-			key: "inviteNum"
+			key: "inviteNum",
+			render(value) {
+				return (
+					<>
+						<Badge count={value} showZero color="#faad14" />
+					</>
+				);
+			}
 		},
 		{
 			title: "状态",
@@ -318,10 +380,10 @@ const Zsxqlist: FC<IProps> = props => {
 		{
 			title: "操作",
 			key: "key",
-			width: 120,
+			width: 210,
 			render: (_, item) => {
 				// 从 item 中取出 articleId
-				const { id } = item;
+				const { id, strategy } = item;
 				return (
 					<div className="operation-btn">
 						<Button
@@ -332,11 +394,18 @@ const Zsxqlist: FC<IProps> = props => {
 								setIsModalOpen(true);
 								handleChange({ ...item });
 								formRef.setFieldsValue({
-									...item
+									...item,
+									// long 型和字符串型的转换
+									strategy: String(strategy)
 								});
+								console.log("formRef item", formRef.getFieldsValue());
 							}}
 						>
 							编辑
+						</Button>
+
+						<Button type="primary" danger icon={<UndoOutlined />} onClick={() => handleReset(id)}>
+							重置
 						</Button>
 					</div>
 				);
@@ -370,6 +439,12 @@ const Zsxqlist: FC<IProps> = props => {
 						handleChange({ starNumber: e.target.value });
 					}}
 				/>
+			</Form.Item>
+			<Form.Item label="AI策略" name="strategy" rules={[{ required: false, message: "请选择 AI 策略!" }]}>
+				<Select
+						options={UserAiStrategyList}
+						onChange={value => handleChange({ strategy :value })}
+					></Select>
 			</Form.Item>
 		</Form>
 	);

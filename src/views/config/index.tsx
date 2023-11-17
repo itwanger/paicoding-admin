@@ -252,6 +252,7 @@ const Banner: FC<IProps> = props => {
 	// 数据请求
 	useEffect(() => {
 		const getConfigList = async () => {
+			console.log("searchForm", searchForm);
 			const { status, result } = await getConfigListApi({
 				...searchForm,
 				pageNumber: current,
