@@ -358,6 +358,11 @@ const Zsxqlist: FC<IProps> = props => {
 			}
 		},
 		{
+			title: "邀请编号",
+			dataIndex: "inviteCode",
+			key: "inviteCode",
+		},
+		{
 			title: "状态",
 			dataIndex: "state",
 			key: "state",

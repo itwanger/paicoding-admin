@@ -42,6 +42,14 @@ const Search: FC<IProps> = ({ handleSearchChange, handleSearch, radioValue, hand
 							allowClear
 							placeholder="请输入登录用户名"
 							style={{ width: 152 }}
+							onChange={e => handleSearchChange({ userCode: e.target.value })}
+						/>
+					</div>
+					<div className="zsxq-white-list-search__search-item">
+						<Input
+							allowClear
+							placeholder="请输入用户昵称"
+							style={{ width: 152 }}
 							onChange={e => handleSearchChange({ name: e.target.value })}
 						/>
 					</div>
