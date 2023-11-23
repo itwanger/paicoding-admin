@@ -20,15 +20,23 @@ const columnRouter: Array<RouteObject> = [
 						path: "/column/setting/index",
 						element: lazyLoad(React.lazy(() => import("@/views/column/setting/index"))),
 						meta: {
-							title: "教程配置",
+							title: "专栏",
 							key: "/column/setting/index"
+						}
+					},
+					{
+						path: "/column/setting/index/articlesort",
+						element: lazyLoad(React.lazy(() => import("@/views/column/setting/articlesort/index"))),
+						meta: {
+							title: "教程排序",
+							key: "/column/setting/index/articlesort"
 						}
 					},
 					{
 						path: "/column/article/index",
 						element: lazyLoad(React.lazy(() => import("@/views/column/article/index"))),
 						meta: {
-							title: "添加文章",
+							title: "教程",
 							key: "/column/article/index"
 						}
 					}

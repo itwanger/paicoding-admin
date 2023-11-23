@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, EyeOutlined, SwapOutlined } from "@ant-design/icons";
 import {
 	Avatar,
 	Button,
@@ -34,6 +34,7 @@ import Search from "./components/search";
 import "dayjs/locale/zh-cn";
 dayjs.locale("zh-cn");
 
+import { useNavigate } from "react-router-dom";
 import { set } from "lodash";
 
 import "./index.scss";
@@ -157,6 +158,8 @@ const Column: FC<IProps> = props => {
 	// 日期范围组件
 	const { RangePicker } = DatePicker;
 
+	const navigate = useNavigate();
+
 	const rangePresets: {
 		label: string;
 		value: [Dayjs, Dayjs];
@@ -274,6 +277,11 @@ const Column: FC<IProps> = props => {
 				}
 			}
 		});
+	};
+
+	const handleManage = (columnId: number) => {
+		// 导航到文章排序页面
+		navigate("/column/setting/index/articlesort", { state: { columnId } });
 	};
 
 	// 编辑或者新增时提交数据到服务器端
@@ -402,7 +410,7 @@ const Column: FC<IProps> = props => {
 		{
 			title: "操作",
 			key: "key",
-			width: 300,
+			width: 200,
 			render: (_, item) => {
 				const { columnId, type, state, cover, freeStartTime, freeEndTime } = item;
 
@@ -418,9 +426,15 @@ const Column: FC<IProps> = props => {
 								});
 								setIsDetailDrawerShow(true);
 							}}
-						>
-							详情
-						</Button>
+						></Button>
+						<Button
+							type="primary"
+							icon={<SwapOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={() => {
+								handleManage(columnId);
+							}}
+						></Button>
 						<Button
 							type="primary"
 							icon={<EditOutlined />}
@@ -454,12 +468,8 @@ const Column: FC<IProps> = props => {
 
 								setDateRange([dayjs.unix(freeStartTime / 1000), dayjs.unix(freeEndTime / 1000)]);
 							}}
-						>
-							编辑
-						</Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}>
-							删除
-						</Button>
+						></Button>
+						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}></Button>
 					</div>
 				);
 			}

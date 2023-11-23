@@ -32,7 +32,7 @@ export const updateColumnApi = (form: IFormType) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/column/saveColumn`, form);
 };
 
-// 删除操作
+// 删除专栏操作
 export const delColumnApi = (columnId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumn`, { columnId });
 };
@@ -47,7 +47,12 @@ export const updateColumnArticleApi = (form: IFormType) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/column/saveColumnArticle`, form);
 };
 
-// 删除操作
+// 删除教程操作
 export const delColumnArticleApi = (id: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumnArticle`, { id });
+};
+
+// 调整两个教程的顺序
+export const sortColumnArticleApi = (activeId: number, overId: number) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/column/sortColumnArticleApi`, { activeId, overId });
 };
