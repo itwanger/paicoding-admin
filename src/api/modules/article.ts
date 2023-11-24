@@ -11,8 +11,13 @@ export const getArticleListApi = (data: { pageNumber: number; pageSize: number }
 	return http.post(`${PORT1}/article/list`, data);
 };
 
-// 保存操作
+// 更新标题操作
 export const updateArticleApi = (params: object | undefined) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/article/update`, params);
+};
+
+// 保存操作
+export const saveArticleApi = (params: object | undefined) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/article/save`, params);
 };
 

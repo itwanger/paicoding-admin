@@ -14,6 +14,7 @@ import { baseDomain } from "@/utils/util";
 import Search from "./components/search";
 
 import "./index.scss";
+import dayjs from "dayjs";
 
 interface DataType {
 	articleId: number;
@@ -243,6 +244,16 @@ const Article: FC<IProps> = props => {
 				);
 			}
 		},
+		{
+			title: "修改时间",
+			dataIndex: "updateTime",
+			key: "updateTime",
+			width: 120,
+			render: (value: string) => {
+				const time = dayjs(value);
+				return <Tooltip title={time.format('YYYY-MM-DD HH:mm:ss')}><span>{time.format('MM-DD HH:mm')}</span></Tooltip>;
+			}
+		},	
 		{
 			title: "作者",
 			dataIndex: "authorName",

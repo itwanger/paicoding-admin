@@ -3,11 +3,11 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
 import gfm from '@bytemd/plugin-gfm'
-import { Editor, Viewer } from '@bytemd/react'
+import { Editor } from '@bytemd/react'
 import { Form, message } from "antd";
 import zhHans from 'bytemd/locales/zh_Hans.json';
 
-import { getArticleApi, updateArticleApi } from "@/api/modules/article";
+import { getArticleApi, saveArticleApi } from "@/api/modules/article";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -27,11 +27,13 @@ interface IProps {}
 
 export interface IFormType {
 	articleId: number;// 文章id
+	status: number; // 文章状态
 	content: string; // 文章内容
 }
 
 const defaultInitForm: IFormType = {
 	articleId: -1,
+	status: 0,
 	content: "",
 }
 
@@ -70,17 +72,23 @@ const ArticleEdit: FC<IProps> = props => {
 	// 编辑或者新增时提交数据到服务器端
 	const handleSubmit = async () => {
 		// 又从form中获取数据，需要转换格式的数据
-		const { articleId, content } = form;
+		const { articleId, content, status } = form;
 		console.log("handleSubmit 时看看form的值", form);
+		// content 为空的时候，提示用户
+		if (!content) {
+			message.error("请输入文章内容");
+			return;
+		}
 
 		// 新的值传递到后端
 		const newValues = {
+			status: status,
 			content: content,
 			articleId: status === UpdateEnum.Save ? UpdateEnum.Save : articleId,
 		};
 		console.log("submit 之前的所有值:", newValues);
 
-		const { status: successStatus } = (await updateArticleApi(newValues)) || {};
+		const { status: successStatus } = (await saveArticleApi(newValues)) || {};
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
 			message.success("成功");
@@ -98,11 +106,15 @@ const ArticleEdit: FC<IProps> = props => {
 				articleId
 			);
 			const { code } = status || {};
-			//@ts-ignore
-			const { content } = result || {};
 			if (code === 0) { 
 				console.log("result", result);
-				setContent(content);
+				handleChange({ 
+					content : result?.content,
+					articleId: result?.articleId,
+					status: result?.status,
+				});
+				// 设置文章内容，编辑器使用
+				setContent(result?.content);
 			 }
 		};
 		getArticle();
