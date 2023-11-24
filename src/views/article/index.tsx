@@ -308,7 +308,7 @@ const Article: FC<IProps> = props => {
 								// 如果 status 为 1 那么 status 为 warning
 								status={status === 1 ? "" : "error"}
 								value={status.toString()} 
-								options={PushStatusList}
+								options={[{value: 1, label: 'Published'}, {value: 2, label: 'InReview'}]}
 								onChange={(value) => handleStatusChange(articleId, Number(value))}
 							>
 							</Select>;
