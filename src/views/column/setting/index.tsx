@@ -16,6 +16,7 @@ import {
 	Select,
 	Space,
 	Table,
+	Tooltip,
 	UploadFile
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -35,11 +36,11 @@ import "dayjs/locale/zh-cn";
 dayjs.locale("zh-cn");
 
 import { useNavigate } from "react-router-dom";
-import { set } from "lodash";
 
 import "./index.scss";
 
 interface DataType {
+	section: number;
 	author: number;
 	columnId: number;
 	state: number;
@@ -404,6 +405,7 @@ const Column: FC<IProps> = props => {
 		},
 		{
 			title: "排序",
+			sorter: (a, b) => a.section - b.section,
 			dataIndex: "section",
 			key: "section"
 		},
@@ -416,60 +418,68 @@ const Column: FC<IProps> = props => {
 
 				return (
 					<div className="operation-btn">
-						<Button
-							type="primary"
-							icon={<EyeOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {
-								handleChange({
-									...item
-								});
-								setIsDetailDrawerShow(true);
-							}}
-						></Button>
-						<Button
-							type="primary"
-							icon={<SwapOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {
-								handleManage(columnId);
-							}}
-						></Button>
-						<Button
-							type="primary"
-							icon={<EditOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {
-								// 打开抽屉
-								setIsOpenDrawerShow(true);
-								// 设置为更新的状态
-								setStatus(UpdateEnum.Edit);
+						<Tooltip title="查看">
+							<Button
+								type="primary"
+								icon={<EyeOutlined />}
+								style={{ marginRight: "10px" }}
+								onClick={() => {
+									handleChange({
+										...item
+									});
+									setIsDetailDrawerShow(true);
+								}}
+							></Button>
+						</Tooltip>
+						<Tooltip title="调整教程顺序">
+							<Button
+								type="primary"
+								icon={<SwapOutlined />}
+								style={{ marginRight: "10px" }}
+								onClick={() => {
+									handleManage(columnId);
+								}}
+							></Button>
+						</Tooltip>
+						<Tooltip title="编辑">
+							<Button
+								type="primary"
+								icon={<EditOutlined />}
+								style={{ marginRight: "10px" }}
+								onClick={() => {
+									// 打开抽屉
+									setIsOpenDrawerShow(true);
+									// 设置为更新的状态
+									setStatus(UpdateEnum.Edit);
 
-								// 从列表中获取数据，需要转换一下时间格式
-								// 此时不能直接从 form 中取出来，所以我们从 item 中取出来了。
-								let coverUrl = getCompleteUrl(cover);
-								// 需要把 cover 放到 coverList 中，默认显示
-								setCoverList([
-									{
-										uid: "-1",
-										name: "封面图(建议110px*156px)",
-										status: "done",
-										thumbUrl: coverUrl,
-										url: coverUrl
-									}
-								]);
+									// 从列表中获取数据，需要转换一下时间格式
+									// 此时不能直接从 form 中取出来，所以我们从 item 中取出来了。
+									let coverUrl = getCompleteUrl(cover);
+									// 需要把 cover 放到 coverList 中，默认显示
+									setCoverList([
+										{
+											uid: "-1",
+											name: "封面图(建议110px*156px)",
+											status: "done",
+											thumbUrl: coverUrl,
+											url: coverUrl
+										}
+									]);
 
-								formRef.setFieldsValue({ ...item, type: String(type), state: String(state) });
+									formRef.setFieldsValue({ ...item, type: String(type), state: String(state) });
 
-								// 注意把 ID 传过去（更新时需要），还有作者名（显示的时候有用），日期（提交的时候保证有值）
-								handleChange({
-									...item
-								});
+									// 注意把 ID 传过去（更新时需要），还有作者名（显示的时候有用），日期（提交的时候保证有值）
+									handleChange({
+										...item
+									});
 
-								setDateRange([dayjs.unix(freeStartTime / 1000), dayjs.unix(freeEndTime / 1000)]);
-							}}
-						></Button>
-						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}></Button>
+									setDateRange([dayjs.unix(freeStartTime / 1000), dayjs.unix(freeEndTime / 1000)]);
+								}}
+							></Button>
+						</Tooltip>
+						<Tooltip title="删除">
+							<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(columnId)}></Button>
+						</Tooltip>
 					</div>
 				);
 			}

@@ -1,4 +1,5 @@
-import ReactDOM from "react-dom";
+import React from "react";
+import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
@@ -11,12 +12,11 @@ import "@/assets/fonts/font.less";
 import "@/styles/common.less";
 import "virtual:svg-icons-register";
 
-// react 17 创建，控制台会报错，暂时不影响使用（菜单折叠时不会出现闪烁）
-ReactDOM.render(
+const root = ReactDOM.createRoot(document.getElementById("root")!);
+root.render(
 	<Provider store={store}>
-		<PersistGate persistor={persistor}>
+		<PersistGate loading={null} persistor={persistor}>
 			<App />
 		</PersistGate>
-	</Provider>,
-	document.getElementById("root")
+	</Provider>
 );

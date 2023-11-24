@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Avatar, Button, Form, Input, message, Modal, Select, Switch, Table } from "antd";
+import { useNavigate } from "react-router";
+import { DeleteOutlined, EditOutlined, HighlightOutlined } from "@ant-design/icons";
+import { Avatar, Button, Form, Input, message, Modal, Select, Switch, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { delArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
@@ -95,6 +96,8 @@ const Article: FC<IProps> = props => {
 
 	const { articleId } = form;
 
+	const navigate = useNavigate();
+
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
@@ -177,6 +180,12 @@ const Article: FC<IProps> = props => {
 		} else {
 			message.error(msg || "状态操作失败");
 		}
+	};
+
+	// 导航到文章编辑页面
+	const handleEdit = (articleId: number) => {
+		console.log("articleId", articleId);
+		navigate("/article/edit/index", { state: { articleId }});
 	};
 
 	const handleSubmit = async () => {
@@ -297,33 +306,44 @@ const Article: FC<IProps> = props => {
 		{
 			title: "操作",
 			key: "key",
-			width: 210,
+			width: 160,
 			render: (_, item) => {
 				// 从 item 中取出 articleId
 				const { articleId } = item;
 				return (
 					<div className="operation-btn">
-						<Button
-							type="primary"
-							icon={<EditOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {
-								setIsModalOpen(true);
-								handleChange({ ...item });
-								formRef.setFieldsValue({
-									...item
-								});
-							}}
-						>
-							编辑
-						</Button>
-						<Button 
-							type="primary" 
-							danger 
-							icon={<DeleteOutlined />} 
-							onClick={() => handleDel(articleId)}>
-							删除
-						</Button>
+						<Tooltip title="调整标题">
+							<Button
+								type="primary"
+								icon={<EditOutlined />}
+								style={{ marginRight: "10px" }}
+								onClick={() => {
+									setIsModalOpen(true);
+									handleChange({ ...item });
+									formRef.setFieldsValue({
+										...item
+									});
+								}}
+							></Button>
+						</Tooltip>
+						<Tooltip title="调整内容">
+							<Button
+								type="primary"
+								icon={<HighlightOutlined />}
+								style={{ marginRight: "10px" }}
+								onClick={() => {
+									handleEdit(articleId);
+								}}
+							></Button>
+						</Tooltip>
+						<Tooltip title="删除">
+							<Button 
+								type="primary" 
+								danger 
+								icon={<DeleteOutlined />} 
+								onClick={() => handleDel(articleId)}>
+							</Button>
+						</Tooltip>
 					</div>
 				);
 			}
