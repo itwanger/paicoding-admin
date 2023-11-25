@@ -1,4 +1,7 @@
-import { combineReducers, compose, legacy_createStore as createStore, Store } from "redux";
+/* eslint-disable simple-import-sort/imports */
+/* eslint-disable prettier/prettier */
+import { Action, combineReducers, compose, legacy_createStore as createStore, Store } from "redux";
+import { ThunkAction, ThunkDispatch } from 'redux-thunk';
 import { applyMiddleware } from "redux";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
@@ -21,6 +24,18 @@ const reducer = combineReducers({
 	breadcrumb,
 	disc
 });
+
+export type RootState = ReturnType<typeof reducer>;
+// 定义自定义的 thunk action 类型
+export type AppThunk<ReturnType = void> = ThunkAction<
+  ReturnType,
+  RootState,
+  unknown,
+  Action<string>
+>;
+
+// 定义自定义的 dispatch 类型
+export type AppDispatch = ThunkDispatch<RootState, unknown, Action<string>>;
 
 // redux 持久化配置
 const persistConfig = {

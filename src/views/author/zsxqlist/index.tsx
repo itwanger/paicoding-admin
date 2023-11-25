@@ -98,7 +98,7 @@ const Zsxqlist: FC<IProps> = props => {
 	// 一些配置项，从字典里取出来
 	//@ts-ignore
 	const { UserAIStatList, UserAiStrategy, UserAiStrategyList, LoginType, LoginTypeList } = props || {};
-	console.log("UserAiStrategyList", UserAiStrategyList);
+	console.log("UserAiStrategyList", UserAiStrategyList, LoginTypeList);
 
 	const colorStrategys = ["#f50", "#2db7f5", "#87d068", "#108ee9"];
 	const colorLoginTypes = ["#1890ff", "#7265e6"];
@@ -479,5 +479,6 @@ const Zsxqlist: FC<IProps> = props => {
 };
 
 const mapStateToProps = (state: any) => state.disc.disc;
+console.log("mapStateToProps", mapStateToProps);
 const mapDispatchToProps = {};
 export default connect(mapStateToProps, mapDispatchToProps)(Zsxqlist);

@@ -51,7 +51,7 @@
 		"redux": "^4.2.0",
 		"redux-persist": "^6.0.0",
 		"redux-promise": "^0.6.0",
-		"redux-thunk": "^2.4.1",
+		"redux-thunk": "^2.4.2",
 		"screenfull": "^6.0.2",
 		"stylelint": "^14.16.1",
 		"stylelint-config-prettier": "^9.0.5",

@@ -1,5 +1,5 @@
-import { Dispatch } from "react";
 import { toPairs } from "lodash";
+import { Dispatch } from "redux";
 
 import { getDiscListApi } from "@/api/modules/common";
 import * as types from "@/redux/mutation-types";
@@ -23,22 +23,28 @@ const dictTransform = (dict = {}, keys = ["id", "title"]) => {
 
 // * redux-thunk
 // 获取字典数据
-export const getDiscListAction = async () => {
-	const { result } = (await getDiscListApi()) || {};
-	let dictionaryMap: { [key: string]: any } = {};
+// 异步 action creator
+export const getDiscListAction = () => {
+	return async (dispatch: Dispatch) => {
+		const { result } = (await getDiscListApi()) || {};
+		console.log("获取字典，getDiscListAction");
 
-	for (const key in result as object) {
-		if (Object.getOwnPropertyDescriptor(result, key)) {
-			// @ts-ignore
-			dictionaryMap[key] = result[key];
-			// @ts-ignore
-			dictionaryMap[`${key}List`] = dictTransform(result[key], ["value", "label"]);
+		let dictionaryMap = {};
+		for (const key in result as object) {
+			if (Object.getOwnPropertyDescriptor(result, key)) {
+				// @ts-ignore
+				dictionaryMap[key] = result[key];
+				// @ts-ignore
+				dictionaryMap[`${key}List`] = dictTransform(result[key], ["value", "label"]);
+			}
 		}
-	}
-	console.log({ dictionaryMap });
 
-	return {
-		type: types.UPDATE_DISC,
-		discList: dictionaryMap
+		console.log("字典", dictionaryMap);
+
+		// 分发 action 更新 state
+		dispatch({
+			type: types.UPDATE_DISC,
+			discList: dictionaryMap
+		});
 	};
 };

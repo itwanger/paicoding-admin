@@ -35,7 +35,7 @@ const Statistics: FC<IProps> = props => {
 	const uvDateCount = pvUvInfo.map(({ uvCount }) => uvCount);
 
 	// @ts-ignore
-	const { pvCount, userCount, articleCount,tutorialCount,collectCount,likeCount,readCount,commentCount } = allInfo;
+	const { pvCount, userCount, starPayCount, articleCount,tutorialCount,collectCount,likeCount,readCount,commentCount } = allInfo;
 
 	const dayLimitList = [
 		{ value: "7", label: "7天" },
@@ -218,7 +218,7 @@ const Statistics: FC<IProps> = props => {
 							<div className="traffic-img">
 								<img src={userCountImg} />
 							</div>
-							<span className="item-value">3100</span>
+							<span className="item-value">{starPayCount}</span>
 							<span className="traffic-name sle">星球用户</span>
 						</div>
 						<div className="gitHub-traffic traffic-box">

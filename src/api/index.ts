@@ -15,6 +15,7 @@ const axiosCanceler = new AxiosCanceler();
 
 const config = {
 	// 默认地址请求地址，可在 .env 开头文件中修改，在 Axios 中使用
+	// 实例化的使用用到
 	baseURL: import.meta.env.VITE_API_URL as string,
 	// 设置超时时间（10s）
 	timeout: 10000,
@@ -24,6 +25,8 @@ const config = {
 
 class RequestHttp {
 	service: AxiosInstance;
+
+	// 构造方法
 	public constructor(config: AxiosRequestConfig) {
 		// 实例化axios
 		this.service = axios.create(config);
@@ -35,17 +38,22 @@ class RequestHttp {
 		 */
 		this.service.interceptors.request.use(
 			(config: AxiosRequestConfig) => {
+				console.log("发起请求");
+				// 进度条开始
 				NProgress.start();
-				// * 将当前请求添加到 pending 中
+				// 将当前请求添加到 pending 中
 				axiosCanceler.addPending(config);
-				// * 如果当前请求不需要显示 loading,在api服务中通过指定的第三个参数: { headers: { noLoading: true } }来控制不显示loading，参见loginApi
+				// 如果当前请求不需要显示 loading
+				// 在api服务中通过指定的第三个参数: { headers: { noLoading: true } }来控制不显示loading，参见loginApi
 				config.headers!.noLoading || showFullScreenLoading();
+				// 从 Redux store 中获取 token 并将其添加到请求的 headers 中。这通常用于身份验证，确保后端可以验证用户的身份。
 				const token: string = store.getState().global.token;
-				console.log("this.service.interceptors.request.use", token);
+				console.log("token", token);
 
 				return { ...config, headers: { ...config.headers, "x-access-token": token } };
 			},
 			(error: AxiosError) => {
+				console.log("error", error);
 				return Promise.reject(error);
 			}
 		);
@@ -59,29 +67,31 @@ class RequestHttp {
 				console.log("response", response);
 
 				const { data, config } = response;
+				// 进度条结束
 				NProgress.done();
-				// * 在请求结束后，移除本次请求(关闭loading)
+				// 在请求结束后，移除本次请求(关闭loading)
 				axiosCanceler.removePending(config);
 				tryHideFullScreenLoading();
+				// 服务器返回的状态码
 				const dataStatus = data.status;
-				console.log("this.service.interceptors.response.use", dataStatus);
-				// * 登录失效（code == 599）
+				// 登录失效（code == 599）
 				if (dataStatus && dataStatus.code == ResultEnum.NOT_LOGIN) {
-					// 未登录，重定向到登录页面
+					// 重定向到登录页面
 					store.dispatch(setToken(""));
 					message.error(dataStatus.msg);
 					window.location.hash = LOGIN_URL;
 					return Promise.reject(data);
 				}
-				// * 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）
+				// 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）
 				if (dataStatus.code && dataStatus.code !== ResultEnum.SUCCESS) {
 					message.error(dataStatus.msg);
 					return Promise.reject(data);
 				}
-				// * 成功请求（在页面上除非特殊情况，否则不用处理失败逻辑）
+				// 成功请求（在页面上除非特殊情况，否则不用处理失败逻辑）
 				return data;
 			},
 			async (error: AxiosError) => {
+				console.log("error", error);
 				const { response } = error;
 				NProgress.done();
 				tryHideFullScreenLoading();
@@ -98,6 +108,7 @@ class RequestHttp {
 
 	// * 常用请求方法封装
 	get<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
+		console.log("开始执行get 请求", url, params, _object);
 		return this.service.get(url, { params, ..._object });
 	}
 	post<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
