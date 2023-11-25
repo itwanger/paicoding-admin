@@ -2,6 +2,7 @@ import http from "@/api";
 import { PORT1 } from "@/api/config/servicePort";
 import { Login } from "@/api/interface/index";
 import { IFormType } from "@/views/column/setting";
+import { IArticleSortFormType } from "@/views/column/setting/articlesort";
 
 /**
  * @name 教程模块
@@ -55,4 +56,9 @@ export const delColumnArticleApi = (id: number) => {
 // 调整两个教程的顺序
 export const sortColumnArticleApi = (activeId: number, overId: number) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/column/sortColumnArticleApi`, { activeId, overId });
+};
+
+// 调整教程的顺序
+export const sortColumnArticleByIDApi = (form: IArticleSortFormType) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/column/sortColumnArticleByIDApi`, form);
 };

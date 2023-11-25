@@ -332,7 +332,7 @@ const Zsxqlist: FC<IProps> = props => {
 			dataIndex: "strategy",
 			key: "strategy",
 			render(value) {
-				const desc = UserAiStrategy[value] || "绑定";
+				const desc = UserAiStrategy[value] || "绑定" + value;
 				// 如果 desc 的长度大于 5，那么就截取前 5 个字符
 				let len = desc.length;
 				if (len > 8) {
@@ -479,6 +479,5 @@ const Zsxqlist: FC<IProps> = props => {
 };
 
 const mapStateToProps = (state: any) => state.disc.disc;
-console.log("mapStateToProps", mapStateToProps);
 const mapDispatchToProps = {};
 export default connect(mapStateToProps, mapDispatchToProps)(Zsxqlist);
