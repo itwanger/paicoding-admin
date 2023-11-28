@@ -296,6 +296,7 @@ const ArticleEdit: FC<IProps> = props => {
 						locale={zhHans}
 						onChange={(v) => {
 							handleChange({ content: v });
+							setContent(v);
 						}}
 					/>
 				</ContentInterWrap>

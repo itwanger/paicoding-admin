@@ -225,6 +225,8 @@ const ColumnArticle: FC<IProps> = props => {
 		setIsOpenDrawerShow(false);
 		// 关闭调整顺序的抽屉
 		setIsSortDrawerShow(false);
+		// 关闭详情抽屉
+		setIsDetailDrawerShow(false);
 	};
 		
 	// 删除
