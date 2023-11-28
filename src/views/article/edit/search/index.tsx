@@ -6,13 +6,15 @@ import { Button } from "antd";
 import { ContentInterWrap } from "@/components/common-wrap";
 
 import "./index.scss";
+import { UpdateEnum } from "@/enums/common";
 
 interface IProps {
 	handleSave: (e: object) => void;
 	goBack: () => void;
+	status: number;
 }
 
-const Search: FC<IProps> = ({ handleSave, goBack }) => {
+const Search: FC<IProps> = ({ handleSave, goBack, status }) => {
 	return (
 		<div className="article-edit-search">
 			{/* 搜索 */}
@@ -23,7 +25,7 @@ const Search: FC<IProps> = ({ handleSave, goBack }) => {
 					</div>
 					<div className="article-edit-search__search-btn">
 						<Button type="primary" icon={<SaveOutlined />} style={{ marginRight: "25px" }} onClick={handleSave}>
-							保存
+							{status === UpdateEnum.Edit ? "更新" : "保存"}
 						</Button>
 					</div>
 				</div>

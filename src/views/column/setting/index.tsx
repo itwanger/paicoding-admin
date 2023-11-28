@@ -150,7 +150,7 @@ const Column: FC<IProps> = props => {
 	// 分页
 	const [pagination, setPagination] = useState<IPagination>(initPagination);
 	const { current, pageSize } = pagination;
-	// 声明一个 coverList
+	// 声明一个 coverList，封面
 	const [coverList, setCoverList] = useState<UploadFile[]>([]);
 
 	// 日期默认值，或者点击编辑时，把 table 中的日期时间赋值给 dateRange
@@ -510,6 +510,7 @@ const Column: FC<IProps> = props => {
 			<Form.Item label="封面" name="cover" rules={[{ required: true, message: "请上传封面!" }]}>
 				<ImgUpload
 					coverList={coverList}
+					coverName="封面图(建议110px*156px)"
 					setCoverList={setCoverList}
 					handleChange={handleChange}
 					handleFormRefChange={handleFormRefChange}

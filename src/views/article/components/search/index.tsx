@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
 import React, { FC } from "react";
-import { SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Select } from "antd";
+import { useNavigate } from "react-router-dom";
+import { PlusCircleOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Input, Select, Tooltip } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
 
@@ -16,6 +17,7 @@ interface IProps {
 }
 
 const Search: FC<IProps> = ({ handleSearchChange, handleSearch, PushStatusList, ToppingStatusList, OfficalStatusList }) => {
+	const navigate = useNavigate();
 	return (
 		<div className="article-search">
 			{/* 搜索 */}
@@ -77,9 +79,16 @@ const Search: FC<IProps> = ({ handleSearchChange, handleSearch, PushStatusList, 
 						></Select>
 					</div>
 					<div className="article-search__search-btn">
-						<Button type="primary" icon={<SearchOutlined />} style={{ marginRight: "25px" }} onClick={handleSearch}>
-							搜索
-						</Button>
+						<Tooltip title="按条件搜索">
+							<Button type="primary" icon={<SearchOutlined />} style={{ marginRight: "10px" }} onClick={handleSearch}>
+							</Button>
+						</Tooltip>
+						<Tooltip title="新增文章">
+							<Button type="primary" icon={<PlusCircleOutlined />}  
+								style={{ marginRight: "20px" }} 
+								onClick={() => {navigate("/article/edit/index");}}>
+							</Button>
+						</Tooltip>
 					</div>
 				</div>
 			</ContentInterWrap>

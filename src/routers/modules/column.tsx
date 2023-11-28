@@ -12,7 +12,7 @@ const columnRouter: Array<RouteObject> = [
 				path: "/column",
 				meta: {
 					// requiresAuth: true,
-					title: "专题",
+					title: "专栏",
 					key: "/column"
 				},
 				children: [
@@ -20,7 +20,7 @@ const columnRouter: Array<RouteObject> = [
 						path: "/column/setting/index",
 						element: lazyLoad(React.lazy(() => import("@/views/column/setting/index"))),
 						meta: {
-							title: "专栏",
+							title: "专栏设置",
 							key: "/column/setting/index"
 						}
 					},
@@ -36,7 +36,7 @@ const columnRouter: Array<RouteObject> = [
 						path: "/column/article/index",
 						element: lazyLoad(React.lazy(() => import("@/views/column/article/index"))),
 						meta: {
-							title: "教程",
+							title: "添加教程",
 							key: "/column/article/index"
 						}
 					}

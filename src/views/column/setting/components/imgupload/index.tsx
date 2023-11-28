@@ -10,12 +10,13 @@ import { getCompleteUrl } from "@/utils/util";
 
 interface IProps {
 	coverList: any[];
+	coverName: string;
 	setCoverList: (e: any[]) => void;
 	handleChange: (e: any) => void;
 	handleFormRefChange: (e: any) => void;
 }
 
-const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange, handleFormRefChange }) => {
+const ImgUpload: FC<IProps> = ({ coverList, coverName, setCoverList, handleChange, handleFormRefChange }) => {
 	const customCoverUpload = async (options: any) => {
 		const { onSuccess, onProgress, onError, file } = options;
 		console.log("上传图片", options);
@@ -43,7 +44,7 @@ const ImgUpload: FC<IProps> = ({ coverList, setCoverList, handleChange, handleFo
 			setCoverList([
 				{
 					uid: "-1",
-					name: "封面图(建议110px*156px)",
+					name: coverName,
 					status: "done",
 					thumbUrl: coverUrl,
 					url: coverUrl

@@ -19,7 +19,15 @@ export const currentMenuList = [
 	{ key: "/global/index", icon: <SettingOutlined />, children: undefined, label: "全局配置" },
 	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },
 	{ key: "/tag/index", icon: <TagsOutlined />, children: undefined, label: "标签管理" },
-	{ key: "/article/index", icon: <FileTextOutlined />, children: undefined, label: "文章管理" },
+	{
+		key: "/article",
+		icon: <ReadOutlined />,
+		children: [
+			{ key: "/article/list/index", icon: <FilePptOutlined />, children: undefined, label: "文章列表" },
+			{ key: "/article/edit/index", icon: <FileAddOutlined />, children: undefined, label: "文章编辑" }
+		],
+		label: "文章管理"
+	},
 	{
 		key: "/author",
 		icon: <UserOutlined />,

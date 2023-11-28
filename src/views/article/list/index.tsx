@@ -5,16 +5,16 @@ import { useNavigate } from "react-router";
 import { DeleteOutlined, EditOutlined, HighlightOutlined } from "@ant-design/icons";
 import { Avatar, Button, Form, Input, message, Modal, Select, Switch, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
 
 import { delArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { initPagination, IPagination } from "@/enums/common";
+import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import { baseDomain } from "@/utils/util";
-import Search from "./components/search";
+import Search from "../components/search";
 
 import "./index.scss";
-import dayjs from "dayjs";
 
 interface DataType {
 	articleId: number;
@@ -186,7 +186,10 @@ const Article: FC<IProps> = props => {
 	// 导航到文章编辑页面
 	const handleEdit = (articleId: number) => {
 		console.log("articleId", articleId);
-		navigate("/article/edit/index", { state: { articleId }});
+		navigate("/article/edit/index", { state: { 
+			articleId,
+			status: UpdateEnum.Edit
+		}});
 	};
 
 	const handleSubmit = async () => {
@@ -317,7 +320,7 @@ const Article: FC<IProps> = props => {
 		{
 			title: "操作",
 			key: "key",
-			width: 160,
+			width: 150,
 			render: (_, item) => {
 				// 从 item 中取出 articleId
 				const { articleId } = item;

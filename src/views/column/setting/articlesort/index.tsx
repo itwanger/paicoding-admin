@@ -85,13 +85,6 @@ const defaultSearchForm = {
 	columnId: -1,
 };
 
-// Usage of DebounceSelect
-interface ColumnValue {
-	key: string;
-	label: string;
-	value: string;
-}
-
 const ColumnArticle: FC<IProps> = props => {
 
 	const [formRef] = Form.useForm();
@@ -211,8 +204,6 @@ const ColumnArticle: FC<IProps> = props => {
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchForm);
 		setPagination({ current: 1, pageSize });
-		// 直接触发刷新
-		onSure();
 	};
 
 	// 点击添加的时候触发
@@ -268,9 +259,11 @@ const ColumnArticle: FC<IProps> = props => {
 		const { status: successStatus } = (await updateColumnArticleApi(newValues)) || {};
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
-			setIsOpenDrawerShow(false);
 			// 重置分页
+			console.log("重置分页");
+			setIsOpenDrawerShow(false);
 			setPagination({ current: 1, pageSize });
+			// 由于分页没有变化，所以只能是通过 query 来刷新
 			onSure();
 		} else {
 			message.error(msg);
@@ -327,6 +320,7 @@ const ColumnArticle: FC<IProps> = props => {
 			// @ts-ignore
 			const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
 			setPagination({ current: Number(pageNum), pageSize: resPageSize, total });
+			console.log("设置分页后，current 和 pagesize 都没有变化，所以不会重新请求:", current, pageSize);
 			if (code === 0) {
 				const newList = list.map((item: MapItem) => ({ ...item, key: item?.id }));
 				console.log("教程列表", newList);
