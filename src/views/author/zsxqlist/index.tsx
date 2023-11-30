@@ -293,6 +293,7 @@ const Zsxqlist: FC<IProps> = props => {
 		},
 		{
 			title: "星球编号",
+			width: 80,
 			dataIndex: "starNumber",
 			key: "starNumber"
 		},
@@ -300,6 +301,7 @@ const Zsxqlist: FC<IProps> = props => {
 			title: "用户头像",
 			dataIndex: "avatar",
 			key: "avatar",
+			width: 80,
 			render(value) {
 				return (
 					<>
@@ -318,6 +320,7 @@ const Zsxqlist: FC<IProps> = props => {
 			title: "注册类型",
 			dataIndex: "loginType",
 			key: "loginType",
+			width: 110,
 			render(value) {
 				return (
 					<>
