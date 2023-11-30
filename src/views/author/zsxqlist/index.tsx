@@ -2,7 +2,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, UndoOutlined } from "@ant-design/icons";
-import { Avatar, Badge, Button, Form, Input, message, Modal, RadioChangeEvent, Select, Table, Tag } from "antd";
+import { Avatar, Badge, Button, Form, Input, message, Modal, RadioChangeEvent, Select, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import { getZsxqWhiteListApi, operateBatchZsxqWhiteApi, operateZsxqWhiteApi, resetAuthorWhiteApi, updateZsxqWhiteApi } from "@/api/modules/author";
@@ -282,6 +282,7 @@ const Zsxqlist: FC<IProps> = props => {
 			title: "用户登录名",
 			dataIndex: "userCode",
 			key: "userCode",
+			width: 110,
 			render(value, item) {
 				return (
 					<a href={`${baseDomain}/user/home?userId=${item?.userId}`} className="cell-text" target="_blank" rel="noreferrer">
@@ -331,6 +332,7 @@ const Zsxqlist: FC<IProps> = props => {
 			title: "AI策略",
 			dataIndex: "strategy",
 			key: "strategy",
+			width: 110,
 			render(value) {
 				const desc = UserAiStrategy[value] || "绑定" + value;
 				// 如果 desc 的长度大于 5，那么就截取前 5 个字符
@@ -349,6 +351,7 @@ const Zsxqlist: FC<IProps> = props => {
 			title: "邀请人数",
 			dataIndex: "inviteNum",
 			key: "inviteNum",
+			width: 80,
 			render(value) {
 				return (
 					<>
@@ -361,6 +364,7 @@ const Zsxqlist: FC<IProps> = props => {
 			title: "邀请编号",
 			dataIndex: "inviteCode",
 			key: "inviteCode",
+			width: 80,
 		},
 		{
 			title: "状态",
@@ -385,33 +389,34 @@ const Zsxqlist: FC<IProps> = props => {
 		{
 			title: "操作",
 			key: "key",
-			width: 210,
+			width: 120,
 			render: (_, item) => {
 				// 从 item 中取出 articleId
 				const { id, strategy } = item;
 				return (
 					<div className="operation-btn">
-						<Button
-							type="primary"
-							icon={<EditOutlined />}
-							style={{ marginRight: "10px" }}
-							onClick={() => {
-								setIsModalOpen(true);
-								handleChange({ ...item });
-								formRef.setFieldsValue({
-									...item,
-									// long 型和字符串型的转换
-									strategy: String(strategy)
-								});
-								console.log("formRef item", formRef.getFieldsValue());
-							}}
-						>
-							编辑
-						</Button>
-
-						<Button type="primary" danger icon={<UndoOutlined />} onClick={() => handleReset(id)}>
-							重置
-						</Button>
+						<Tooltip title="编辑">
+							<Button
+								type="primary"
+								icon={<EditOutlined />}
+								style={{ marginRight: "10px" }}
+								onClick={() => {
+									setIsModalOpen(true);
+									handleChange({ ...item });
+									formRef.setFieldsValue({
+										...item,
+										// long 型和字符串型的转换
+										strategy: String(strategy)
+									});
+									console.log("formRef item", formRef.getFieldsValue());
+								}}
+							>
+							</Button>
+						</Tooltip>
+						<Tooltip title="重置">
+							<Button type="primary" danger icon={<UndoOutlined />} onClick={() => handleReset(id)}>
+							</Button>
+						</Tooltip>
 					</div>
 				);
 			}
