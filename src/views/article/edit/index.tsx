@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
 import gfm from '@bytemd/plugin-gfm'
@@ -8,7 +8,8 @@ import { Button, Drawer, Form, Input, message,Radio, Space, UploadFile } from "a
 import TextArea from "antd/es/input/TextArea";
 import zhHans from 'bytemd/locales/zh_Hans.json';
 
-import { getArticleApi, saveArticleApi } from "@/api/modules/article";
+import { getArticleApi, saveArticleApi, saveImgApi } from "@/api/modules/article";
+import { uploadImgApi } from "@/api/modules/common";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -59,6 +60,10 @@ const ArticleEdit: FC<IProps> = props => {
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 文章内容
 	const [content, setContent] = useState<string>('');
+	// 上一次转链后的内容
+	const [lastContent, setLastContent] = useState<string>('');
+	// 放图片的路径，和上传时间，30s 内防止重复提交
+	const lastUploadTimes = useRef<Map<string, number>>(new Map());
 
 	// 刷新函数
 	const [query, setQuery] = useState<number>(0);
@@ -119,10 +124,83 @@ const ArticleEdit: FC<IProps> = props => {
 		setIsOpenDrawerShow(true);
 	};
 
+	// 判断图片的链接是否已经上传过了
+	const canUpload = (url: string) => {
+		// 当前的时间
+		const now = Date.now();
+
+		const lastUploadTime = lastUploadTimes.current.get(url);
+		// 如果没有上传过，或者上传时间超过了 30s，就返回 false
+		if (lastUploadTime && now - lastUploadTime < 30000) {
+			return false;
+		}
+		// 更新上传时间
+		lastUploadTimes.current.set(url, now);
+		return true;
+	}
+
+	// 如果是外网的图片链接，转成内网的图片链接
+	const handleReplaceImgUrl = async () => {
+		const { content } = form;
+		// 临时变量 content
+		let contentTemp;
+		console.log("content vs lastContent", content, lastContent);
+		// 如果新的内容以上次转链后的内容开头
+		if (content.startsWith(lastContent)) {
+			// 变化的内容
+			contentTemp = content.substring(lastContent.length);
+		} else if (lastContent.startsWith(content)) {
+			// 删掉了一部分内容
+			setLastContent(content);
+			console.log("删掉了一部分内容", lastContent);
+			return;
+		} else {
+			contentTemp = content;
+		}
+
+		// 正则表达式
+		const reg = /!\[(.*?)\]\((.*?)\)/mg;
+		let match;
+
+		while ((match = reg.exec(contentTemp)) !== null) {
+			const [img, alt, src] = match;
+			console.log("img, alt, src", match, img, alt, src);
+			// 如果是外网的图片链接，转成内网的图片链接
+			if (src.length > 0 && src.startsWith("http") && src.indexOf("saveError") < 0) {
+				// 判断图片的链接是否已经上传过了
+				if (!canUpload(src)) {
+					console.log("30秒内防重复提交，忽略:", src);
+					continue;
+				}
+
+				// 调用上传图片的接口
+				const { status: resultStatus, result } = await saveImgApi(src);
+				const { code } = resultStatus || {};
+				if (code === 0) {
+					// 重新组织图片的路径
+					let newSrc = `![${alt}](${result?.imagePath})`;
+					console.log("newSrc", newSrc);
+					// 替换后的内容
+					let newContent = content.replace(img, newSrc);
+					console.log("newContent", newContent);
+
+					// 替换图片链接
+					setContent(newContent);
+					handleChange({ content: newContent });
+					setLastContent(newContent);
+				} else {
+					message.error("转链失败");
+				}
+			}
+		}
+
+		message.success("转链完成，可以看看控制台的输出");
+	}
+
 	// 编辑或者新增时提交数据到服务器端
 	const handleSubmit = async () => {
 		// 又从form中获取数据，需要转换格式的数据
-		const { articleId, content, cover, tagIds } = form;
+		const { articleId, cover, content, tagIds } = form;
 		console.log("handleSubmit 时看看form的值", form);
 		// content 为空的时候，提示用户
 		if (!content) {
@@ -286,6 +364,7 @@ const ArticleEdit: FC<IProps> = props => {
 			<ContentWrap>
 				<Search
 					status={status}
+					handleReplaceImgUrl={handleReplaceImgUrl}
 					handleSave={handleSaveOrUpdate}
 					goBack={goBack}
 				/>
@@ -294,9 +373,38 @@ const ArticleEdit: FC<IProps> = props => {
 						value={content}
 						plugins={plugins}
 						locale={zhHans}
+						uploadImages={(files) => {
+							return Promise.all(
+								files.map((file) => {
+									// 限制图片大小，不超过 5M
+									if (file.size > 5 * 1024 * 1024) {
+										return  {
+											url: "图片大小不能超过 5M",
+										}
+									}
+
+									const formData = new FormData();
+      						formData.append('image', file);
+
+									return uploadImgApi(formData).then(({ status, result }) => {
+										const { code, msg } = status || {};
+										const { imagePath } = result || {};
+										if (code === 0) {
+											return {
+												url: imagePath,
+											}
+										}
+										return {
+											url: msg,
+										}
+									})
+								})
+							)
+						}}
 						onChange={(v) => {
-							handleChange({ content: v });
+							// 右侧的预览更新
 							setContent(v);
+							handleChange({ content: v });
 						}}
 					/>
 				</ContentInterWrap>

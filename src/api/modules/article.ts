@@ -21,6 +21,11 @@ export const saveArticleApi = (params: object | undefined) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/article/save`, params);
 };
 
+// 转链上传图片的操作
+export const saveImgApi = (params: string) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/image/save?img=` + params);
+};
+
 // 删除操作
 export const delArticleApi = (articleId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/article/delete`, { articleId });

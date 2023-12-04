@@ -5,7 +5,7 @@ import { FC } from "react";
 import { UploadOutlined } from "@ant-design/icons";
 import { Button, message, Upload } from "antd";
 
-import { uploadCoverApi } from "@/api/modules/column";
+import { uploadImgApi } from "@/api/modules/common";
 import { getCompleteUrl } from "@/utils/util";
 
 interface IProps {
@@ -29,7 +29,7 @@ const ImgUpload: FC<IProps> = ({ coverList, coverName, setCoverList, handleChang
 		const formData = new FormData();
 		formData.append("image", file);
 
-		const { status, result } = await uploadCoverApi(formData);
+		const { status, result } = await uploadImgApi(formData);
 		const { code, msg } = status || {};
 		const { imagePath } = result || {};
 		console.log("上传图片", status, result, code, msg, imagePath);

@@ -23,11 +23,6 @@ export const getAuthorListApi = (key: string) => {
 	return http.get(`${PORT1}/user/query`, { key });
 };
 
-// 上传图片
-export const uploadCoverApi = (data: FormData) => {
-	return http.post<Login.ResAuthButtons>(`${PORT1}/image/upload`, data);
-};
-
 // 保存操作
 export const updateColumnApi = (form: IFormType) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/column/saveColumn`, form);
