@@ -21,6 +21,7 @@ import Search from "./search";
 import 'bytemd/dist/index.css';
 import 'juejin-markdown-themes/dist/juejin.css';
 import "./index.scss";
+import { set } from "lodash";
 
 const plugins = [
 	gfm({
@@ -33,6 +34,13 @@ interface IProps {}
 interface TagValue {
 	tagId: string;
 	tag: string;
+}
+
+interface ImageInfo {
+  img: string;
+  alt: string;
+	src: string; 
+	index: number; // 图片在文本中的位置
 }
 
 export interface IFormType {
@@ -140,61 +148,73 @@ const ArticleEdit: FC<IProps> = props => {
 	}
 
 	// 如果是外网的图片链接，转成内网的图片链接
-	const handleReplaceImgUrl = async () => {
-		const { content } = form;
-		// 临时变量 content
-		let contentTemp;
-		console.log("content vs lastContent", content, lastContent);
+	const uploadImages = async (newVal: string) => {
+		let add;
 		// 如果新的内容以上次转链后的内容开头
-		if (content.startsWith(lastContent)) {
+		if (newVal.startsWith(lastContent)) {
 			// 变化的内容
-			contentTemp = content.substring(lastContent.length);
-		} else if (lastContent.startsWith(content)) {
+			add = newVal.substring(lastContent.length);
+		} else if (lastContent.startsWith(newVal)) {
 			// 删掉了一部分内容
-			setLastContent(content);
+			setLastContent(newVal);
 			console.log("删掉了一部分内容", lastContent);
 			return;
 		} else {
-			contentTemp = content;
+			add = newVal;
 		}
 
 		// 正则表达式
 		const reg = /!\[(.*?)\]\((.*?)\)/mg;
 		let match;
 
-		while ((match = reg.exec(contentTemp)) !== null) {
+		let uploadTasks = [];
+    let imageInfos:ImageInfo[] = []; // 用于存储图片信息和它们在文本中的位置
+
+		while ((match = reg.exec(add)) !== null) {
 			const [img, alt, src] = match;
 			console.log("img, alt, src", match, img, alt, src);
 			// 如果是外网的图片链接，转成内网的图片链接
-			if (src.length > 0 && src.startsWith("http") && src.indexOf("saveError") < 0) {
+			if (src.length > 0 && src.startsWith("http") 
+				&& src.indexOf("saveError") < 0) {
+				// 收集图片信息
+				imageInfos.push({ img, alt, src, index: match.index });
 				// 判断图片的链接是否已经上传过了
 				if (!canUpload(src)) {
 					console.log("30秒内防重复提交，忽略:", src);
 					continue;
-				}
-
-				// 调用上传图片的接口
-				const { status: resultStatus, result } = await saveImgApi(src);
-				const { code } = resultStatus || {};
-				if (code === 0) {
-					// 重新组织图片的路径
-					let newSrc = `![${alt}](${result?.imagePath})`;
-					console.log("newSrc", newSrc);
-					// 替换后的内容
-					let newContent = content.replace(img, newSrc);
-					console.log("newContent", newContent);
-
-					// 替换图片链接
-					setContent(newContent);
-					handleChange({ content: newContent });
-					setLastContent(newContent);
 				} else {
-					message.error("转链失败");
+					uploadTasks.push(saveImgApi(src));
 				}
 			}
 		}
 
-		message.success("转链完成，可以看看控制台的输出");
+		// 同时上传所有图片
+		const results = await Promise.all(uploadTasks);
+
+		// 替换所有图片链接
+		let newContent = newVal;
+		results.forEach((result, i) => {
+				if (result.status && result.status.code === 0 && result.result) {
+					// 重新组织图片的路径
+					const newSrc = `![${imageInfos[i].alt}](${result.result.imagePath})`;
+					console.log("newSrc", newSrc);
+					// 替换后的内容
+					newContent = newContent.replace(imageInfos[i].img, newSrc);
+					console.log("newContent", newContent);
+				}
+		});
+		setLastContent(newVal);
+
+		return newContent;
+	}
+
+	const handleReplaceImgUrl = async () => {
+		const { content } = form;
+		const newContent = await uploadImages(content);
+		if (newContent) {
+			setContent(newContent);
+			handleChange({ content: newContent });
+		}
 	}
 
 	// 编辑或者新增时提交数据到服务器端
