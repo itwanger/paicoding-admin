@@ -115,9 +115,9 @@ const ArticleEdit: FC<IProps> = props => {
 	};
 
 	const goBack = () => {
-    // 跳转到文章列表页
+    	// 跳转到文章列表页
 		navigate("/article/list/index");   
-  };
+  	};
 
 	// 重置表单
 	const resetFrom = () => {

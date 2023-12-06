@@ -313,7 +313,7 @@ const Zsxqlist: FC<IProps> = props => {
 		{
 			title: "用户昵称",
 			dataIndex: "name",
-			width: 110,
+			width: 120,
 			key: "name",
 		},
 		{
