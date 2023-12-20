@@ -27,3 +27,4 @@ stats.html
 *.sln
 *.sw?
 package-lock.json
+.vscode/settings.json

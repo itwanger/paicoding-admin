@@ -2,8 +2,12 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
-import gfm from '@bytemd/plugin-gfm'
-import { Editor } from '@bytemd/react'
+import gemoji from '@bytemd/plugin-gemoji';
+import gfm from '@bytemd/plugin-gfm';
+import highlight from "@bytemd/plugin-highlight";
+import math from '@bytemd/plugin-math';
+import mediumZoom from '@bytemd/plugin-medium-zoom';
+import { Editor } from '@bytemd/react';
 import { Button, Drawer, Form, Input, message,Radio, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import zhHans from 'bytemd/locales/zh_Hans.json';
@@ -18,14 +22,18 @@ import DebounceSelect from "@/views/article/components/debounceselect/index";
 import ImgUpload from "@/views/column/setting/components/imgupload";
 import Search from "./search";
 
+import 'katex/dist/katex.css';
+import 'highlight.js/styles/default.css';
 import 'bytemd/dist/index.css';
 import 'juejin-markdown-themes/dist/juejin.css';
 import "./index.scss";
-import { set } from "lodash";
 
 const plugins = [
-	gfm({
-	}),
+	gfm(),
+	highlight(),
+	gemoji(),
+	math(),
+	mediumZoom(),
 	// Add more plugins here
 ]
 

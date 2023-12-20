@@ -19,7 +19,11 @@
 	},
 	"dependencies": {
 		"@ant-design/icons": "^4.7.0",
+		"@bytemd/plugin-gemoji": "^1.21.0",
 		"@bytemd/plugin-gfm": "^1.21.0",
+		"@bytemd/plugin-highlight": "^1.21.0",
+		"@bytemd/plugin-math": "^1.21.0",
+		"@bytemd/plugin-medium-zoom": "^1.21.0",
 		"@bytemd/react": "^1.21.0",
 		"@dnd-kit/core": "^6.1.0",
 		"@dnd-kit/modifiers": "^7.0.0",
