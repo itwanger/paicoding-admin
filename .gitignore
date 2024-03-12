@@ -26,5 +26,4 @@ stats.html
 *.njsproj
 *.sln
 *.sw?
-package-lock.json
 .vscode/settings.json
