@@ -19,6 +19,7 @@ export const currentMenuList = [
 	{ key: "/global/index", icon: <SettingOutlined />, children: undefined, label: "全局配置" },
 	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },
 	{ key: "/tag/index", icon: <TagsOutlined />, children: undefined, label: "标签管理" },
+	{ key: "/resume/index", icon: <FileTextOutlined />, children: undefined, label: "简历管理" },
 	{
 		key: "/article",
 		icon: <ReadOutlined />,
