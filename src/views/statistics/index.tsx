@@ -3,7 +3,7 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Select, Switch } from "antd";
 import * as echarts from "echarts";
 
-import { getAllApi, getPvUvApi } from "@/api/modules/statistics";
+import { download2ExcelPvUvApi, getAllApi, getPvUvApi } from "@/api/modules/statistics";
 import pvCountImg from "@/assets/images/fangwenliang.png";
 import articleCountImg from "@/assets/images/wenzhangzongshu.png";
 import userCountImg from "@/assets/images/yonghu.png";
@@ -48,6 +48,45 @@ const Statistics: FC<IProps> = props => {
     myChartRef.current?.resize();
 		myPieChartRef.current?.resize();
   }, []);
+
+	// 导出数据为 Excel 文件
+  const exportToExcel = async () => {
+    // 通过 dayLimitList 获取对应的天数
+		const day = dayLimitList.find(item => item.value === pvUvDay)?.value;
+		if (!day) return;
+	
+		console.log("导出的天数是", day);
+
+		// 调用下载接口
+		const response = await download2ExcelPvUvApi(Number(day));
+
+		const contentDisposition = response.headers["content-disposition"];
+		let fileName = "default.xlsx";
+
+		if (contentDisposition) {
+			const matches = contentDisposition.match(/filename\*?=utf-8''([^;]+)/i);
+			if (matches && matches.length === 2) {
+				fileName = decodeURIComponent(matches[1]);
+			}
+		}
+		console.log("文件名是", fileName);
+
+		// 将返回的 Blob 数据转换为可下载文件
+		const blob = new Blob([response.data], {
+			type: response.headers["content-type"],
+		});
+		console.log("Blob 数据大小：", blob);
+
+		const url = window.URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = fileName; // 下载的文件名
+		link.click();
+
+		// 释放 Blob URL，避免内存泄漏
+		window.URL.revokeObjectURL(url);
+
+  };
 
 	useEffect(() => {
 		const getAllInfo = async () => {
@@ -158,7 +197,12 @@ const Statistics: FC<IProps> = props => {
 						type: ["line", "bar"]
 					},
 					feature: {
-						saveAsImage: {}
+						myDownloadExcel: {
+              show: true,
+              title: "下载 Excel",
+              icon: "path://M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 14h-3v-3h-2v3H8v-3H6v3H5v-2h3v-2H5V5h14v9h-2v3z", // 自定义图标
+              onclick: exportToExcel, // 点击按钮触发导出函数
+            },
 					}
 				},
 				xAxis: {

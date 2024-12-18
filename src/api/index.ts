@@ -71,6 +71,12 @@ class RequestHttp {
 				axiosCanceler.removePending(config);
 				tryHideFullScreenLoading();
 				// 服务器返回的状态码
+				// 如果响应是文件流（通过 responseType 判断）
+				if (config.params?.responseType === "blob") {
+					// 跳过 dataStatus.code 检查
+					// TODO（防止下载文件的时候返回数据流，没有code，直接报错）
+					return response;
+				}
 				const dataStatus = data.status;
 				// 登录失效（code == 599）
 				if (dataStatus && dataStatus.code == ResultEnum.NOT_LOGIN) {
@@ -80,7 +86,7 @@ class RequestHttp {
 					window.location.hash = LOGIN_URL;
 					return Promise.reject(data);
 				}
-				// 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）
+				// 全局错误信息拦截
 				if (dataStatus.code && dataStatus.code !== ResultEnum.SUCCESS) {
 					message.error(dataStatus.msg);
 					return Promise.reject(data);
