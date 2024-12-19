@@ -15,12 +15,12 @@ export const getColumnListApi = (data: { pageNumber: number; pageSize: number })
 
 // 添加返回类型
 export const getColumnByNameListApi = (key: string) => {
-	return http.get(`${PORT1}/column/query`, { key });
+	return http.get(`${PORT1}/column/query`, { params: { key } });
 };
 
 // 获取作者列表，参数为作者名称
 export const getAuthorListApi = (key: string) => {
-	return http.get(`${PORT1}/user/query`, { key });
+	return http.get(`${PORT1}/user/query`, { params: { key } });
 };
 
 // 保存操作
@@ -30,7 +30,7 @@ export const updateColumnApi = (form: IFormType) => {
 
 // 删除专栏操作
 export const delColumnApi = (columnId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumn`, { columnId });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumn`, { params: { columnId } });
 };
 
 // 获取列表
@@ -45,7 +45,7 @@ export const updateColumnArticleApi = (form: IFormType) => {
 
 // 删除教程操作
 export const delColumnArticleApi = (id: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumnArticle`, { id });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/column/deleteColumnArticle`, { params: { id } });
 };
 
 // 调整两个教程的顺序

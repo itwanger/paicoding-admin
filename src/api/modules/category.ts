@@ -14,7 +14,7 @@ export const getCategoryListApi = (data: { pageNumber: number; pageSize: number 
 
 // 删除操作
 export const delCategoryApi = (categoryId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/category/delete`, { categoryId });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/category/delete`, { params: { categoryId } });
 };
 
 // 保存操作

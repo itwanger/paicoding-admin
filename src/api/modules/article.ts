@@ -28,12 +28,14 @@ export const saveImgApi = (params: string) => {
 
 // 删除操作
 export const delArticleApi = (articleId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/article/delete`, { articleId });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/article/delete`, { params: { articleId } });
 };
 
 // 获取文章
 export const getArticleApi = (articleId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/article/detail`, { articleId });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/article/detail`, {
+		params: { articleId } // 参数放在 params 字段中
+	});
 };
 
 // 置顶/加精操作
