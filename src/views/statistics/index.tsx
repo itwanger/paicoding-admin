@@ -61,7 +61,7 @@ const Statistics: FC<IProps> = props => {
 		const response = await download2ExcelPvUvApi(Number(day));
 
 		const contentDisposition = response.headers["content-disposition"];
-		let fileName = "default.xlsx";
+		let fileName = "paicoding.xlsx";
 
 		if (contentDisposition) {
 			const matches = contentDisposition.match(/filename\*?=utf-8''([^;]+)/i);
