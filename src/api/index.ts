@@ -72,7 +72,7 @@ class RequestHttp {
 				tryHideFullScreenLoading();
 				// 服务器返回的状态码
 				// 如果响应是文件流（通过 responseType 判断）
-				if (config.params?.responseType === "blob") {
+				if (config.responseType === "blob") {
 					// 跳过 dataStatus.code 检查
 					// TODO（防止下载文件的时候返回数据流，没有code，直接报错）
 					return response;
@@ -111,9 +111,9 @@ class RequestHttp {
 	}
 
 	// * 常用请求方法封装
-	get<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
-		console.log("开始执行get 请求", url, params, _object);
-		return this.service.get(url, { params, ..._object });
+	get<T>(url: string, config: AxiosRequestConfig = {}): Promise<ResultData<T>> {
+		console.log("开始执行 get 请求", url, config);
+		return this.service.get(url, config);
 	}
 	post<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
 		return this.service.post(url, params, _object);
