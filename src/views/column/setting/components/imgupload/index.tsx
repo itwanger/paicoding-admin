@@ -12,11 +12,10 @@ interface IProps {
 	coverList: any[];
 	coverName: string;
 	setCoverList: (e: any[]) => void;
-	handleChange: (e: any) => void;
 	handleFormRefChange: (e: any) => void;
 }
 
-const ImgUpload: FC<IProps> = ({ coverList, coverName, setCoverList, handleChange, handleFormRefChange }) => {
+const ImgUpload: FC<IProps> = ({ coverList, coverName, setCoverList, handleFormRefChange }) => {
 	const customCoverUpload = async (options: any) => {
 		const { onSuccess, onProgress, onError, file } = options;
 		console.log("上传图片", options);
@@ -37,7 +36,6 @@ const ImgUpload: FC<IProps> = ({ coverList, coverName, setCoverList, handleChang
 		if (code === 0) {
 			console.log("上传图片成功，回调 onsuccess", imagePath);
 			// 把 data 的值赋给 form 的 cover，传递给后端
-			handleChange({ cover: imagePath });
 			handleFormRefChange({ cover: imagePath });
 			const coverUrl = getCompleteUrl(imagePath);
 			// 更新 coverList
@@ -67,7 +65,7 @@ const ImgUpload: FC<IProps> = ({ coverList, coverName, setCoverList, handleChang
 			onRemove={() => {
 				console.log("删除封面");
 				// 删除封面的时候，清空 cover
-				handleChange({ cover: "" });
+				handleFormRefChange({ cover: "" });
 				// 清空 coverList
 				setCoverList([]);
 			}}

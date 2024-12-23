@@ -250,7 +250,6 @@ const ArticleEdit: FC<IProps> = props => {
 			...values,
 			content: content,
 			tagIds: tagIds,
-			cover: cover,
 			// 确定的参数
 			articleType: "BLOG",
 			source: 2,
@@ -350,7 +349,6 @@ const ArticleEdit: FC<IProps> = props => {
 					coverList={coverList}
 					coverName={coverName}
 					setCoverList={setCoverList}
-					handleChange={handleChange}
 					handleFormRefChange={handleFormRefChange}
 				/>
 			</Form.Item>

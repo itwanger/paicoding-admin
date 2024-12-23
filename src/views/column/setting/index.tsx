@@ -299,7 +299,6 @@ const Column: FC<IProps> = props => {
 		// 新的值传递到后端
 		const newValues = {
 			...values,
-			cover: cover,
 			author: author,
 			columnId: status === UpdateEnum.Save ? UpdateEnum.Save : columnId,
 			freeStartTime: freeStartTime,
@@ -512,7 +511,6 @@ const Column: FC<IProps> = props => {
 					coverList={coverList}
 					coverName="封面图(建议110px*156px)"
 					setCoverList={setCoverList}
-					handleChange={handleChange}
 					handleFormRefChange={handleFormRefChange}
 				/>
 			</Form.Item>
