@@ -40,7 +40,7 @@ export const getArticleApi = (articleId: number) => {
 
 // 置顶/加精操作
 export const operateArticleApi = (params: object | undefined) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/article/operate`, params);
+	return http.get<Login.ResAuthButtons>(`${PORT1}/article/operate`, {params});
 };
 
 // 上线/下线操作
