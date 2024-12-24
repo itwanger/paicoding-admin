@@ -14,7 +14,7 @@ export const getGlobalConfigListApi = (data: { pageNumber: number; pageSize: num
 
 // 删除操作
 export const delGlobalConfigApi = (id: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/global/config/delete`, { params: { id } });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/global/config/delete`, { id });
 };
 
 // 保存操作

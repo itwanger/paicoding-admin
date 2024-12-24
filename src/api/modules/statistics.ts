@@ -16,5 +16,5 @@ export const getPvUvApi = (day: number) => {
 
 // download pvuv to excel, params: day response: excel file
 export const download2ExcelPvUvApi = (day: number) => {
-	return http.get(`${PORT1}/statistics/pvUvDayDownload2Excel?day=${day}`, { responseType: "blob" });
+	return http.down(`${PORT1}/statistics/pvUvDayDownload2Excel?day=${day}`, { responseType: "blob" });
 };

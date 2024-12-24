@@ -29,10 +29,10 @@ export const operateBatchZsxqWhiteApi = (params: object | undefined) => {
 
 // 重置操作
 export const resetAuthorWhiteApi = (authorId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/zsxq/whitelist/reset`, { params: { authorId } });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/zsxq/whitelist/reset`, { authorId });
 };
 
 // 保存操作
 export const updateAuthorWhiteApi = (authorId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/author/whitelist/add`, { params: { authorId } });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/author/whitelist/add`, { authorId });
 };

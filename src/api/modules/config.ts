@@ -14,7 +14,7 @@ export const getConfigListApi = (data: { pageNumber: number; pageSize: number })
 
 // 删除操作
 export const delConfigApi = (configId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/config/delete`, { params: { configId } });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/config/delete`, { configId });
 };
 
 // 保存操作

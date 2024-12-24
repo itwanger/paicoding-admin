@@ -28,18 +28,16 @@ export const saveImgApi = (params: string) => {
 
 // 删除操作
 export const delArticleApi = (articleId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/article/delete`, { params: { articleId } });
+	return http.get<Login.ResAuthButtons>(`${PORT1}/article/delete`, { articleId });
 };
 
 // 获取文章
 export const getArticleApi = (articleId: number) => {
-	return http.get<Login.ResAuthButtons>(`${PORT1}/article/detail`, {
-		params: { articleId } // 参数放在 params 字段中
-	});
+	return http.get<Login.ResAuthButtons>(`${PORT1}/article/detail`, { articleId });
 };
 
 // 置顶/加精操作
-export const operateArticleApi = (params: object | undefined) => {
+export const operateArticleApi = (params: object) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/article/operate`, params);
 };
 
