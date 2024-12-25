@@ -112,7 +112,6 @@ class RequestHttp {
 
 	// * 常用请求方法封装
 	get<T>(url: string, config: AxiosRequestConfig = {}): Promise<ResultData<T>> {
-		console.log("开始执行 get 请求", url, config);
 		const finalConfig = config.params ? config : { ...config, params: config };
 		return this.service.get(url, finalConfig);
 	}
