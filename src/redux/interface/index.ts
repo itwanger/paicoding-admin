@@ -49,5 +49,5 @@ export interface AuthState {
 
 /**discState */
 export interface DiscState {
-	disc: MapItem[];
+	disc: MapItem;
 }

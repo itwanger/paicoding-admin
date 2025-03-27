@@ -5,7 +5,7 @@ import { DiscState } from "@/redux/interface";
 import * as types from "@/redux/mutation-types";
 
 const discState: DiscState = {
-	disc: []
+	disc: {}
 };
 
 // disc reducer
