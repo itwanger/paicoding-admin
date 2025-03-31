@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-undef */
+/* eslint-disable simple-import-sort/imports */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import {
 	Button,
@@ -22,6 +22,8 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { delConfigApi, getConfigListApi, operateConfigApi, updateConfigApi } from "@/api/modules/config";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
@@ -84,7 +86,9 @@ const defaultSearchForm: ISearchFormType = {
 	name: ""
 };
 
-const Banner: FC<IProps> = props => {
+const Banner: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
+
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
@@ -110,7 +114,7 @@ const Banner: FC<IProps> = props => {
 	const { current, pageSize } = pagination;
 
 	//@ts-ignore
-	const { ConfigType, ConfigTypeList, ArticleTag, ArticleTagList } = props || {};
+	const { ConfigType, ConfigTypeList, ArticleTag, ArticleTagList } = disc || {};
 
 	const { configId, type, name, content, bannerUrl, jumpUrl, rank, tags } = form;
 
@@ -502,6 +506,4 @@ const Banner: FC<IProps> = props => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(Banner);
+export default Banner;

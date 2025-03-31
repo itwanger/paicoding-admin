@@ -1,10 +1,12 @@
+/* eslint-disable simple-import-sort/imports */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Drawer, Form, Input, message, Modal, Space, Switch, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { delTagApi, getTagListApi, operateTagApi, updateTagApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
@@ -31,7 +33,9 @@ const defaultInitForm: IFormType = {
 	tag: ""
 };
 
-const Tag: FC<IProps> = props => {
+const Tag: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
+
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
@@ -263,6 +267,4 @@ const Tag: FC<IProps> = props => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(Tag);
+export default Tag;

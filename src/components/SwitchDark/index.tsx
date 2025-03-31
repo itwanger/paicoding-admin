@@ -1,12 +1,17 @@
-import { connect } from "react-redux";
+/* eslint-disable simple-import-sort/imports */
 import { Switch } from "antd";
 
-import { setThemeConfig } from "@/redux/modules/global/action";
+import { useAppDispatch, useAppSelector } from "@/hooks/useRTK";
+import type { AppDispatch, RootState } from "@/rtk";
+import { setThemeConfig } from "@/rtk";
 
-const SwitchDark = (props: any) => {
-	const { setThemeConfig, themeConfig } = props;
+const SwitchDark = () => {
+	const global = useAppSelector((state: RootState) => state.global);
+	const { themeConfig } = global;
+	const dispatch: AppDispatch = useAppDispatch();
+
 	const onChange = (checked: boolean) => {
-		setThemeConfig({ ...themeConfig, isDark: checked });
+		dispatch(setThemeConfig({ ...themeConfig, isDark: checked }));
 	};
 
 	return (
@@ -20,6 +25,4 @@ const SwitchDark = (props: any) => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.global;
-const mapDispatchToProps = { setThemeConfig };
-export default connect(mapStateToProps, mapDispatchToProps)(SwitchDark);
+export default SwitchDark;

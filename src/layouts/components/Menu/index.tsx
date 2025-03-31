@@ -1,16 +1,16 @@
+/* eslint-disable simple-import-sort/imports */
 /**
  * 菜单控制
  */
 import React, { useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import * as Icons from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Menu, Spin } from "antd";
 
-import { setAuthRouter } from "@/redux/modules/auth/action";
-import { setBreadcrumbList } from "@/redux/modules/breadcrumb/action";
-import { setMenuList } from "@/redux/modules/menu/action";
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
+// import { setAuthRouter, setBreadcrumbList, setMenuList } from "@/rtk";
 import { currentMenuList } from "@/routers/route";
 import { getOpenKeys, searchRoute } from "@/utils/util";
 import Logo from "./components/Logo";
@@ -19,7 +19,8 @@ import "./index.less";
 
 const LayoutMenu = (props: any) => {
 	const { pathname } = useLocation();
-	const { isCollapse } = props;
+	const menu = useAppSelector((state: RootState) => state.menu);
+	const { isCollapse } = menu;
 	const [selectedKeys, setSelectedKeys] = useState<string[]>([pathname]);
 	const [openKeys, setOpenKeys] = useState<string[]>([]);
 
@@ -79,7 +80,7 @@ const LayoutMenu = (props: any) => {
 	// 点击当前菜单跳转页面
 	const navigate = useNavigate();
 	const clickMenu: MenuProps["onClick"] = ({ key }: { key: string }) => {
-		const route = searchRoute(key, props.menuList);
+		const route = searchRoute(key, menu.menuList);
 		console.log({ route, props });
 
 		if (route.isLink) window.open(route.isLink, "_blank");
@@ -108,6 +109,4 @@ const LayoutMenu = (props: any) => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.menu;
-const mapDispatchToProps = { setMenuList, setBreadcrumbList, setAuthRouter };
-export default connect(mapStateToProps, mapDispatchToProps)(LayoutMenu);
+export default LayoutMenu;

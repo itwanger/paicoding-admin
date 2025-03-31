@@ -1,17 +1,19 @@
+/* eslint-disable simple-import-sort/imports */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
-import gemoji from '@bytemd/plugin-gemoji';
-import gfm from '@bytemd/plugin-gfm';
+import gemoji from "@bytemd/plugin-gemoji";
+import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
-import math from '@bytemd/plugin-math';
-import mediumZoom from '@bytemd/plugin-medium-zoom';
-import { Editor } from '@bytemd/react';
-import { Button, Drawer, Form, Input, message,Radio, Space, UploadFile } from "antd";
+import math from "@bytemd/plugin-math";
+import mediumZoom from "@bytemd/plugin-medium-zoom";
+import { Editor } from "@bytemd/react";
+import { Button, Drawer, Form, Input, message, Radio, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import zhHans from 'bytemd/locales/zh_Hans.json';
+import zhHans from "bytemd/locales/zh_Hans.json";
 
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { getArticleApi, saveArticleApi, saveImgApi } from "@/api/modules/article";
 import { uploadImgApi } from "@/api/modules/common";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
@@ -22,10 +24,10 @@ import DebounceSelect from "@/views/article/components/debounceselect/index";
 import ImgUpload from "@/views/column/setting/components/imgupload";
 import Search from "./search";
 
-import 'katex/dist/katex.css';
-import 'highlight.js/styles/default.css';
-import 'bytemd/dist/index.css';
-import 'juejin-markdown-themes/dist/juejin.css';
+import "katex/dist/katex.css";
+import "highlight.js/styles/default.css";
+import "bytemd/dist/index.css";
+import "juejin-markdown-themes/dist/juejin.css";
 import "./index.scss";
 
 const plugins = [
@@ -33,9 +35,9 @@ const plugins = [
 	highlight(),
 	gemoji(),
 	math(),
-	mediumZoom(),
+	mediumZoom()
 	// Add more plugins here
-]
+];
 
 interface IProps {}
 
@@ -45,14 +47,14 @@ interface TagValue {
 }
 
 interface ImageInfo {
-  img: string;
-  alt: string;
-	src: string; 
+	img: string;
+	alt: string;
+	src: string;
 	index: number; // 图片在文本中的位置
 }
 
 export interface IFormType {
-	articleId: number;// 文章id
+	articleId: number; // 文章id
 	status: number; // 文章状态
 	content: string; // 文章内容
 	cover: string; // 封面
@@ -60,14 +62,16 @@ export interface IFormType {
 }
 
 const defaultInitForm: IFormType = {
-	articleId: 0,// 后台默认为 0
+	articleId: 0, // 后台默认为 0
 	status: 0,
 	content: "",
 	cover: "",
-	tagIds: [],
-}
+	tagIds: []
+};
 
-const ArticleEdit: FC<IProps> = props => {
+const ArticleEdit: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
+
 	const [formRef] = Form.useForm();
 
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
@@ -75,9 +79,9 @@ const ArticleEdit: FC<IProps> = props => {
 	// 抽屉
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 文章内容
-	const [content, setContent] = useState<string>('');
+	const [content, setContent] = useState<string>("");
 	// 上一次转链后的内容
-	const [lastContent, setLastContent] = useState<string>('');
+	const [lastContent, setLastContent] = useState<string>("");
 	// 放图片的路径，和上传时间，30s 内防止重复提交
 	const lastUploadTimes = useRef<Map<string, number>>(new Map());
 
@@ -91,14 +95,14 @@ const ArticleEdit: FC<IProps> = props => {
 	const navigate = useNavigate();
 	// 取出来 articleId 和 status
 	// 当前的状态，用于新增还是更新，新增的时候不传递 id，更新的时候传递 id
-  const { articleId, status } = location.state || {};
+	const { articleId, status } = location.state || {};
 	console.log("看看前面是否把参数传递了过来", articleId, status);
 
 	// 声明一个 coverList，封面
 	const [coverList, setCoverList] = useState<UploadFile[]>([]);
 
 	//@ts-ignore
-	const { CategoryTypeList, CategoryType} = props || {};
+	const { CategoryTypeList, CategoryType } = disc || {};
 	console.log("CategoryTypeList", CategoryTypeList, CategoryType);
 
 	const onSure = useCallback(() => {
@@ -123,9 +127,9 @@ const ArticleEdit: FC<IProps> = props => {
 	};
 
 	const goBack = () => {
-    	// 跳转到文章列表页
-		navigate("/article/list/index");   
-  	};
+		// 跳转到文章列表页
+		navigate("/article/list/index");
+	};
 
 	// 重置表单
 	const resetFrom = () => {
@@ -153,7 +157,7 @@ const ArticleEdit: FC<IProps> = props => {
 		// 更新上传时间
 		lastUploadTimes.current.set(url, now);
 		return true;
-	}
+	};
 
 	// 如果是外网的图片链接，转成内网的图片链接
 	const uploadImages = async (newVal: string) => {
@@ -172,18 +176,17 @@ const ArticleEdit: FC<IProps> = props => {
 		}
 
 		// 正则表达式
-		const reg = /!\[(.*?)\]\((.*?)\)/mg;
+		const reg = /!\[(.*?)\]\((.*?)\)/gm;
 		let match;
 
 		let uploadTasks = [];
-    let imageInfos:ImageInfo[] = []; // 用于存储图片信息和它们在文本中的位置
+		let imageInfos: ImageInfo[] = []; // 用于存储图片信息和它们在文本中的位置
 
 		while ((match = reg.exec(add)) !== null) {
 			const [img, alt, src] = match;
 			console.log("img, alt, src", match, img, alt, src);
 			// 如果是外网的图片链接，转成内网的图片链接
-			if (src.length > 0 && src.startsWith("http") 
-				&& src.indexOf("saveError") < 0) {
+			if (src.length > 0 && src.startsWith("http") && src.indexOf("saveError") < 0) {
 				// 收集图片信息
 				imageInfos.push({ img, alt, src, index: match.index });
 				// 判断图片的链接是否已经上传过了
@@ -202,19 +205,19 @@ const ArticleEdit: FC<IProps> = props => {
 		// 替换所有图片链接
 		let newContent = newVal;
 		results.forEach((result, i) => {
-				if (result.status && result.status.code === 0 && result.result) {
-					// 重新组织图片的路径
-					const newSrc = `![${imageInfos[i].alt}](${result.result.imagePath})`;
-					console.log("newSrc", newSrc);
-					// 替换后的内容
-					newContent = newContent.replace(imageInfos[i].img, newSrc);
-					console.log("newContent", newContent);
-				}
+			if (result.status && result.status.code === 0 && result.result) {
+				// 重新组织图片的路径
+				const newSrc = `![${imageInfos[i].alt}](${result.result.imagePath})`;
+				console.log("newSrc", newSrc);
+				// 替换后的内容
+				newContent = newContent.replace(imageInfos[i].img, newSrc);
+				console.log("newContent", newContent);
+			}
 		});
 		setLastContent(newVal);
 
 		return newContent;
-	}
+	};
 
 	const handleReplaceImgUrl = async () => {
 		const { content } = form;
@@ -223,7 +226,7 @@ const ArticleEdit: FC<IProps> = props => {
 			setContent(newContent);
 			handleChange({ content: newContent });
 		}
-	}
+	};
 
 	// 编辑或者新增时提交数据到服务器端
 	const handleSubmit = async () => {
@@ -255,7 +258,7 @@ const ArticleEdit: FC<IProps> = props => {
 			source: 2,
 			// 草稿还是发布
 			actionType: "post",
-			articleId: status === UpdateEnum.Save ? UpdateEnum.Save : articleId,
+			articleId: status === UpdateEnum.Save ? UpdateEnum.Save : articleId
 		};
 		console.log("submit 之前的所有值:", newValues);
 
@@ -274,11 +277,9 @@ const ArticleEdit: FC<IProps> = props => {
 	useEffect(() => {
 		const getArticle = async () => {
 			console.log("此时是否还有 ", articleId, status);
-			const { status: resultStatus, result } = await getArticleApi(
-				articleId
-			);
+			const { status: resultStatus, result } = await getArticleApi(articleId);
 			const { code } = resultStatus || {};
-			if (code === 0 && status === UpdateEnum.Edit) { 
+			if (code === 0 && status === UpdateEnum.Edit) {
 				console.log("result", result);
 
 				// 如果 status 为编辑，就请求数据
@@ -313,11 +314,11 @@ const ArticleEdit: FC<IProps> = props => {
 				// 保存的时候需要
 				handleChange({
 					content: result?.content,
-					articleId: result?.articleId,
+					articleId: result?.articleId
 				});
-			 }
+			}
 		};
-	
+
 		getArticle();
 	}, []);
 
@@ -352,34 +353,25 @@ const ArticleEdit: FC<IProps> = props => {
 					handleFormRefChange={handleFormRefChange}
 				/>
 			</Form.Item>
-			<Form.Item
-        name="categoryId"
-        label="分类"
-        rules={[{ required: true, message: '请选择一个分类' }]}
-      >
-        <Radio.Group 
+			<Form.Item name="categoryId" label="分类" rules={[{ required: true, message: "请选择一个分类" }]}>
+				<Radio.Group
 					className="custom-radio-group"
-					optionType="button" 
+					optionType="button"
 					buttonStyle="solid"
-					options={CategoryTypeList}>
-        </Radio.Group>
-      </Form.Item>
-			<Form.Item 
-				label="标签" 
-				name="tagName" 
-				rules={[{ required: true, message: "请选择标签!" }]}>
+					options={CategoryTypeList}
+				></Radio.Group>
+			</Form.Item>
+			<Form.Item label="标签" name="tagName" rules={[{ required: true, message: "请选择标签!" }]}>
 				{/*用下拉框做一个教程的选择 */}
 				<DebounceSelect
-					onChange={
-						(selectedValues) => {
-							console.log('选中的值:', selectedValues);
-							// @ts-ignore
-							const keys = selectedValues.map(item => Number(item.key));
+					onChange={selectedValues => {
+						console.log("选中的值:", selectedValues);
+						// @ts-ignore
+						const keys = selectedValues.map(item => Number(item.key));
 
-							console.log('keysString', keys);
-							handleChange({ tagIds: keys });
-						}
-					}
+						console.log("keysString", keys);
+						handleChange({ tagIds: keys });
+					}}
 				/>
 			</Form.Item>
 		</Form>
@@ -388,46 +380,41 @@ const ArticleEdit: FC<IProps> = props => {
 	return (
 		<div className="ArticleEdit">
 			<ContentWrap>
-				<Search
-					status={status}
-					handleReplaceImgUrl={handleReplaceImgUrl}
-					handleSave={handleSaveOrUpdate}
-					goBack={goBack}
-				/>
+				<Search status={status} handleReplaceImgUrl={handleReplaceImgUrl} handleSave={handleSaveOrUpdate} goBack={goBack} />
 				<ContentInterWrap>
 					<Editor
 						value={content}
 						plugins={plugins}
 						locale={zhHans}
-						uploadImages={(files) => {
+						uploadImages={files => {
 							return Promise.all(
-								files.map((file) => {
+								files.map(file => {
 									// 限制图片大小，不超过 5M
 									if (file.size > 5 * 1024 * 1024) {
-										return  {
-											url: "图片大小不能超过 5M",
-										}
+										return {
+											url: "图片大小不能超过 5M"
+										};
 									}
 
 									const formData = new FormData();
-      						formData.append('image', file);
+									formData.append("image", file);
 
 									return uploadImgApi(formData).then(({ status, result }) => {
 										const { code, msg } = status || {};
 										const { imagePath } = result || {};
 										if (code === 0) {
 											return {
-												url: imagePath,
-											}
+												url: imagePath
+											};
 										}
 										return {
-											url: msg,
-										}
-									})
+											url: msg
+										};
+									});
 								})
-							)
+							);
 						}}
-						onChange={(v) => {
+						onChange={v => {
 							// 右侧的预览更新
 							setContent(v);
 							handleChange({ content: v });
@@ -457,6 +444,4 @@ const ArticleEdit: FC<IProps> = props => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(ArticleEdit);
+export default ArticleEdit;

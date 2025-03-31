@@ -2,24 +2,27 @@
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
 import React from "react";
-import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DeleteOutlined, EyeOutlined, SwapOutlined } from "@ant-design/icons";
-import type { DragEndEvent } from '@dnd-kit/core';
-import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import type { DragEndEvent } from "@dnd-kit/core";
+import { DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Button, Descriptions, Drawer, Form, Input, InputNumber, message, Modal, Space, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delColumnArticleApi, getColumnArticleListApi, sortColumnArticleApi, sortColumnArticleByIDApi,updateColumnArticleApi } from "@/api/modules/column";
+import {
+	delColumnArticleApi,
+	getColumnArticleListApi,
+	sortColumnArticleApi,
+	sortColumnArticleByIDApi,
+	updateColumnArticleApi
+} from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { MapItem } from "@/typings/common";
 import { baseDomain } from "@/utils/util";
 import TableSelect from "@/views/column/article/components/tableselect/TableSelect";
@@ -82,10 +85,11 @@ const defaultInitForm: IFormType = {
 // 查询表单默认值
 const defaultSearchForm = {
 	articleTitle: "",
-	columnId: -1,
+	columnId: -1
 };
 
-const ColumnArticle: FC<IProps> = props => {
+const ColumnArticle: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
 
 	const [formRef] = Form.useForm();
 	// 调整文章书序的表单
@@ -121,27 +125,27 @@ const ColumnArticle: FC<IProps> = props => {
 
 	const location = useLocation();
 	const navigate = useNavigate();
-  const { columnId: columnIdParam } = location.state || {};
+	const { columnId: columnIdParam } = location.state || {};
 
 	// 拖拽相关 1
 	interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
-		'data-row-key': string;
+		"data-row-key": string;
 	}
 
 	// 拖拽相关 2
 	const Row = (props: RowProps) => {
 		const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-			id: props['data-row-key'],
+			id: props["data-row-key"]
 		});
-	
+
 		const style: React.CSSProperties = {
 			...props.style,
 			transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
 			transition,
-			cursor: 'move',
-			...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
+			cursor: "move",
+			...(isDragging ? { position: "relative", zIndex: 9999 } : {})
 		};
-	
+
 		return <tr {...props} ref={setNodeRef} style={style} {...attributes} {...listeners} />;
 	};
 
@@ -169,13 +173,13 @@ const ColumnArticle: FC<IProps> = props => {
 
 	// 拖拽相关 3
 	const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        // https://docs.dndkit.com/api-documentation/sensors/pointer#activation-constraints
-        distance: 1,
-      },
-    }),
-  );
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				// https://docs.dndkit.com/api-documentation/sensors/pointer#activation-constraints
+				distance: 1
+			}
+		})
+	);
 
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
@@ -196,7 +200,7 @@ const ColumnArticle: FC<IProps> = props => {
 	const handleSearchChange = (item: MapItem) => {
 		// 当 status 的值为 -1 时，重新显示
 		setSearchForm({ ...searchForm, ...item });
-		console.log("查询条件变化了",searchForm);
+		console.log("查询条件变化了", searchForm);
 	};
 
 	// 当点击查询按钮的时候触发
@@ -214,8 +218,8 @@ const ColumnArticle: FC<IProps> = props => {
 	};
 
 	const goBack = () => {
-    navigate(-1); // 返回上一个页面
-  };
+		navigate(-1); // 返回上一个页面
+	};
 
 	// 关闭抽屉时触发
 	const handleCloseDrawer = () => {
@@ -228,7 +232,7 @@ const ColumnArticle: FC<IProps> = props => {
 		// 关闭详情抽屉
 		setIsDetailDrawerShow(false);
 	};
-		
+
 	// 删除
 	const handleDel = (id: number) => {
 		Modal.warning({
@@ -254,10 +258,10 @@ const ColumnArticle: FC<IProps> = props => {
 		const values = await formRef.validateFields();
 		const newValues = {
 			...values,
-			columnId: columnIdParam, 
+			columnId: columnIdParam
 		};
 		console.log("提交的值:", newValues);
-		
+
 		const { status: successStatus } = (await updateColumnArticleApi(newValues)) || {};
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
@@ -277,10 +281,10 @@ const ColumnArticle: FC<IProps> = props => {
 		const values = await articleSortFormRef.validateFields();
 		const newValues = {
 			...values,
-			id: articleSortForm.id, 
+			id: articleSortForm.id
 		};
 		console.log("提交的值:", newValues);
-		
+
 		const { status: successStatus } = (await sortColumnArticleByIDApi(newValues)) || {};
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
@@ -293,7 +297,7 @@ const ColumnArticle: FC<IProps> = props => {
 
 	const onDragEnd = async ({ active, over }: DragEndEvent) => {
 		console.log("active over", active, over);
-    if (over != null && active.id !== over.id) {
+		if (over != null && active.id !== over.id) {
 			// 此时，我需要把两个 ID 发送到服务器端等待更新后再在前端调整顺序
 			const { status: successStatus } = (await sortColumnArticleApi(Number(active.id), Number(over.id))) || {};
 			const { code, msg } = successStatus || {};
@@ -303,20 +307,20 @@ const ColumnArticle: FC<IProps> = props => {
 			} else {
 				message.error(msg);
 			}
-    }
-  };
+		}
+	};
 
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
 			const newValues = {
 				...searchForm,
-				pageNumber: current, 
+				pageNumber: current,
 				pageSize,
 				columnId: columnIdParam
 			};
 			console.log("查询教程列表之前的所有值:", newValues);
-			
+
 			const { status, result } = await getColumnArticleListApi(newValues);
 			const { code } = status || {};
 			// @ts-ignore
@@ -342,7 +346,7 @@ const ColumnArticle: FC<IProps> = props => {
 		{
 			title: "专栏名称",
 			dataIndex: "column",
-			key: "column",
+			key: "column"
 		},
 		{
 			title: "教程ID",
@@ -355,10 +359,7 @@ const ColumnArticle: FC<IProps> = props => {
 			key: "shortTitle",
 			render(value, item) {
 				return (
-					<a 
-						href={`${baseDomain}/column/${item?.columnId}/${item?.sort}`}
-						className="cell-text"
-						target="_blank" rel="noreferrer">
+					<a href={`${baseDomain}/column/${item?.columnId}/${item?.sort}`} className="cell-text" target="_blank" rel="noreferrer">
 						{value}
 					</a>
 				);
@@ -366,7 +367,7 @@ const ColumnArticle: FC<IProps> = props => {
 		},
 		{
 			title: "操作",
-			width:  150,
+			width: 150,
 			render: (_, item) => {
 				// 删除的时候用
 				const { id, sort } = item;
@@ -387,7 +388,7 @@ const ColumnArticle: FC<IProps> = props => {
 						<Tooltip title="调整顺序">
 							<Button
 								type="primary"
-								icon={<SwapOutlined className="rotated-icon"/>}
+								icon={<SwapOutlined className="rotated-icon" />}
 								style={{ marginRight: "10px" }}
 								onClick={() => {
 									setIsSortDrawerShow(true);
@@ -398,12 +399,7 @@ const ColumnArticle: FC<IProps> = props => {
 							></Button>
 						</Tooltip>
 						<Tooltip title="删除">
-							<Button 
-								type="primary" 
-								danger 
-								icon={<DeleteOutlined />} 
-								onClick={() => handleDel(id)}>
-							</Button>
+							<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(id)}></Button>
 						</Tooltip>
 					</div>
 				);
@@ -413,46 +409,25 @@ const ColumnArticle: FC<IProps> = props => {
 
 	// 调整顺序的表单
 	const articleSortContent = (
-		<Form
-			autoComplete="off"
-			form={articleSortFormRef}>
-      <Form.Item
-        label="设置文章顺序为"
-        name="sort"
-        rules={[{ required: true, message: '请输入文章顺序' }]}
-      >
-        <InputNumber min={1} size="small"
-					onChange={value => handleArticleSortChange({ sort: value })}
-					/>
-      </Form.Item>
-    </Form>
+		<Form autoComplete="off" form={articleSortFormRef}>
+			<Form.Item label="设置文章顺序为" name="sort" rules={[{ required: true, message: "请输入文章顺序" }]}>
+				<InputNumber min={1} size="small" onChange={value => handleArticleSortChange({ sort: value })} />
+			</Form.Item>
+		</Form>
 	);
 
 	// 编辑表单
 	const reviseDrawerContent = (
-		<Form 
-			name="basic" 
-			form={formRef} 
-			labelCol={{ span: 4 }} 
-			wrapperCol={{ span: 16 }} 
-			autoComplete="off">
-			<Form.Item 
-				label="教程"
-				name="articleId"
-				rules={[{ required: true, message: "请选择教程!" }]}
-				>
-				<TableSelect 
+		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+			<Form.Item label="教程" name="articleId" rules={[{ required: true, message: "请选择教程!" }]}>
+				<TableSelect
 					isArticleSelectOpen={isArticleSelectOpen}
 					setIsArticleSelectOpen={setIsArticleSelectOpen}
 					handleChange={handleChange}
-					/>
+				/>
 			</Form.Item>
 
-			<Form.Item 
-				label="标题"
-				name="shortTitle"
-				rules={[{ required: true, message: "请输入标题!" }]}
-				>
+			<Form.Item label="标题" name="shortTitle" rules={[{ required: true, message: "请输入标题!" }]}>
 				<Input
 					allowClear
 					placeholder="请输入标题"
@@ -460,7 +435,6 @@ const ColumnArticle: FC<IProps> = props => {
 					onChange={e => handleChange({ shortTitle: e.target.value })}
 				/>
 			</Form.Item>
-			
 		</Form>
 	);
 
@@ -468,38 +442,32 @@ const ColumnArticle: FC<IProps> = props => {
 		<div className="ColumnArticle">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search
-					handleSearchChange={handleSearchChange}
-					goBack={goBack}
-					handleSearch={handleSearch} 
-					handleAdd={handleAdd}
-					/>
+				<Search handleSearchChange={handleSearchChange} goBack={goBack} handleSearch={handleSearch} handleAdd={handleAdd} />
 				{/* 表格 */}
 				<ContentInterWrap>
 					<DndContext sensors={sensors} modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
 						<SortableContext
 							// rowKey array
-							items={tableData.map((i) => i.key)}
+							items={tableData.map(i => i.key)}
 							strategy={verticalListSortingStrategy}
 						>
-							<Table 
+							<Table
 								components={{
 									body: {
-										row: Row,
-									},
+										row: Row
+									}
 								}}
 								rowKey="key"
-								columns={columns} dataSource={tableData} pagination={paginationInfo} />
+								columns={columns}
+								dataSource={tableData}
+								pagination={paginationInfo}
+							/>
 						</SortableContext>
 					</DndContext>
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 抽屉 */}
-			<Drawer 
-				title="详情" 
-				placement="right" 
-				onClose={handleCloseDrawer} 
-				open={isDetailDrawerShow}>
+			<Drawer title="详情" placement="right" onClose={handleCloseDrawer} open={isDetailDrawerShow}>
 				<Descriptions column={1} labelStyle={{ width: "100px" }}>
 					{detailInfo.map(({ label, title }) => (
 						<Descriptions.Item label={label} key={label}>
@@ -509,37 +477,36 @@ const ColumnArticle: FC<IProps> = props => {
 				</Descriptions>
 			</Drawer>
 			{/* 调整顺序的抽屉 */}
-			<Modal 
+			<Modal
 				title="调整教程顺序"
 				width={280}
 				style={{ left: 200 }}
 				onOk={handleSortByIDSubmit}
-				onCancel={handleCloseDrawer} 
-				open={isSortDrawerShow}>
+				onCancel={handleCloseDrawer}
+				open={isSortDrawerShow}
+			>
 				{articleSortContent}
 			</Modal>
 			{/* 把弹窗修改为抽屉 */}
-			<Drawer 
-				title="添加" 
+			<Drawer
+				title="添加"
 				size="large"
 				placement="right"
 				extra={
-          <Space>
-            <Button onClick={handleCloseDrawer}>取消</Button>
-            <Button type="primary" onClick={handleSubmit}>
-              OK
-            </Button>
-          </Space>
-        }
-				onClose={handleCloseDrawer} 
-				open={isOpenDrawerShow}>
+					<Space>
+						<Button onClick={handleCloseDrawer}>取消</Button>
+						<Button type="primary" onClick={handleSubmit}>
+							OK
+						</Button>
+					</Space>
+				}
+				onClose={handleCloseDrawer}
+				open={isOpenDrawerShow}
+			>
 				{reviseDrawerContent}
 			</Drawer>
 		</div>
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(ColumnArticle);
-
+export default ColumnArticle;

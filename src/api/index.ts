@@ -1,3 +1,4 @@
+/* eslint-disable simple-import-sort/imports */
 import { message } from "antd";
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
@@ -6,8 +7,7 @@ import { LOGIN_URL } from "@/config/config";
 import NProgress from "@/config/nprogress";
 import { showFullScreenLoading, tryHideFullScreenLoading } from "@/config/serviceLoading";
 import { ResultEnum } from "@/enums/httpEnum";
-import { store } from "@/redux";
-import { setToken } from "@/redux/modules/global/action";
+import { store, setToken } from "@/rtk";
 import { AxiosCanceler } from "./helper/axiosCancel";
 import { checkStatus } from "./helper/checkStatus";
 

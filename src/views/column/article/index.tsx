@@ -1,14 +1,20 @@
 /* eslint-disable react/jsx-no-comment-textnodes */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Drawer, Form, Image,Input, message, Modal, Space, Table } from "antd";
+import { Button, Descriptions, Drawer, Form, Image, Input, message, Modal, Space, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delColumnArticleApi, getColumnArticleListApi, getColumnByNameListApi, updateColumnArticleApi } from "@/api/modules/column";
+import {
+	delColumnArticleApi,
+	getColumnArticleListApi,
+	getColumnByNameListApi,
+	updateColumnArticleApi
+} from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { MapItem } from "@/typings/common";
 import { baseDomain } from "@/utils/util";
 import { getCompleteUrl } from "@/utils/util";
@@ -60,7 +66,7 @@ const defaultInitForm: IFormType = {
 // 查询表单默认值
 const defaultSearchForm = {
 	articleTitle: "",
-	columnId: -1,
+	columnId: -1
 };
 
 // Usage of DebounceSelect
@@ -70,7 +76,8 @@ interface ColumnValue {
 	value: string;
 }
 
-const ColumnArticle: FC<IProps> = props => {
+const ColumnArticle: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
 
 	const [formRef] = Form.useForm();
 	// form值（详情和新增的时候会用到）
@@ -134,7 +141,7 @@ const ColumnArticle: FC<IProps> = props => {
 	const handleSearchChange = (item: MapItem) => {
 		// 当 status 的值为 -1 时，重新显示
 		setSearchForm({ ...searchForm, ...item });
-		console.log("查询条件变化了",searchForm);
+		console.log("查询条件变化了", searchForm);
 	};
 
 	// 当点击查询按钮的时候触发
@@ -165,7 +172,7 @@ const ColumnArticle: FC<IProps> = props => {
 	const handleCloseDetailDrawer = () => {
 		setIsDetailDrawerShow(false);
 	};
-		
+
 	// 删除
 	const handleDel = (id: number) => {
 		Modal.warning({
@@ -191,10 +198,10 @@ const ColumnArticle: FC<IProps> = props => {
 		const values = await formRef.validateFields();
 		const newValues = {
 			...values,
-			columnId: columnId, 
+			columnId: columnId
 		};
 		console.log("提交的值:", newValues);
-		
+
 		const { status: successStatus } = (await updateColumnArticleApi(newValues)) || {};
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
@@ -212,11 +219,11 @@ const ColumnArticle: FC<IProps> = props => {
 		const getSortList = async () => {
 			const newValues = {
 				...searchForm,
-				pageNumber: current, 
-				pageSize,
+				pageNumber: current,
+				pageSize
 			};
 			console.log("查询教程列表之前的所有值:", newValues);
-			
+
 			const { status, result } = await getColumnArticleListApi(newValues);
 			const { code } = status || {};
 			// @ts-ignore
@@ -232,7 +239,7 @@ const ColumnArticle: FC<IProps> = props => {
 
 	// 教程下拉框，可根据教程查询
 	async function fetchColumnList(key: string): Promise<ColumnValue[]> {
-		console.log('根据教程名查询', key);
+		console.log("根据教程名查询", key);
 		const { status, result } = await getColumnByNameListApi(key);
 		const { code } = status || {};
 		//@ts-ignore
@@ -241,13 +248,12 @@ const ColumnArticle: FC<IProps> = props => {
 			const newList = items.map((item: MapItem) => ({
 				key: item?.columnId,
 				// label 这里我想把教程封面也加上
-				label: <div>
-					<Image
-						className="cover-select"
-						src={getCompleteUrl(item?.cover)}
-					/>
-					<span>{item?.column}</span>
-				</div>,
+				label: (
+					<div>
+						<Image className="cover-select" src={getCompleteUrl(item?.cover)} />
+						<span>{item?.column}</span>
+					</div>
+				),
 				value: item?.column
 			}));
 			console.log("教程列表", newList);
@@ -255,7 +261,7 @@ const ColumnArticle: FC<IProps> = props => {
 		}
 		// 没查到数据时，返回空数组
 		return [];
-	};
+	}
 
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
@@ -265,10 +271,7 @@ const ColumnArticle: FC<IProps> = props => {
 			key: "column",
 			render(value, item) {
 				return (
-					<a 
-						href={`${baseDomain}/column/${item?.columnId}/1`}
-						className="cell-text"
-						target="_blank" rel="noreferrer">
+					<a href={`${baseDomain}/column/${item?.columnId}/1`} className="cell-text" target="_blank" rel="noreferrer">
 						{value}
 					</a>
 				);
@@ -280,10 +283,7 @@ const ColumnArticle: FC<IProps> = props => {
 			key: "shortTitle",
 			render(value, item) {
 				return (
-					<a 
-						href={`${baseDomain}/column/${item?.columnId}/${item?.sort}`}
-						className="cell-text"
-						target="_blank" rel="noreferrer">
+					<a href={`${baseDomain}/column/${item?.columnId}/${item?.sort}`} className="cell-text" target="_blank" rel="noreferrer">
 						{value}
 					</a>
 				);
@@ -315,11 +315,7 @@ const ColumnArticle: FC<IProps> = props => {
 						>
 							详情
 						</Button>
-						<Button 
-							type="primary" 
-							danger 
-							icon={<DeleteOutlined />} 
-							onClick={() => handleDel(id)}>
+						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(id)}>
 							删除
 						</Button>
 					</div>
@@ -330,16 +326,8 @@ const ColumnArticle: FC<IProps> = props => {
 
 	// 编辑表单
 	const reviseDrawerContent = (
-		<Form 
-			name="basic" 
-			form={formRef} 
-			labelCol={{ span: 4 }} 
-			wrapperCol={{ span: 16 }} 
-			autoComplete="off">
-			<Form.Item 
-				label="专栏" 
-				name="columnName" 
-				rules={[{ required: true, message: "请选择专栏!" }]}>
+		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+			<Form.Item label="专栏" name="columnName" rules={[{ required: true, message: "请选择专栏!" }]}>
 				{/*用下拉框做一个教程的选择 */}
 				<DebounceSelect
 					allowClear
@@ -350,37 +338,26 @@ const ColumnArticle: FC<IProps> = props => {
 					optionLabelProp="value"
 					// 是否在输入框聚焦时自动调用搜索方法
 					showSearch={true}
-					onChange={
-						(value, option) => {
-							console.log("添加教程文章时教程搜索的值改变", value, option)
-						if(option)
+					onChange={(value, option) => {
+						console.log("添加教程文章时教程搜索的值改变", value, option);
+						if (option)
 							//@ts-ignore
-							handleChange({ columnId: option.key, columnName: option.value})
-						else
-							handleChange({ columnId: -1 })
-						}
-					}
+							handleChange({ columnId: option.key, columnName: option.value });
+						else handleChange({ columnId: -1 });
+					}}
 					fetchOptions={fetchColumnList}
 				/>
 			</Form.Item>
 
-			<Form.Item 
-				label="教程"
-				name="articleId"
-				rules={[{ required: true, message: "请选择教程!" }]}
-				>
-				<TableSelect 
+			<Form.Item label="教程" name="articleId" rules={[{ required: true, message: "请选择教程!" }]}>
+				<TableSelect
 					isArticleSelectOpen={isArticleSelectOpen}
 					setIsArticleSelectOpen={setIsArticleSelectOpen}
 					handleChange={handleChange}
-					/>
+				/>
 			</Form.Item>
 
-			<Form.Item 
-				label="标题"
-				name="shortTitle"
-				rules={[{ required: true, message: "请输入标题!" }]}
-				>
+			<Form.Item label="标题" name="shortTitle" rules={[{ required: true, message: "请输入标题!" }]}>
 				<Input
 					allowClear
 					placeholder="请输入标题"
@@ -388,7 +365,6 @@ const ColumnArticle: FC<IProps> = props => {
 					onChange={e => handleChange({ shortTitle: e.target.value })}
 				/>
 			</Form.Item>
-			
 		</Form>
 	);
 
@@ -399,20 +375,16 @@ const ColumnArticle: FC<IProps> = props => {
 				<Search
 					handleSearchChange={handleSearchChange}
 					fetchColumnList={fetchColumnList}
-					handleSearch={handleSearch} 
+					handleSearch={handleSearch}
 					handleAdd={handleAdd}
-					/>
+				/>
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 抽屉 */}
-			<Drawer 
-				title="详情" 
-				placement="right" 
-				onClose={handleCloseDetailDrawer} 
-				open={isDetailDrawerShow}>
+			<Drawer title="详情" placement="right" onClose={handleCloseDetailDrawer} open={isDetailDrawerShow}>
 				<Descriptions column={1} labelStyle={{ width: "100px" }}>
 					{detailInfo.map(({ label, title }) => (
 						<Descriptions.Item label={label} key={label}>
@@ -422,27 +394,25 @@ const ColumnArticle: FC<IProps> = props => {
 				</Descriptions>
 			</Drawer>
 			{/* 把弹窗修改为抽屉 */}
-			<Drawer 
-				title="添加" 
+			<Drawer
+				title="添加"
 				size="large"
 				placement="right"
 				extra={
-          <Space>
-            <Button onClick={handleCloseDrawer}>取消</Button>
-            <Button type="primary" onClick={handleSubmit}>
-              OK
-            </Button>
-          </Space>
-        }
-				onClose={handleCloseDrawer} 
-				open={isOpenDrawerShow}>
+					<Space>
+						<Button onClick={handleCloseDrawer}>取消</Button>
+						<Button type="primary" onClick={handleSubmit}>
+							OK
+						</Button>
+					</Space>
+				}
+				onClose={handleCloseDrawer}
+				open={isOpenDrawerShow}
+			>
 				{reviseDrawerContent}
 			</Drawer>
 		</div>
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(ColumnArticle);
-
+export default ColumnArticle;

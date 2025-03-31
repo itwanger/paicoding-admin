@@ -1,12 +1,14 @@
+/* eslint-disable simple-import-sort/imports */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { useNavigate } from "react-router";
 import { DeleteOutlined, EditOutlined, HighlightOutlined } from "@ant-design/icons";
 import { Avatar, Button, Form, Input, message, Modal, Select, Switch, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { delArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
@@ -61,11 +63,13 @@ const defaultSearchForm = {
 	userName: "",
 	title: "",
 	status: -1,
-	toppingStat : -1,
-	officalStat : -1
+	toppingStat: -1,
+	officalStat: -1
 };
 
-const Article: FC<IProps> = props => {
+const Article: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
+
 	const [formRef] = Form.useForm();
 	// 编辑表单
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
@@ -93,7 +97,7 @@ const Article: FC<IProps> = props => {
 
 	// 一些配置项
 	//@ts-ignore
-	const { PushStatusList, ToppingStatusList, OfficalStatusList} = props || {};
+	const { PushStatusList, ToppingStatusList, OfficalStatusList } = disc || {};
 
 	const { articleId } = form;
 
@@ -102,7 +106,7 @@ const Article: FC<IProps> = props => {
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
-	
+
 	// 编辑表单值改变
 	const handleChange = (item: MapItem) => {
 		setForm({ ...form, ...item });
@@ -112,7 +116,7 @@ const Article: FC<IProps> = props => {
 	const handleSearchChange = (item: MapItem) => {
 		// 当 status 的值为 -1 时，重新显示
 		setSearchForm({ ...searchForm, ...item });
-		console.log("查询条件变化了",searchForm);
+		console.log("查询条件变化了", searchForm);
 	};
 
 	// 当点击查询按钮的时候触发
@@ -157,7 +161,7 @@ const Article: FC<IProps> = props => {
 		} else if (operateType === 1) {
 			operateDesc = "推荐";
 		}
-		
+
 		const { status } = await operateArticleApi({ articleId, operateType });
 		const { code, msg } = status || {};
 		if (code === 0) {
@@ -172,7 +176,7 @@ const Article: FC<IProps> = props => {
 	const handleStatusChange = async (articleId: number, status: number) => {
 		// 将 articleId 和 status 作为参数传递给 updateArticleApi
 		const newValues = { articleId, status };
-		const { status: successStatus } = await updateArticleApi(newValues) || {};
+		const { status: successStatus } = (await updateArticleApi(newValues)) || {};
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
 			message.success("状态操作成功");
@@ -186,10 +190,12 @@ const Article: FC<IProps> = props => {
 	// 导航到文章编辑页面
 	const handleEdit = (articleId: number) => {
 		console.log("articleId", articleId);
-		navigate("/article/edit/index", { state: { 
-			articleId,
-			status: UpdateEnum.Edit
-		}});
+		navigate("/article/edit/index", {
+			state: {
+				articleId,
+				status: UpdateEnum.Edit
+			}
+		});
 	};
 
 	const handleSubmit = async () => {
@@ -198,7 +204,7 @@ const Article: FC<IProps> = props => {
 		const { status } = form;
 		const newValues = { ...values, articleId, status };
 		console.log("编辑 时提交的 newValues:", newValues);
-		
+
 		const { status: successStatus } = (await updateArticleApi(newValues)) || {};
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
@@ -213,8 +219,8 @@ const Article: FC<IProps> = props => {
 	// 数据请求，这是一个钩子，query, current, pageSize, search 有变化的时候就会自动触发
 	useEffect(() => {
 		const getSortList = async () => {
-			const { status, result } = await getArticleListApi({ 
-				pageNumber: current, 
+			const { status, result } = await getArticleListApi({
+				pageNumber: current,
 				pageSize,
 				...searchForm
 			});
@@ -238,10 +244,7 @@ const Article: FC<IProps> = props => {
 			key: "title",
 			render(value, item) {
 				return (
-					<a 
-						href={`${baseDomain}/article/detail/${item?.articleId}`}
-						className="cell-text"
-						target="_blank" rel="noreferrer">
+					<a href={`${baseDomain}/article/detail/${item?.articleId}`} className="cell-text" target="_blank" rel="noreferrer">
 						{value}
 					</a>
 				);
@@ -254,20 +257,26 @@ const Article: FC<IProps> = props => {
 			width: 120,
 			render: (value: string) => {
 				const time = dayjs(value);
-				return <Tooltip title={time.format('YYYY-MM-DD HH:mm:ss')}><span>{time.format('MM-DD HH:mm')}</span></Tooltip>;
+				return (
+					<Tooltip title={time.format("YYYY-MM-DD HH:mm:ss")}>
+						<span>{time.format("MM-DD HH:mm")}</span>
+					</Tooltip>
+				);
 			}
-		},	
+		},
 		{
 			title: "作者",
 			dataIndex: "authorName",
 			width: 110,
 			key: "authorName",
 			render(value) {
-				return <>
-					<Avatar style={{ backgroundColor: '#1890ff', color: '#fff' }} size="large">
-						{value.slice(0, 3)}
-					</Avatar>
-				</>;
+				return (
+					<>
+						<Avatar style={{ backgroundColor: "#1890ff", color: "#fff" }} size="large">
+							{value.slice(0, 3)}
+						</Avatar>
+					</>
+				);
 			}
 		},
 		{
@@ -278,12 +287,9 @@ const Article: FC<IProps> = props => {
 				const { articleId, toppingStat } = item;
 				// 返回的是 0 和 1
 				const isTopped = toppingStat === 1;
-		
+
 				const topStatus = isTopped ? 4 : 3; // 3-置顶；4-取消置顶
-				return <Switch 
-					checked={isTopped} 
-					onChange={() => handleOperate(articleId, topStatus)} 
-					/>;
+				return <Switch checked={isTopped} onChange={() => handleOperate(articleId, topStatus)} />;
 			}
 		},
 		{
@@ -295,10 +301,7 @@ const Article: FC<IProps> = props => {
 				const { articleId, officalStat } = item;
 				const isOffical = officalStat === 1;
 				const officalStatus = isOffical ? 2 : 1; // 1-官方推荐；2-取消官方推荐
-				return <Switch 
-					checked={isOffical} 
-					onChange={() => handleOperate(articleId, officalStatus)} 
-					/>;
+				return <Switch checked={isOffical} onChange={() => handleOperate(articleId, officalStatus)} />;
 			}
 		},
 		{
@@ -307,14 +310,15 @@ const Article: FC<IProps> = props => {
 			key: "status",
 			render(_, item) {
 				const { articleId, status } = item;
-				return <Select 
-								// 如果 status 为 1 那么 status 为 warning
-								status={status === 1 ? "" : "error"}
-								value={status.toString()} 
-								options={PushStatusList}
-								onChange={(value) => handleStatusChange(articleId, Number(value))}
-							>
-							</Select>;
+				return (
+					<Select
+						// 如果 status 为 1 那么 status 为 warning
+						status={status === 1 ? "" : "error"}
+						value={status.toString()}
+						options={PushStatusList}
+						onChange={value => handleStatusChange(articleId, Number(value))}
+					></Select>
+				);
 			}
 		},
 		{
@@ -351,12 +355,7 @@ const Article: FC<IProps> = props => {
 							></Button>
 						</Tooltip>
 						<Tooltip title="删除">
-							<Button 
-								type="primary" 
-								danger 
-								icon={<DeleteOutlined />} 
-								onClick={() => handleDel(articleId)}>
-							</Button>
+							<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(articleId)}></Button>
 						</Tooltip>
 					</div>
 				);
@@ -375,12 +374,12 @@ const Article: FC<IProps> = props => {
 					}}
 				/>
 			</Form.Item>
-			<Form.Item 
-				label="教程名" 
-				name="shortTitle" 
+			<Form.Item
+				label="教程名"
+				name="shortTitle"
 				tooltip="教程的时候使用"
 				rules={[{ required: false, message: "请输入短标题!" }]}
-				>
+			>
 				<Input
 					allowClear
 					onChange={e => {
@@ -415,6 +414,4 @@ const Article: FC<IProps> = props => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(Article);
+export default Article;

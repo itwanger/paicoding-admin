@@ -1,11 +1,12 @@
-import { connect } from "react-redux";
-
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { baseDomain } from "@/utils/util";
 
 import "./index.less";
 
-const LayoutFooter = (props: any) => {
-	const { themeConfig } = props;
+const LayoutFooter = () => {
+	const global = useAppSelector((state: RootState) => state.global);
+	const { themeConfig } = global;
 
 	// 定义一个自动获取年份的方法
 	const getYear = () => {
@@ -25,5 +26,4 @@ const LayoutFooter = (props: any) => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.global;
-export default connect(mapStateToProps)(LayoutFooter);
+export default LayoutFooter;

@@ -1,21 +1,25 @@
+/* eslint-disable simple-import-sort/imports */
 import { useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { HomeFilled } from "@ant-design/icons";
 import { message, Tabs } from "antd";
 
+import type { AppDispatch, RootState } from "@/rtk";
+import { setTabsList } from "@/rtk";
+import { useAppDispatch, useAppSelector } from "@/hooks/useRTK";
 import { HOME_URL } from "@/config/config";
-import { setTabsList } from "@/redux/modules/tabs/action";
 import { routerArray } from "@/routers";
 import { searchRoute } from "@/utils/util";
 import MoreButton from "./components/MoreButton";
 
 import "./index.less";
 
-const LayoutTabs = (props: any) => {
-	const { tabsList } = props.tabs;
-	const { themeConfig } = props.global;
-	const { setTabsList } = props;
+const LayoutTabs = () => {
+	const dispatch: AppDispatch = useAppDispatch();
+	const global = useAppSelector((state: RootState) => state.global);
+	const tabs = useAppSelector((state: RootState) => state.tabs);
+	const { tabsList } = tabs;
+	const { themeConfig } = global;
 	const { TabPane } = Tabs;
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
@@ -37,7 +41,7 @@ const LayoutTabs = (props: any) => {
 		if (tabsList.every((item: any) => item.path !== route.path)) {
 			newTabsList.push({ title: route.meta!.title, path: route.path });
 		}
-		setTabsList(newTabsList);
+		dispatch(setTabsList(newTabsList));
 		setActiveValue(pathname);
 	};
 
@@ -53,7 +57,11 @@ const LayoutTabs = (props: any) => {
 			});
 		}
 		message.success("你删除了Tabs标签 😆😆😆");
-		setTabsList(tabsList.filter((item: Menu.MenuOptions) => item.path !== tabPath));
+		dispatch(setTabsList(tabsList.filter((item: Menu.MenuOptions) => item.path !== tabPath)));
+	};
+
+	const setTabs = (list: Menu.MenuOptions[]) => {
+		dispatch(setTabsList(list));
 	};
 
 	return (
@@ -85,13 +93,11 @@ const LayoutTabs = (props: any) => {
 							);
 						})}
 					</Tabs>
-					<MoreButton tabsList={tabsList} delTabs={delTabs} setTabsList={setTabsList}></MoreButton>
+					<MoreButton tabsList={tabsList} delTabs={delTabs} setTabsList={setTabs}></MoreButton>
 				</div>
 			)}
 		</>
 	);
 };
 
-const mapStateToProps = (state: any) => state;
-const mapDispatchToProps = { setTabsList };
-export default connect(mapStateToProps, mapDispatchToProps)(LayoutTabs);
+export default LayoutTabs;

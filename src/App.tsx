@@ -1,16 +1,19 @@
-import { connect } from "react-redux";
+/* eslint-disable simple-import-sort/imports */
 import { HashRouter } from "react-router-dom";
 import { ConfigProvider } from "antd";
 import zhCN from "antd/lib/locale/zh_CN";
 
+import type { RootState } from "@/rtk";
+import { useAppSelector } from "@/hooks/useRTK";
 import useTheme from "@/hooks/useTheme";
 import Router from "@/routers/index";
 import AuthRouter from "@/routers/utils/authRouter";
 
 import "./index.scss";
 
-const App = (props: any) => {
-	const { assemblySize, themeConfig } = props;
+const App = () => {
+	const assemblySize = useAppSelector((state: RootState) => state.global.assemblySize);
+	const themeConfig = useAppSelector((state: RootState) => state.global.themeConfig);
 
 	// 全局使用主题
 	useTheme(themeConfig);
@@ -26,6 +29,4 @@ const App = (props: any) => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.global;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default App;
