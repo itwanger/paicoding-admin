@@ -1,11 +1,13 @@
+/* eslint-disable simple-import-sort/imports */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { connect } from "react-redux";
 import { DeleteOutlined, DownloadOutlined, EditOutlined, InboxOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, Drawer, Form, Input, message, Modal, Space, Table, Tag, Upload } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { uploadFileUrl } from "@/api/modules/common";
 import { delResumeApi, downResumeApi, getResumeListApi, replayResumeApi } from "@/api/modules/resume";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
@@ -45,7 +47,9 @@ const defaultInitForm: IFormType = {
 	type: 0
 };
 
-const Resume: FC<IProps> = props => {
+const Resume: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
+
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
@@ -417,6 +421,4 @@ const Resume: FC<IProps> = props => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(Resume);
+export default Resume;

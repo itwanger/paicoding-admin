@@ -1,10 +1,12 @@
+/* eslint-disable simple-import-sort/imports */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Drawer, Form, Input, message, Modal, Space, Switch, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { delGlobalConfigApi, getGlobalConfigListApi, updateGlobalConfigApi } from "@/api/modules/global";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
@@ -36,7 +38,9 @@ const defaultInitForm: IFormType = {
 	comment: ""
 };
 
-const GlobalConfig: FC<IProps> = props => {
+const GlobalConfig: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
+
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
@@ -172,21 +176,23 @@ const GlobalConfig: FC<IProps> = props => {
 			dataIndex: "value",
 			width: 400,
 			key: "value",
-			render: (text) => (
-				<div style={{
-					wordWrap: 'break-word',
-					wordBreak: 'break-all',
-					maxHeight: '4rem', // 3行的高度，可以根据字体大小调整
-					overflow: 'hidden',
-					textOverflow: 'ellipsis',
-					display: '-webkit-box',
-					WebkitLineClamp: 3, // 限制显示3行
-					WebkitBoxOrient: 'vertical',
-				}}>
+			render: text => (
+				<div
+					style={{
+						wordWrap: "break-word",
+						wordBreak: "break-all",
+						maxHeight: "4rem", // 3行的高度，可以根据字体大小调整
+						overflow: "hidden",
+						textOverflow: "ellipsis",
+						display: "-webkit-box",
+						WebkitLineClamp: 3, // 限制显示3行
+						WebkitBoxOrient: "vertical"
+					}}
+				>
 					{text}
 				</div>
 			)
-		},		
+		},
 		{
 			title: "备注",
 			dataIndex: "comment",
@@ -283,6 +289,4 @@ const GlobalConfig: FC<IProps> = props => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(GlobalConfig);
+export default GlobalConfig;

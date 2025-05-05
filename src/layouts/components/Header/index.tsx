@@ -1,11 +1,10 @@
 import { useEffect } from "react";
-import { connect } from "react-redux";
 import { Layout } from "antd";
 
 import { loginUserInfo } from "@/api/modules/login";
-import { getDiscListAction } from "@/redux/modules/disc/action";
-import { setToken, setUserInfo } from "@/redux/modules/global/action";
-import { setTabsList } from "@/redux/modules/tabs/action";
+import { useAppDispatch, useAppSelector } from "@/hooks/useRTK";
+import type { AppDispatch, RootState } from "@/rtk";
+import { getDiscListAction, setTabsList, setToken, setUserInfo } from "@/rtk";
 import AssemblySize from "./components/AssemblySize";
 import AvatarIcon from "./components/AvatarIcon";
 import BreadcrumbNav from "./components/BreadcrumbNav";
@@ -15,11 +14,12 @@ import Theme from "./components/Theme";
 
 import "./index.less";
 
-const LayoutHeader = (props: any) => {
-	const { setToken, setUserInfo, setTabsList, getDiscListAction } = props;
+const LayoutHeader = () => {
+	const global = useAppSelector((state: RootState) => state.global);
+	const dispatch: AppDispatch = useAppDispatch();
 
-	// 尝试从 props 中获取用户信息，如果没有登录行为，则从后端直接获取
-	let { userInfo } = props || {};
+	// 尝试从 store 中获取用户信息，如果没有登录行为，则从后端直接获取
+	let { userInfo } = global || {};
 	console.log("LayoutHeader userInfo", userInfo);
 
 	const { Header } = Layout;
@@ -36,12 +36,12 @@ const LayoutHeader = (props: any) => {
 
 					if (status && status.code == 0 && result && result.userId > 0) {
 						// 保存 token 到 Redux 的状态中
-						setToken(String(result.userId));
+						dispatch(setToken(String(result.userId)));
 						// 保存用户登录信息
-						setUserInfo(result);
-						setTabsList([]);
+						dispatch(setUserInfo(result));
+						dispatch(setTabsList([]));
 						// 获取字典数据
-						getDiscListAction();
+						dispatch(getDiscListAction());
 					}
 				} catch (e) {
 					console.log("初始化用户身份异常!", e);
@@ -69,6 +69,4 @@ const LayoutHeader = (props: any) => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.global;
-const mapDispatchToProps = { setToken, setUserInfo, getDiscListAction, setTabsList };
-export default connect(mapStateToProps, mapDispatchToProps)(LayoutHeader);
+export default LayoutHeader;

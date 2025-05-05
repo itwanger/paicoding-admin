@@ -1,5 +1,5 @@
+/* eslint-disable simple-import-sort/imports */
 import { FC, useCallback, useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, EyeOutlined, SwapOutlined } from "@ant-design/icons";
 import {
 	Avatar,
@@ -23,6 +23,8 @@ import type { ColumnsType } from "antd/es/table";
 import TextArea from "antd/lib/input/TextArea";
 import dayjs, { Dayjs } from "dayjs";
 
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { delColumnApi, getColumnListApi, updateColumnApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
@@ -95,10 +97,12 @@ const defaultSearchForm = {
 	column: ""
 };
 
-const Column: FC<IProps> = props => {
+const Column: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
+
 	const dateFormat = "YYYY/MM/DD";
 	// @ts-ignore
-	const { ColumnStatus, ColumnStatusList, ColumnType, ColumnTypeList } = props || {};
+	const { ColumnStatus, ColumnStatusList, ColumnType, ColumnTypeList } = disc || {};
 
 	// form值，临时保存一些值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
@@ -615,6 +619,4 @@ const Column: FC<IProps> = props => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(Column);
+export default Column;

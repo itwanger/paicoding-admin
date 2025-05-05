@@ -1,11 +1,19 @@
+/* eslint-disable simple-import-sort/imports */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, UndoOutlined } from "@ant-design/icons";
 import { Avatar, Badge, Button, Form, Input, message, Modal, RadioChangeEvent, Select, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { getZsxqWhiteListApi, operateBatchZsxqWhiteApi, operateZsxqWhiteApi, resetAuthorWhiteApi, updateZsxqWhiteApi } from "@/api/modules/author";
+import type { RootState } from "@/rtk";
+import { useAppSelector } from "@/hooks/useRTK";
+import {
+	getZsxqWhiteListApi,
+	operateBatchZsxqWhiteApi,
+	operateZsxqWhiteApi,
+	resetAuthorWhiteApi,
+	updateZsxqWhiteApi
+} from "@/api/modules/author";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -65,7 +73,9 @@ const defaultSearchForm = {
 	state: -1
 };
 
-const Zsxqlist: FC<IProps> = props => {
+const Zsxqlist: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
+
 	const [formRef] = Form.useForm();
 	// 编辑表单
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
@@ -97,20 +107,20 @@ const Zsxqlist: FC<IProps> = props => {
 
 	// 一些配置项，从字典里取出来
 	//@ts-ignore
-	const { UserAIStatList, UserAiStrategy, UserAiStrategyList, LoginType, LoginTypeList } = props || {};
+	const { UserAIStatList, UserAiStrategy, UserAiStrategyList, LoginType, LoginTypeList } = disc || {};
 	console.log("UserAiStrategyList", UserAiStrategyList, LoginTypeList);
 
 	const colorStrategys = ["#f50", "#2db7f5", "#87d068", "#108ee9"];
 	const colorLoginTypes = ["#1890ff", "#7265e6"];
 	//@ts-ignore
 	const colorStrategyMap = UserAiStrategyList.reduce((acc, strategy, index) => {
-    acc[strategy.value] = colorStrategys[index % colorStrategys.length];
-    return acc;
+		acc[strategy.value] = colorStrategys[index % colorStrategys.length];
+		return acc;
 	}, {} as { [key: string]: string });
 	//@ts-ignore
 	const colorLoginTypeMap = LoginTypeList.reduce((acc, loginType, index) => {
-    acc[loginType.value] = colorLoginTypes[index % colorLoginTypes.length];
-    return acc;
+		acc[loginType.value] = colorLoginTypes[index % colorLoginTypes.length];
+		return acc;
 	}, {} as { [key: string]: string });
 
 	const { id } = form;
@@ -314,7 +324,7 @@ const Zsxqlist: FC<IProps> = props => {
 			title: "用户昵称",
 			dataIndex: "name",
 			width: 120,
-			key: "name",
+			key: "name"
 		},
 		{
 			title: "注册类型",
@@ -341,7 +351,7 @@ const Zsxqlist: FC<IProps> = props => {
 				// 如果 desc 的长度大于 5，那么就截取前 5 个字符
 				let len = desc.length;
 				if (len > 8) {
-					len = 8
+					len = 8;
 				}
 				return (
 					<>
@@ -367,7 +377,7 @@ const Zsxqlist: FC<IProps> = props => {
 			title: "邀请编号",
 			dataIndex: "inviteCode",
 			key: "inviteCode",
-			width: 80,
+			width: 80
 		},
 		{
 			title: "状态",
@@ -413,12 +423,10 @@ const Zsxqlist: FC<IProps> = props => {
 									});
 									console.log("formRef item", formRef.getFieldsValue());
 								}}
-							>
-							</Button>
+							></Button>
 						</Tooltip>
 						<Tooltip title="重置">
-							<Button type="primary" danger icon={<UndoOutlined />} onClick={() => handleReset(id)}>
-							</Button>
+							<Button type="primary" danger icon={<UndoOutlined />} onClick={() => handleReset(id)}></Button>
 						</Tooltip>
 					</div>
 				);
@@ -454,10 +462,7 @@ const Zsxqlist: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="AI策略" name="strategy" rules={[{ required: false, message: "请选择 AI 策略!" }]}>
-				<Select
-						options={UserAiStrategyList}
-						onChange={value => handleChange({ strategy :value })}
-					></Select>
+				<Select options={UserAiStrategyList} onChange={value => handleChange({ strategy: value })}></Select>
 			</Form.Item>
 		</Form>
 	);
@@ -486,6 +491,4 @@ const Zsxqlist: FC<IProps> = props => {
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(Zsxqlist);
+export default Zsxqlist;

@@ -1,10 +1,12 @@
+/* eslint-disable simple-import-sort/imports */
 /* eslint-disable prettier/prettier */
 import { FC, useCallback, useEffect, useState } from "react";
-import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Drawer, Form, Input, InputNumber,message, Modal, Space, Switch,Table } from "antd";
+import { Button, Drawer, Form, Input, InputNumber, message, Modal, Space, Switch, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
+import { useAppSelector } from "@/hooks/useRTK";
+import type { RootState } from "@/rtk";
 import { delCategoryApi, getCategoryListApi, operateCategoryApi, updateCategoryApi } from "@/api/modules/category";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
@@ -33,7 +35,9 @@ const defaultInitForm: IFormType = {
 	rank: -1
 };
 
-const Category: FC<IProps> = props => {
+const Category: FC<IProps> = () => {
+	const disc = useAppSelector((state: RootState) => state.disc.disc);
+
 	const [formRef] = Form.useForm();
 	// form值
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
@@ -107,7 +111,7 @@ const Category: FC<IProps> = props => {
 			onOk: async () => {
 				const { status } = await delCategoryApi(categoryId);
 				const { code, msg } = status || {};
-	
+
 				if (code === 0) {
 					message.success("删除成功");
 					onSure();
@@ -120,9 +124,9 @@ const Category: FC<IProps> = props => {
 
 	const handleSubmit = async () => {
 		const values = await formRef.validateFields();
-		const newValues = { 
-			...values, 
-			categoryId: status === UpdateEnum.Save ? UpdateEnum.Save : categoryId 
+		const newValues = {
+			...values,
+			categoryId: status === UpdateEnum.Save ? UpdateEnum.Save : categoryId
 		};
 
 		const { status: successStatus } = (await updateCategoryApi(newValues)) || {};
@@ -134,7 +138,6 @@ const Category: FC<IProps> = props => {
 		} else {
 			message.error(msg);
 		}
-		
 	};
 
 	// 上线/下线
@@ -152,10 +155,10 @@ const Category: FC<IProps> = props => {
 	// 数据请求
 	useEffect(() => {
 		const getSortList = async () => {
-			const { status, result } = await getCategoryListApi({ 
+			const { status, result } = await getCategoryListApi({
 				...searchForm,
-				pageNumber: current, 
-				pageSize 
+				pageNumber: current,
+				pageSize
 			});
 			const { code } = status || {};
 			//@ts-ignore
@@ -189,9 +192,8 @@ const Category: FC<IProps> = props => {
 						onChange={() => {
 							const pushStatus = status === 0 ? 1 : 0;
 							handleOperate(item.categoryId, pushStatus);
-						}
-					}
-				/>
+						}}
+					/>
 				);
 			}
 		},
@@ -221,7 +223,7 @@ const Category: FC<IProps> = props => {
 						>
 							编辑
 						</Button>
-						
+
 						<Button type="primary" danger icon={<DeleteOutlined />} onClick={() => handleDel(categoryId)}>
 							删除
 						</Button>
@@ -233,12 +235,7 @@ const Category: FC<IProps> = props => {
 
 	// 编辑表单
 	const reviseDrawerContent = (
-		<Form 
-			name="basic" 
-			form={formRef} 
-			labelCol={{ span: 4 }} 
-			wrapperCol={{ span: 16 }} 
-			autoComplete="off">
+		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
 			<Form.Item label="分类" name="category" rules={[{ required: true, message: "请输入分类!" }]}>
 				<Input
 					allowClear
@@ -262,36 +259,30 @@ const Category: FC<IProps> = props => {
 		<div className="category">
 			<ContentWrap>
 				{/* 搜索 */}
-				<Search 
-					handleSearchChange={handleSearchChange} 
-					handleSearch={handleSearch}
-					handleAdd={handleAdd}
-				/>
+				<Search handleSearchChange={handleSearchChange} handleSearch={handleSearch} handleAdd={handleAdd} />
 				{/* 表格 */}
 				<ContentInterWrap>
 					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 抽屉 */}
-			<Drawer 
-				title="添加/修改" 
-				open={isDrawerOpen} 
+			<Drawer
+				title="添加/修改"
+				open={isDrawerOpen}
 				onClose={handleClose}
 				extra={
-          <Space>
-            <Button onClick={handleClose}>取消</Button>
-            <Button type="primary" onClick={handleSubmit}>
-              确定
-            </Button>
-          </Space>
-        }
-				>
+					<Space>
+						<Button onClick={handleClose}>取消</Button>
+						<Button type="primary" onClick={handleSubmit}>
+							确定
+						</Button>
+					</Space>
+				}
+			>
 				{reviseDrawerContent}
 			</Drawer>
 		</div>
 	);
 };
 
-const mapStateToProps = (state: any) => state.disc.disc;
-const mapDispatchToProps = {};
-export default connect(mapStateToProps, mapDispatchToProps)(Category);
+export default Category;

@@ -4,7 +4,7 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
 import App from "@/App";
-import { persistor, store } from "@/redux";
+import { persistor, store } from "@/rtk";
 
 import "@/styles/reset.less";
 import "@/assets/iconfont/iconfont.less";

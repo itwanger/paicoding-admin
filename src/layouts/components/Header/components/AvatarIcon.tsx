@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
 import { useRef } from "react";
-import { connect, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, MenuProps, message, Modal } from "antd";
@@ -8,14 +7,17 @@ import { Avatar, Dropdown, MenuProps, message, Modal } from "antd";
 import { logoutApi } from "@/api/modules/login";
 import loginPng from "@/assets/images/logo_md.png";
 import { HOME_URL, LOGIN_URL } from "@/config/config";
-import { setToken, setUserInfo } from "@/redux/modules/global/action";
+import { useAppDispatch, useAppSelector } from "@/hooks/useRTK";
+import type { AppDispatch, RootState } from "@/rtk";
+import { setToken, setUserInfo } from "@/rtk";
 import InfoModal from "./InfoModal";
 import PasswordModal from "./PasswordModal";
 
-const AvatarIcon = (props: any) => {
-	const { userInfo, setToken, setUserInfo } = props;
+const AvatarIcon = () => {
+	const { userInfo } = useAppSelector((state: RootState) => state.global);
+	const dispatch: AppDispatch = useAppDispatch();
 	console.log("AvatarIcon setToken setUserInfo", setToken, setUserInfo);
-	console.log("AvatarIcon userInfo", userInfo );
+	console.log("AvatarIcon userInfo", userInfo);
 
 	const navigate = useNavigate();
 
@@ -39,8 +41,8 @@ const AvatarIcon = (props: any) => {
 				const { status, result } = await logoutApi();
 				if (status && status.code == 0 && result) {
 					// 退出，清除 token，清除用户信息，跳转到登录页
-					setToken("");
-					setUserInfo({});
+					dispatch(setToken(""));
+					dispatch(setUserInfo({}));
 					message.success("退出登录成功！");
 					navigate(LOGIN_URL);
 				} else {
@@ -59,12 +61,13 @@ const AvatarIcon = (props: any) => {
 		{
 			key: "2",
 			label: <span className="dropdown-item">个人信息</span>,
-			onClick: () => infoRef.current!.showModal({ 
-				photo: userInfo.photo,
-				profile: userInfo.profile,
-				role: userInfo.role,
-				userName: userInfo.userName,
-			})
+			onClick: () =>
+				infoRef.current!.showModal({
+					photo: userInfo.photo,
+					profile: userInfo.profile,
+					role: userInfo.role,
+					userName: userInfo.userName
+				})
 		},
 		{
 			key: "3",
@@ -91,5 +94,4 @@ const AvatarIcon = (props: any) => {
 	);
 };
 
-const mapDispatchToProps = { setToken, setUserInfo };
-export default connect(null, mapDispatchToProps)(AvatarIcon);
+export default AvatarIcon;

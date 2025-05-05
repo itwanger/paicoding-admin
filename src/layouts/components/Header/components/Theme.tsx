@@ -1,26 +1,27 @@
 import { useState } from "react";
-import { connect } from "react-redux";
 import { FireOutlined, SettingOutlined } from "@ant-design/icons";
 import { Divider, Drawer, Switch } from "antd";
 
 import SwitchDark from "@/components/SwitchDark";
-import { setThemeConfig } from "@/redux/modules/global/action";
-import { updateCollapse } from "@/redux/modules/menu/action";
+import { useAppDispatch, useAppSelector } from "@/hooks/useRTK";
+import type { AppDispatch, RootState } from "@/rtk";
+import { setThemeConfig, updateCollapse } from "@/rtk";
 
-const Theme = (props: any) => {
+const Theme = () => {
 	const [visible, setVisible] = useState<boolean>(false);
-	const { setThemeConfig, updateCollapse } = props;
-	const { isCollapse } = props.menu;
-	const { themeConfig } = props.global;
+	const global = useAppSelector((state: RootState) => state.global);
+	const menu = useAppSelector((state: RootState) => state.menu);
+	const { isCollapse } = menu;
+	const { themeConfig } = global;
 	const { weakOrGray, breadcrumb, tabs, footer } = themeConfig;
+	const dispatch: AppDispatch = useAppDispatch();
 
 	const setWeakOrGray = (checked: boolean, theme: string) => {
-		if (checked) return setThemeConfig({ ...themeConfig, weakOrGray: theme });
-		setThemeConfig({ ...themeConfig, weakOrGray: "" });
+		dispatch(setThemeConfig({ ...themeConfig, weakOrGray: checked ? theme : "" }));
 	};
 
 	const onChange = (checked: boolean, keyName: string) => {
-		return setThemeConfig({ ...themeConfig, [keyName]: !checked });
+		dispatch(setThemeConfig({ ...themeConfig, [keyName]: !checked }));
 	};
 
 	return (
@@ -78,7 +79,7 @@ const Theme = (props: any) => {
 					<Switch
 						checked={isCollapse}
 						onChange={e => {
-							updateCollapse(e);
+							dispatch(updateCollapse(e));
 						}}
 					/>
 				</div>
@@ -114,6 +115,4 @@ const Theme = (props: any) => {
 	);
 };
 
-const mapStateToProps = (state: any) => state;
-const mapDispatchToProps = { setThemeConfig, updateCollapse };
-export default connect(mapStateToProps, mapDispatchToProps)(Theme);
+export default Theme;
