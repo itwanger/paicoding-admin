@@ -1,0 +1,33 @@
+.rotated-icon {
+	transform: rotate(90deg); /* 或任何您需要的角度 */
+}
+
+.group-tree {
+	margin: 20px;
+	padding: 20px;
+	background-color: #fff;
+	border-radius: 4px;
+	box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+}
+
+.group-tree .ant-tree-node-content-wrapper {
+	display: flex;
+	align-items: center;
+}
+
+.group-tree .ant-tree-node-content-wrapper span {
+	margin-right: 8px;
+}
+
+// 分组节点样式
+.group-tree .ant-tree-treenode .ant-tree-node-content-wrapper.group-node {
+	color: #1890ff;
+	font-weight: 500;
+}
+
+// 文章节点样式
+.group-tree .ant-tree-treenode .ant-tree-node-content-wrapper.article-node {
+	color: #555;
+	font-weight: 400;
+	font-style: italic;
+}
