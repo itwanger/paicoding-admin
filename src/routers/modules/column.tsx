@@ -33,6 +33,14 @@ const columnRouter: Array<RouteObject> = [
 						}
 					},
 					{
+						path: "/column/setting/index/groups",
+						element: lazyLoad(React.lazy(() => import("@/views/column/setting/groups/index"))),
+						meta: {
+							title: "专栏分组",
+							key: "/column/setting/index/groups"
+						}
+					},
+					{
 						path: "/column/article/index",
 						element: lazyLoad(React.lazy(() => import("@/views/column/article/index"))),
 						meta: {

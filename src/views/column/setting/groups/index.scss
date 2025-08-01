@@ -2,14 +2,6 @@
 	transform: rotate(90deg); /* 或任何您需要的角度 */
 }
 
-.group-tree-container {
-	margin: 20px;
-	padding: 20px;
-	background-color: #fff;
-	border-radius: 4px;
-	box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
-}
-
 .group-tree {
 	margin: 20px;
 	padding: 20px;
@@ -21,7 +13,6 @@
 .group-tree .ant-tree-node-content-wrapper {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 }
 
 .group-tree .ant-tree-node-content-wrapper span {
@@ -41,14 +32,6 @@
 	font-style: italic;
 }
 
-// 分组节点标题容器
-.group-node-title {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-}
-
 // 分组节点按钮容器
 .group-node-buttons {
 	display: flex;
@@ -60,38 +43,4 @@
 // 鼠标悬停时显示按钮
 .group-tree .ant-tree-treenode:hover .group-node-buttons {
 	opacity: 1;
-}
-
-// 空状态样式
-.group-tree-empty {
-	text-align: center;
-	padding: 40px 20px;
-
-	p {
-		margin-bottom: 20px;
-		color: #666;
-	}
-
-	.add-group-form {
-		display: flex;
-		gap: 10px;
-		justify-content: center;
-		align-items: center;
-
-		.ant-input {
-			width: 200px;
-		}
-
-		.ant-btn {
-			flex-shrink: 0;
-		}
-	}
-}
-
-// 树底部添加分组按钮
-.add-group-button {
-	margin-top: 20px;
-	width: 100%;
-	display: flex;
-	justify-content: center;
 }
