@@ -43,6 +43,7 @@ interface DataType {
 	section: number;
 	author: number;
 	columnId: number;
+	column: string; // 教程名
 	state: number;
 	freeEndTime: number;
 	freeStartTime: number;
@@ -280,9 +281,9 @@ const Column: FC<IProps> = props => {
 		});
 	};
 
-	const handleManage = (columnId: number) => {
+	const handleManage = (columnId: number, column: string) => {
 		// 导航到文章排序页面
-		navigate("/column/setting/index/articlesort", { state: { columnId } });
+		navigate("/column/setting/index/groups", { state: { columnId, column } });
 	};
 
 	// 编辑或者新增时提交数据到服务器端
@@ -413,7 +414,7 @@ const Column: FC<IProps> = props => {
 			key: "key",
 			width: 200,
 			render: (_, item) => {
-				const { columnId, type, state, cover, freeStartTime, freeEndTime } = item;
+				const { columnId, column, type, state, cover, freeStartTime, freeEndTime } = item;
 
 				return (
 					<div className="operation-btn">
@@ -436,7 +437,7 @@ const Column: FC<IProps> = props => {
 								icon={<SwapOutlined />}
 								style={{ marginRight: "10px" }}
 								onClick={() => {
-									handleManage(columnId);
+									handleManage(columnId, column);
 								}}
 							></Button>
 						</Tooltip>

@@ -3,6 +3,7 @@ import { PORT1 } from "@/api/config/servicePort";
 import { Login } from "@/api/interface/index";
 import { IFormType } from "@/views/column/setting";
 import { IArticleSortFormType, IGroupFormType } from "@/views/column/setting/articlesort";
+import { IMoveType } from "@/views/column/setting/groups";
 
 /**
  * @name 教程模块
@@ -76,4 +77,9 @@ export const sortColumnArticleApi = (activeId: number, overId: number) => {
 // 调整教程的顺序
 export const sortColumnArticleByIDApi = (form: IArticleSortFormType) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/column/sortColumnArticleByIDApi`, form);
+};
+
+// 拖拽移动教程或者分组
+export const moveColumnArticleOrGroup = (form: IMoveType) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/column/moveColumnArticleOrGroup`, form);
 };

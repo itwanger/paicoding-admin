@@ -31,3 +31,16 @@
 	font-weight: 400;
 	font-style: italic;
 }
+
+// 分组节点按钮容器
+.group-node-buttons {
+	display: flex;
+	gap: 4px;
+	opacity: 0;
+	transition: opacity 0.2s;
+}
+
+// 鼠标悬停时显示按钮
+.group-tree .ant-tree-treenode:hover .group-node-buttons {
+	opacity: 1;
+}
