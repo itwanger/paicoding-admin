@@ -72,7 +72,7 @@ const Statistics: FC<IProps> = props => {
 		console.log("文件名是", fileName);
 
 		// 将返回的 Blob 数据转换为可下载文件
-		const blob = new Blob([response.data], {
+		const blob = new Blob([response.data as BlobPart], {
 			type: response.headers["content-type"],
 		});
 		console.log("Blob 数据大小：", blob);
@@ -88,13 +88,18 @@ const Statistics: FC<IProps> = props => {
 
   };
 
+	// 定义一个异步函数 getAllInfo，用于获取所有信息
+	const getAllInfo = async () => {
+	  // 调用 getAllApi 获取所有信息
+	  const { status, result } = await getAllApi();
+	  // 如果状态码为 0，表示获取成功
+	  if (status && status.code === 0) {
+	    // 将获取到的信息设置到 allInfo 状态中
+	    setAllInfo(result as MapItem[]);
+	  }
+	};
+
 	useEffect(() => {
-		const getAllInfo = async () => {
-			const { status, result } = await getAllApi();
-			if (status && status.code === 0) {
-				setAllInfo(result as MapItem[]);
-			}
-		};
 		getAllInfo();
 	}, []);
 
