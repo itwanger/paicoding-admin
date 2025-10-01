@@ -24,7 +24,7 @@ interface DataType {
 	inviteCode: string;
 	inviteNum: number;
 	state: number;
-	strategy: number;
+	expireTime: string | null; // 后台返回的是Date类型，前端接收为字符串
 }
 
 interface IProps {}
@@ -43,7 +43,7 @@ interface IInitForm {
 	name: string;
 	starNumber: string;
 	state: number;
-	strategy: number;
+	expireTime: string | null; // 表单中也使用字符串格式
 	userCode: string;
 }
 
@@ -53,7 +53,7 @@ const defaultInitForm = {
 	name: "",
 	starNumber: "",
 	state: -1,
-	strategy: 0,
+	expireTime: null,
 	userCode: ""
 };
 
@@ -99,6 +99,18 @@ const Zsxqlist: FC<IProps> = props => {
 	//@ts-ignore
 	const { UserAIStatList, UserAiStrategy, UserAiStrategyList, LoginType, LoginTypeList } = props || {};
 	console.log("UserAiStrategyList", UserAiStrategyList, LoginTypeList);
+
+	// 格式化日期函数，将Long型时间戳转换为年月日格式
+	const formatDate = (dateString: string | null): string => {
+		if (!dateString) return '-';
+		// 如果后台返回的是Date字符串格式，直接格式化显示
+		const date = new Date(dateString);
+		return date.toLocaleDateString('zh-CN', {
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		});
+	};
 
 	const colorStrategys = ["#f50", "#2db7f5", "#87d068", "#108ee9"];
 	const colorLoginTypes = ["#1890ff", "#7265e6"];
@@ -332,21 +344,13 @@ const Zsxqlist: FC<IProps> = props => {
 			}
 		},
 		{
-			title: "AI策略",
-			dataIndex: "strategy",
-			key: "strategy",
+			title: "过期时间",
+			dataIndex: "expireTime",
+			key: "expireTime",
 			width: 110,
 			render(value) {
-				const desc = UserAiStrategy[value] || "绑定" + value;
-				// 如果 desc 的长度大于 5，那么就截取前 5 个字符
-				let len = desc.length;
-				if (len > 8) {
-					len = 8
-				}
 				return (
-					<>
-						<Tag color={colorStrategyMap[value]}>{desc.slice(2, len)}</Tag>
-					</>
+					<span>{formatDate(value)}</span>
 				);
 			}
 		},
@@ -395,7 +399,7 @@ const Zsxqlist: FC<IProps> = props => {
 			width: 120,
 			render: (_, item) => {
 				// 从 item 中取出 articleId
-				const { id, strategy } = item;
+				const { id } = item;
 				return (
 					<div className="operation-btn">
 						<Tooltip title="编辑">
@@ -406,11 +410,20 @@ const Zsxqlist: FC<IProps> = props => {
 								onClick={() => {
 									setIsModalOpen(true);
 									handleChange({ ...item });
-									formRef.setFieldsValue({
+									// 修复时区问题，不使用toISOString，手动格式化日期
+									const getLocalDate = (dateString: string) => {
+										const date = new Date(dateString);
+										const year = date.getFullYear();
+										const month = (date.getMonth() + 1).toString().padStart(2, '0');
+										const day = date.getDate().toString().padStart(2, '0');
+										return `${year}-${month}-${day}`;
+									};
+
+									const formData = {
 										...item,
-										// long 型和字符串型的转换
-										strategy: String(strategy)
-									});
+										expireTime: item.expireTime ? getLocalDate(item.expireTime) : ''
+									};
+									formRef.setFieldsValue(formData);
 									console.log("formRef item", formRef.getFieldsValue());
 								}}
 							>
@@ -453,11 +466,15 @@ const Zsxqlist: FC<IProps> = props => {
 					}}
 				/>
 			</Form.Item>
-			<Form.Item label="AI策略" name="strategy" rules={[{ required: false, message: "请选择 AI 策略!" }]}>
-				<Select
-						options={UserAiStrategyList}
-						onChange={value => handleChange({ strategy :value })}
-					></Select>
+			<Form.Item label="过期时间" name="expireTime" rules={[{ required: false, message: "请选择过期时间!" }]}>
+				<Input
+					type="date"
+					onChange={e => {
+						// 当用户在表单中选择日期时，e.target.value 是字符串格式 "YYYY-MM-DD"
+						// 由于后台接收的也是Date类型，直接传递字符串格式即可
+						handleChange({ expireTime: e.target.value || null });
+					}}
+				/>
 			</Form.Item>
 		</Form>
 	);

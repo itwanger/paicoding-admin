@@ -31,4 +31,39 @@
 .bytemd-preview {
   /* 解决外部容器出现滚动条的 bug */
   position: relative;
+
+  strong {
+    font-weight: bold;
+  }
+
+  /* 为斜体添加斜体样式 */
+  em {
+    font-style: italic;
+  }
+
+  ul {
+    list-style-type: disc;
+    padding-left: 20px;
+  }
+
+  p {
+    line-height: 1.5;
+  }
+
+  .img-with-caption {
+    display: inline-block;
+
+    img {
+      display: block;
+    }
+
+    .img-caption {
+      display: block;
+      text-align: center;
+      color: #666;
+      padding: 4px 8px;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+  }
 }

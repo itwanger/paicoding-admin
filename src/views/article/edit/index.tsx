@@ -28,12 +28,44 @@ import 'bytemd/dist/index.css';
 import 'juejin-markdown-themes/dist/juejin.css';
 import "./index.scss";
 
+// 自定义插件：为图片添加 alt 标题
+const imageAltPlugin = () => ({
+	viewerEffect({ markdownBody }: { markdownBody: HTMLElement }) {
+		const images = markdownBody.querySelectorAll('img[alt]:not([alt=""])');
+		images.forEach((img: Element) => {
+			const imgElement = img as HTMLImageElement;
+			const alt = imgElement.alt;
+
+			// 检查是否已经添加过标题
+			const parent = imgElement.parentElement;
+			if (parent && parent.classList.contains('img-with-caption')) {
+				return;
+			}
+
+			// 创建包装容器
+			const wrapper = document.createElement('span');
+			wrapper.className = 'img-with-caption';
+
+			// 创建标题元素
+			const caption = document.createElement('span');
+			caption.className = 'img-caption';
+			caption.textContent = alt;
+
+			// 替换图片
+			imgElement.parentNode?.insertBefore(wrapper, imgElement);
+			wrapper.appendChild(imgElement);
+			wrapper.appendChild(caption);
+		});
+	}
+});
+
 const plugins = [
 	gfm(),
 	highlight(),
 	gemoji(),
 	math(),
 	mediumZoom(),
+	imageAltPlugin(),
 	// Add more plugins here
 ]
 
@@ -395,44 +427,46 @@ const ArticleEdit: FC<IProps> = props => {
 					goBack={goBack}
 				/>
 				<ContentInterWrap>
-					<Editor
-						value={content}
-						plugins={plugins}
-						locale={zhHans}
-						uploadImages={(files) => {
-							return Promise.all(
-								files.map((file) => {
-									// 限制图片大小，不超过 5M
-									if (file.size > 5 * 1024 * 1024) {
-										return  {
-											url: "图片大小不能超过 5M",
-										}
-									}
-
-									const formData = new FormData();
-      						formData.append('image', file);
-
-									return uploadImgApi(formData).then(({ status, result }) => {
-										const { code, msg } = status || {};
-										const { imagePath } = result || {};
-										if (code === 0) {
+					<div className="markdown-body">
+						<Editor
+							value={content}
+							plugins={plugins}
+							locale={zhHans}
+							uploadImages={files => {
+								return Promise.all(
+									files.map(file => {
+										// 限制图片大小，不超过 5M
+										if (file.size > 5 * 1024 * 1024) {
 											return {
-												url: imagePath,
+												url: "图片大小不能超过 5M"
+											};
+										}
+
+										const formData = new FormData();
+										formData.append("image", file);
+
+										return uploadImgApi(formData).then(({ status, result }) => {
+											const { code, msg } = status || {};
+											const { imagePath } = result || {};
+											if (code === 0) {
+												return {
+													url: imagePath
+												};
 											}
-										}
-										return {
-											url: msg,
-										}
+											return {
+												url: msg
+											};
+										});
 									})
-								})
-							)
-						}}
-						onChange={(v) => {
-							// 右侧的预览更新
-							setContent(v);
-							handleChange({ content: v });
-						}}
-					/>
+								);
+							}}
+							onChange={v => {
+								// 右侧的预览更新
+								setContent(v);
+								handleChange({ content: v });
+							}}
+						/>
+					</div>
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 保存或者更新时打开的抽屉 */}

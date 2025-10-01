@@ -189,6 +189,8 @@ pacoding-admin
 
 2、将 dist 目录上传到服务器的 `/home/admin/` 目录下
 
+或者执行 `zip -r dist.zip dist` 压缩为 dist.zip 包，然后上传到服务器的 `/home/admin/` 目录下。再执行 `unzip dist.zip` 解压即可。
+
 3、如果采用 Nginx 的话，请在 server 节点下进行 location 配置。
 
 ```
