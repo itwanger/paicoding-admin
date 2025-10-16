@@ -2,8 +2,9 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, UndoOutlined } from "@ant-design/icons";
-import { Avatar, Badge, Button, Form, Input, message, Modal, RadioChangeEvent, Select, Table, Tag, Tooltip } from "antd";
+import { Avatar, Badge, Button, DatePicker, Form, Input, message, Modal, RadioChangeEvent, Select, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
 
 import { getZsxqWhiteListApi, operateBatchZsxqWhiteApi, operateZsxqWhiteApi, resetAuthorWhiteApi, updateZsxqWhiteApi } from "@/api/modules/author";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
@@ -410,18 +411,9 @@ const Zsxqlist: FC<IProps> = props => {
 								onClick={() => {
 									setIsModalOpen(true);
 									handleChange({ ...item });
-									// 修复时区问题，不使用toISOString，手动格式化日期
-									const getLocalDate = (dateString: string) => {
-										const date = new Date(dateString);
-										const year = date.getFullYear();
-										const month = (date.getMonth() + 1).toString().padStart(2, '0');
-										const day = date.getDate().toString().padStart(2, '0');
-										return `${year}-${month}-${day}`;
-									};
-
 									const formData = {
 										...item,
-										expireTime: item.expireTime ? getLocalDate(item.expireTime) : ''
+										expireTime: item.expireTime ? dayjs(item.expireTime) : null
 									};
 									formRef.setFieldsValue(formData);
 									console.log("formRef item", formRef.getFieldsValue());
@@ -467,12 +459,11 @@ const Zsxqlist: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item label="过期时间" name="expireTime" rules={[{ required: false, message: "请选择过期时间!" }]}>
-				<Input
-					type="date"
-					onChange={e => {
-						// 当用户在表单中选择日期时，e.target.value 是字符串格式 "YYYY-MM-DD"
-						// 由于后台接收的也是Date类型，直接传递字符串格式即可
-						handleChange({ expireTime: e.target.value || null });
+				<DatePicker
+					style={{ width: "100%" }}
+					placeholder="选择过期时间"
+					onChange={(date, dateString) => {
+						handleChange({ expireTime: dateString || null });
 					}}
 				/>
 			</Form.Item>
