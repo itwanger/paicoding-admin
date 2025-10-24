@@ -108,8 +108,6 @@ const ArticleEdit: FC<IProps> = props => {
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
 	// 文章内容
 	const [content, setContent] = useState<string>('');
-	// 上一次转链后的内容
-	const [lastContent, setLastContent] = useState<string>('');
 	// 放图片的路径，和上传时间，30s 内防止重复提交
 	const lastUploadTimes = useRef<Map<string, number>>(new Map());
 
@@ -189,71 +187,146 @@ const ArticleEdit: FC<IProps> = props => {
 
 	// 如果是外网的图片链接，转成内网的图片链接
 	const uploadImages = async (newVal: string) => {
-		let add;
-		// 如果新的内容以上次转链后的内容开头
-		if (newVal.startsWith(lastContent)) {
-			// 变化的内容
-			add = newVal.substring(lastContent.length);
-		} else if (lastContent.startsWith(newVal)) {
-			// 删掉了一部分内容
-			setLastContent(newVal);
-			console.log("删掉了一部分内容", lastContent);
-			return;
-		} else {
-			add = newVal;
-		}
-
-		// 正则表达式
+		// 正则表达式匹配所有图片
 		const reg = /!\[(.*?)\]\((.*?)\)/mg;
 		let match;
 
-		let uploadTasks = [];
-    let imageInfos:ImageInfo[] = []; // 用于存储图片信息和它们在文本中的位置
+		// 存储需要上传的图片信息及其上传任务
+		interface UploadTask {
+			imageInfo: ImageInfo;
+			uploadPromise: Promise<any>;
+		}
+		let uploadTasksWithInfo: UploadTask[] = [];
+		let successCount = 0;
+		let failedCount = 0;
+		let skippedCount = 0;
 
-		while ((match = reg.exec(add)) !== null) {
+		while ((match = reg.exec(newVal)) !== null) {
 			const [img, alt, src] = match;
 			console.log("img, alt, src", match, img, alt, src);
-			// 如果是外网的图片链接，转成内网的图片链接
-			if (src.length > 0 && src.startsWith("http") 
-				&& src.indexOf("saveError") < 0) {
-				// 收集图片信息
-				imageInfos.push({ img, alt, src, index: match.index });
-				// 判断图片的链接是否已经上传过了
+
+			// 判断是否需要转链:
+			// 1. 外链图片 (http/https 开头)
+			// 2. 包含 saveError 的失败图片也要重试
+			const isExternalImage = src.length > 0 && src.startsWith("http");
+			const isFailedImage = src.indexOf("saveError") >= 0;
+
+			if (isExternalImage && !isFailedImage) {
+				// 普通外链图片，检查 30 秒防重复
 				if (!canUpload(src)) {
 					console.log("30秒内防重复提交，忽略:", src);
+					skippedCount++;
 					continue;
-				} else {
-					uploadTasks.push(saveImgApi(src));
 				}
+
+				// 收集图片信息和上传任务，保持一一对应
+				const imageInfo: ImageInfo = { img, alt, src, index: match.index };
+				uploadTasksWithInfo.push({
+					imageInfo,
+					uploadPromise: saveImgApi(src)
+				});
+			} else if (isFailedImage) {
+				// 失败的图片，提取原始 URL 并重试
+				// URL 格式: https://files.mdnice.com/...?&cause=saveError!
+				const originalUrl = src.split('?')[0]; // 去掉 query 参数
+				console.log("重试失败的图片:", originalUrl);
+
+				const imageInfo: ImageInfo = { img, alt, src, index: match.index };
+				uploadTasksWithInfo.push({
+					imageInfo,
+					uploadPromise: saveImgApi(originalUrl) // 用原始 URL 重试
+				});
 			}
 		}
 
+		// 如果没有需要上传的图片，直接返回
+		if (uploadTasksWithInfo.length === 0) {
+			return { newContent: newVal, successCount, failedCount, skippedCount };
+		}
+
 		// 同时上传所有图片
-		const results = await Promise.all(uploadTasks);
+		const results = await Promise.all(
+			uploadTasksWithInfo.map(task => task.uploadPromise)
+		);
+
+		// 按照图片在文本中的位置倒序排序，从后往前替换，避免索引错位
+		const sortedTasks = [...uploadTasksWithInfo].sort((a, b) => b.imageInfo.index - a.imageInfo.index);
 
 		// 替换所有图片链接
 		let newContent = newVal;
-		results.forEach((result, i) => {
-				if (result.status && result.status.code === 0 && result.result) {
-					// 重新组织图片的路径
-					const newSrc = `![${imageInfos[i].alt}](${result.result.imagePath})`;
-					console.log("newSrc", newSrc);
-					// 替换后的内容
-					newContent = newContent.replace(imageInfos[i].img, newSrc);
-					console.log("newContent", newContent);
-				}
-		});
-		setLastContent(newVal);
+		sortedTasks.forEach((task) => {
+			// 找到对应的 result（需要用原始顺序的索引）
+			const originalIndex = uploadTasksWithInfo.indexOf(task);
+			const result = results[originalIndex];
 
-		return newContent;
+			if (result.status && result.status.code === 0 && result.result && result.result.imagePath) {
+				const newImagePath = result.result.imagePath;
+
+				// 检查返回的路径是否包含 saveError,如果包含说明转链失败
+				if (newImagePath.indexOf("saveError") >= 0) {
+					console.log("转链失败(返回 saveError) - 原:", task.imageInfo.src);
+					console.log("转链失败(返回 saveError) - 返回:", newImagePath);
+					failedCount++;
+					// 不替换内容,保持原样
+				} else {
+					// 真正转链成功,替换为新路径
+					const newSrc = `![${task.imageInfo.alt}](${newImagePath})`;
+					console.log("转链成功 - 原:", task.imageInfo.src);
+					console.log("转链成功 - 新:", newImagePath);
+					// 从后往前替换，避免影响前面的索引
+					newContent = newContent.replace(task.imageInfo.img, newSrc);
+					successCount++;
+				}
+			} else {
+				console.log("转链失败(API错误):", task.imageInfo.src, result);
+				failedCount++;
+			}
+		});
+
+		return { newContent, successCount, failedCount, skippedCount };
 	}
 
 	const handleReplaceImgUrl = async () => {
 		const { content } = form;
-		const newContent = await uploadImages(content);
-		if (newContent) {
+
+		// 检查是否有外链图片或失败的图片需要转换
+		const hasExternalImages = /!\[.*?\]\(https?:\/\/.*?\)/.test(content);
+		if (!hasExternalImages) {
+			message.info("当前内容中没有外链图片需要转换");
+			return;
+		}
+
+		const result = await uploadImages(content);
+		const { newContent, successCount, failedCount, skippedCount } = result;
+
+		// 更新内容
+		if (newContent !== content) {
 			setContent(newContent);
 			handleChange({ content: newContent });
+		}
+
+		// 构建详细的反馈消息
+		const messages = [];
+		if (successCount > 0) {
+			messages.push(`成功转链 ${successCount} 张图片`);
+		}
+		if (failedCount > 0) {
+			messages.push(`失败 ${failedCount} 张`);
+		}
+		if (skippedCount > 0) {
+			messages.push(`跳过 ${skippedCount} 张(30秒内已转换)`);
+		}
+
+		if (successCount > 0 && failedCount === 0) {
+			message.success(messages.join(', '));
+		} else if (successCount > 0 && failedCount > 0) {
+			message.warning(messages.join(', '));
+		} else if (failedCount > 0) {
+			message.error(messages.join(', '));
+		} else if (skippedCount > 0) {
+			message.info("所有外链图片都在 30 秒内已转换过,请稍后再试");
+		} else {
+			message.info("没有需要转换的图片");
 		}
 	}
 
