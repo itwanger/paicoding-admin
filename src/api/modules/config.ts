@@ -26,3 +26,8 @@ export const updateConfigApi = (form: IFormType) => {
 export const operateConfigApi = (params: object | undefined) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/config/operate`, params);
 };
+
+// 刷新配置缓存
+export const refreshConfigApi = () => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/config/refresh`);
+};

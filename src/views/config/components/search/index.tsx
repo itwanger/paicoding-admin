@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { FC } from "react";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Select } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
@@ -11,6 +11,7 @@ interface IProps {
 	ConfigTypeList: any;
 	handleSearch: (e: object) => void;
 	handleSearchChange: (e: object) => void;
+	handleRefresh: () => void;
 	handleAdd: () => void;
 }
 
@@ -18,6 +19,7 @@ const Search: FC<IProps> = ({
 	ConfigTypeList,
 	handleSearch,
 	handleSearchChange,
+	handleRefresh,
 	handleAdd,
 }) => {
 	return (
@@ -49,6 +51,15 @@ const Search: FC<IProps> = ({
 						</div>
 					</div>
 					<div className="config-search__search-btn">
+						<Button 
+							type="default" 
+							icon={<ReloadOutlined />}
+							style={{ marginRight: "10px" }}
+							onClick={handleRefresh}
+							>
+							刷新
+						</Button>
+
 						<Button 
 							type="primary" 
 							icon={<SearchOutlined />}

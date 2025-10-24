@@ -22,7 +22,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
-import { delConfigApi, getConfigListApi, operateConfigApi, updateConfigApi } from "@/api/modules/config";
+import { delConfigApi, getConfigListApi, operateConfigApi, refreshConfigApi, updateConfigApi } from "@/api/modules/config";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -142,6 +142,17 @@ const Banner: FC<IProps> = props => {
 	// 查询表单值改变
 	const handleSearchChange = (item: MapItem) => {
 		setSearchForm({ ...searchForm, ...item });
+	};
+
+	// 点击刷新按钮时触发刷新
+	const handleRefresh = async () => {
+		const { status } = await refreshConfigApi();
+		const { code, msg } = status || {};
+		if (code === 0) {
+			message.success("刷新成功");
+		} else {
+			message.error(msg || "刷新失败");
+		}
 	};
 
 	// 点击搜索按钮时触发搜索
@@ -450,6 +461,7 @@ const Banner: FC<IProps> = props => {
 					ConfigTypeList={ConfigTypeList}
 					handleSearchChange={handleSearchChange}
 					handleSearch={handleSearch}
+					handleRefresh={handleRefresh}
 					handleAdd={handleAdd}
 				/>
 				{/* 表格 */}
