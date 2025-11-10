@@ -36,6 +36,7 @@ interface IInitForm {
 	articleId: number;
 	title: string;
 	shortTitle: string;
+	urlSlug: string;
 	status: number;
 }
 
@@ -53,6 +54,7 @@ const defaultInitForm = {
 	articleId: -1,
 	title: "",
 	shortTitle: "",
+	urlSlug: "",
 	status: -1
 };
 
@@ -69,6 +71,8 @@ const Article: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
 	// 编辑表单
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
+	const [urlSlugValidating, setUrlSlugValidating] = useState<boolean>(false);
+	const [urlSlugError, setUrlSlugError] = useState<string>("");
 	// 查询表单
 	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
 	// 弹窗
@@ -194,6 +198,7 @@ const Article: FC<IProps> = props => {
 
 	const handleSubmit = async () => {
 		const values = await formRef.validateFields();
+	
 		// 从 form 中取出 status
 		const { status } = form;
 		const newValues = { ...values, articleId, status };
@@ -237,13 +242,37 @@ const Article: FC<IProps> = props => {
 			dataIndex: "title",
 			key: "title",
 			render(value, item) {
+				const { urlSlug, articleId, shortTitle } = item;
+				const fullUrl = urlSlug 
+					? `${baseDomain}/article/detail/${articleId}/${urlSlug}`
+					: `${baseDomain}/article/detail/${articleId}`;
+				const tooltipContent = (
+					<div>
+						<div>{fullUrl}</div>
+						{shortTitle && <div style={{ marginTop: '4px' }}>教程名: {shortTitle}</div>}
+					</div>
+				);
 				return (
-					<a 
-						href={`${baseDomain}/article/detail/${item?.articleId}`}
-						className="cell-text"
-						target="_blank" rel="noreferrer">
-						{value}
-					</a>
+					<Tooltip title={tooltipContent}>
+						<div>
+							<a 
+								href={fullUrl}
+								className="cell-text"
+								target="_blank" rel="noreferrer">
+								{value}
+							</a>
+							{shortTitle && (
+								<div style={{ fontSize: '12px', color: '#1890ff', marginTop: '4px' }}>
+									教程: {shortTitle}
+								</div>
+							)}
+							{urlSlug && (
+								<div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+									{urlSlug}
+								</div>
+							)}
+						</div>
+					</Tooltip>
 				);
 			}
 		},
@@ -364,7 +393,6 @@ const Article: FC<IProps> = props => {
 		}
 	];
 
-	// 编辑表单
 	const reviseModalContent = (
 		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
 			<Form.Item label="标题" name="title" rules={[{ required: false, message: "请输入标题!" }]}>
@@ -385,6 +413,21 @@ const Article: FC<IProps> = props => {
 					allowClear
 					onChange={e => {
 						handleChange({ tag: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item
+				label="语义 URL"
+				name="urlSlug"
+				tooltip="用于 SEO 友好的文章链接,例如:my-article-title"
+				rules={[{ required: false }]}
+			>
+				<Input
+					allowClear
+					placeholder="可选,留空则使用默认 ID"
+					onChange={e => {
+						const value = e.target.value;
+						handleChange({ urlSlug: value });
 					}}
 				/>
 			</Form.Item>
