@@ -26,6 +26,7 @@ interface DataType {
 	inviteNum: number;
 	state: number;
 	expireTime: string | null; // 后台返回的是Date类型，前端接收为字符串
+	lastLoginTime: string | null; // 上次登录时间
 }
 
 interface IProps {}
@@ -36,6 +37,8 @@ interface ISearchForm {
 	name: string;
 	state: number;
 	userCode: string;
+	starNumberNotEmpty?: boolean; // 星球编号不为空
+	lastLoginWithinWeek?: boolean; // 最近一周有登录
 }
 
 // 编辑表单接口，定义类型
@@ -63,7 +66,9 @@ const defaultSearchForm = {
 	starNumber: "",
 	name: "",
 	userCode: "",
-	state: -1
+	state: -1,
+	starNumberNotEmpty: false,
+	lastLoginWithinWeek: false
 };
 
 const Zsxqlist: FC<IProps> = props => {
@@ -369,10 +374,15 @@ const Zsxqlist: FC<IProps> = props => {
 			}
 		},
 		{
-			title: "邀请编号",
-			dataIndex: "inviteCode",
-			key: "inviteCode",
-			width: 80,
+			title: "上次登录日期",
+			dataIndex: "lastLoginTime",
+			key: "lastLoginTime",
+			width: 110,
+			render(value) {
+				return (
+					<span>{formatDate(value)}</span>
+				);
+			}
 		},
 		{
 			title: "状态",

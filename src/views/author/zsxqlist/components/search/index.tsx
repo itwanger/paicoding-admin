@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import React, { FC } from "react";
 import { SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Radio, RadioChangeEvent, Select } from "antd";
+import { Button, Checkbox, Input, Radio, RadioChangeEvent, Select } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
 
@@ -64,6 +64,20 @@ const Search: FC<IProps> = ({ handleSearchChange, handleSearch, radioValue, hand
 							// 触发搜索
 							onChange={value => handleSearchChange({ state: Number(value || -1) })}
 						></Select>
+					</div>
+					<div className="zsxq-white-list-search__search-item">
+						<Checkbox
+							onChange={e => handleSearchChange({ starNumberNotEmpty: e.target.checked })}
+						>
+							星球会员
+						</Checkbox>
+					</div>
+					<div className="zsxq-white-list-search__search-item">
+						<Checkbox
+							onChange={e => handleSearchChange({ lastLoginWithinWeek: e.target.checked })}
+						>
+							一周内登录
+						</Checkbox>
 					</div>
 					<div className="zsxq-white-list-search__search-btn">
 						<Button type="primary" icon={<SearchOutlined />} style={{ marginRight: "25px" }} onClick={handleSearch}>
