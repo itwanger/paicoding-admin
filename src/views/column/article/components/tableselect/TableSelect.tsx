@@ -138,7 +138,7 @@ const TableSelect: FC<IProps> = ({
 			render(value) {
 				return <>
 					<Avatar style={{ backgroundColor: '#1890ff', color: '#fff' }}>
-						{value.slice(0, 2)}
+						{value?.slice(0, 2) || ''}
 					</Avatar>
 				</>;
 			}

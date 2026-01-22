@@ -376,7 +376,7 @@ const Column: FC<IProps> = props => {
 				return (
 					<>
 						<Avatar style={{ backgroundColor: "#1890ff", color: "#fff" }} size={54}>
-							{value.slice(0, 4)}
+							{value ? value.slice(0, 4) : ''}
 						</Avatar>
 					</>
 				);

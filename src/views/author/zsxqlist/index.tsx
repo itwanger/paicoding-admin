@@ -338,7 +338,7 @@ const Zsxqlist: FC<IProps> = props => {
 				return (
 					<>
 						<Avatar style={{ backgroundColor: colorLoginTypeMap[value], color: "#fff" }} size={50} gap={1}>
-							{LoginType[value].slice(0, 5)}
+							{LoginType[value]?.slice(0, 5) || ''}
 						</Avatar>
 					</>
 				);

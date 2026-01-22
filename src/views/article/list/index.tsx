@@ -294,7 +294,7 @@ const Article: FC<IProps> = props => {
 			render(value) {
 				return <>
 					<Avatar style={{ backgroundColor: '#1890ff', color: '#fff' }} size="large">
-						{value.slice(0, 3)}
+						{value?.slice(0, 3) || ''}
 					</Avatar>
 				</>;
 			}
