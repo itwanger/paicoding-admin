@@ -5,22 +5,129 @@
 		display: flex;
 		justify-content: space-between;
 		padding-left: 48px;
+		padding-right: 24px;
 	}
 
 	&__search {
 		flex: 1;
 		display: flex;
-		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 12px 16px;
+		align-items: center;
 		&-wrap {
 			display: flex;
 		}
 	}
 
 	&__search-item {
-		margin-right: 28px;
+		flex-shrink: 0;
+	}
+
+	&__search-btn {
+		display: flex;
+		gap: 12px;
+		align-items: center;
+		flex-shrink: 0;
 	}
 
 	&-label {
 		margin-right: 12px;
+	}
+
+	// 移动端适配
+	@media (max-width: 1200px) {
+		&__wrap {
+			padding-left: 24px;
+			padding-right: 16px;
+		}
+
+		&__search {
+			gap: 10px 12px;
+		}
+
+		&__search-item {
+			// 让输入框在小屏幕上也能更灵活
+			Input, Select {
+				min-width: 120px !important;
+			}
+		}
+	}
+
+	@media (max-width: 768px) {
+		&__wrap {
+			padding-left: 16px;
+			padding-right: 12px;
+		}
+
+		&__search {
+			gap: 8px 10px;
+		}
+
+		&__search-item {
+			// 在更小的屏幕上让输入框占据更多空间
+			flex: 1 1 auto;
+			min-width: 140px;
+
+			Input, Select {
+				width: 100% !important;
+			}
+		}
+
+		&__search-btn {
+			flex: 1 1 100%;
+			justify-content: flex-start;
+		}
+	}
+
+	// 手机端适配 (≤480px)
+	@media (max-width: 480px) {
+		margin-bottom: 12px;
+
+		&__wrap {
+			padding: 12px 8px;
+		}
+
+		&__search {
+			gap: 8px;
+		}
+
+		&__search-item {
+			flex: 1 1 100%;
+			margin-right: 0;
+
+			input, .ant-select, .ant-checkbox-wrapper {
+				width: 100% !important;
+				font-size: 14px;
+			}
+
+			.ant-input {
+				padding: 6px 11px;
+			}
+
+			.ant-checkbox-wrapper {
+				padding: 6px 0;
+			}
+		}
+
+		&__search-btn {
+			flex: 1 1 100%;
+			flex-direction: column;
+			gap: 8px;
+
+			button {
+				width: 100%;
+				margin-right: 0 !important;
+			}
+
+			.ant-radio-group {
+				width: 100%;
+				display: flex;
+
+				.ant-radio-button-wrapper {
+					flex: 1;
+					text-align: center;
+				}
+			}
+		}
 	}
 }

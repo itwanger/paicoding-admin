@@ -25,8 +25,9 @@ interface DataType {
 	inviteCode: string;
 	inviteNum: number;
 	state: number;
-	expireTime: string | null; // 后台返回的是Date类型，前端接收为字符串
+	expireTime: string | null; // 后台返回的是Date类型,前端接收为字符串
 	lastLoginTime: string | null; // 上次登录时间
+	loginType: number; // 登录类型
 }
 
 interface IProps {}
@@ -481,7 +482,7 @@ const Zsxqlist: FC<IProps> = props => {
 	);
 
 	return (
-		<div className="article">
+		<div className="article zsxq-list-page">
 			<ContentWrap>
 				{/* 搜索 */}
 				<Search
@@ -491,10 +492,108 @@ const Zsxqlist: FC<IProps> = props => {
 					handleBatchStatusChange={handleBatchStatusChange}
 					radioValue={radioValue}
 				/>
-				{/* 表格 */}
-				<ContentInterWrap>
+				{/* 表格 - 桌面端 */}
+				<ContentInterWrap className="desktop-table">
 					<Table rowSelection={rowSelection} columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
+				{/* 卡片列表 - 移动端 */}
+				<div className="mobile-card-list">
+					{tableData.map((item) => (
+						<div key={item.id} className="user-card">
+							<div className="card-header">
+								<Avatar src={item.avatar} size={48} />
+								<div className="user-info">
+									<div className="user-name">{item.name}</div>
+									<a href={`${baseDomain}/user/home?userId=${item?.userId}`} className="user-code" target="_blank" rel="noreferrer">
+										{item.userCode}
+									</a>
+								</div>
+								<div className="user-status">
+									<Select
+										size="small"
+										status={item.state === 2 ? "" : "error"}
+										value={item.state.toString()}
+										options={UserAIStatList}
+										onChange={value => handleStatusChange(item.id, Number(value))}
+										style={{ width: 80 }}
+									></Select>
+								</div>
+							</div>
+							<div className="card-body">
+								<div className="info-row">
+									<span className="label">星球编号:</span>
+									<span className="value">{item.starNumber || '-'}</span>
+								</div>
+								<div className="info-row">
+									<span className="label">注册类型:</span>
+									<span className="value">
+										<Avatar style={{ backgroundColor: colorLoginTypeMap[item.loginType], color: "#fff" }} size={40} gap={1}>
+											{LoginType[item.loginType]?.slice(0, 5) || ''}
+										</Avatar>
+									</span>
+								</div>
+								<div className="info-row">
+									<span className="label">过期时间:</span>
+									<span className="value">{formatDate(item.expireTime)}</span>
+								</div>
+								<div className="info-row">
+									<span className="label">邀请人数:</span>
+									<span className="value">
+										<Badge count={item.inviteNum} showZero color="#faad14" />
+									</span>
+								</div>
+								<div className="info-row">
+									<span className="label">上次登录:</span>
+									<span className="value">{formatDate(item.lastLoginTime)}</span>
+								</div>
+							</div>
+							<div className="card-footer">
+								<Button
+									type="primary"
+									icon={<EditOutlined />}
+									size="small"
+									onClick={() => {
+										setIsModalOpen(true);
+										handleChange({ ...item });
+										const formData = {
+											...item,
+											expireTime: item.expireTime ? dayjs(item.expireTime) : null
+										};
+										formRef.setFieldsValue(formData);
+									}}
+								>
+									编辑
+								</Button>
+								<Button type="primary" danger icon={<UndoOutlined />} size="small" onClick={() => handleReset(item.id)}>
+									重置
+								</Button>
+							</div>
+						</div>
+					))}
+					{/* 移动端分页 */}
+					<div className="mobile-pagination">
+						<div className="pagination-info">
+							共 {pagination.total || 0} 条
+						</div>
+						<div className="pagination-controls">
+							<Button 
+								size="small" 
+								disabled={current === 1}
+								onClick={() => setPagination({ ...pagination, current: current - 1 })}
+							>
+								上一页
+							</Button>
+							<span className="current-page">{current} / {Math.ceil((pagination.total || 0) / pageSize)}</span>
+							<Button 
+								size="small"
+								disabled={current >= Math.ceil((pagination.total || 0) / pageSize)}
+								onClick={() => setPagination({ ...pagination, current: current + 1 })}
+							>
+								下一页
+							</Button>
+						</div>
+					</div>
+				</div>
 			</ContentWrap>
 			{/* 弹窗 */}
 			<Modal title="修改" visible={isModalOpen} onCancel={() => setIsModalOpen(false)} onOk={handleSubmit}>
