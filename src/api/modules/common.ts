@@ -15,7 +15,8 @@ export const getDiscListApi = () => {
 
 // 上传图片
 export const uploadImgApi = (data: FormData) => {
-	return http.post<Login.ResAuthButtons>(`${PORT1}/image/upload`, data);
+	// 添加时间戳参数，确保每个请求 URL 不同，避免被 AxiosCanceler 取消
+	return http.post<Login.ResAuthButtons>(`${PORT1}/image/upload?t=${Date.now()}`, data);
 };
 
 // 文件上传

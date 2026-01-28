@@ -365,7 +365,8 @@ const ArticleEdit: FC<IProps> = props => {
 			
 			try {
 				console.log('开始转换文件...');
-				message.loading('正在导入 Word 文档...', 0);
+				const loadingKey = 'word-import-loading';
+				message.loading({ content: '正在导入 Word 文档...', key: loadingKey, duration: 0 });
 				
 				const arrayBuffer = await file.arrayBuffer();
 				console.log('文件读取成功，大小:', arrayBuffer.byteLength);
@@ -427,6 +428,63 @@ const ArticleEdit: FC<IProps> = props => {
 				console.log(processedWithoutImages);
 				console.log('=== 预处理后的 HTML 结束 ===');
 				
+				// 关闭初始的 loading
+				message.destroy(loadingKey);
+				
+				// 先询问用户是否继续导入
+				const shouldImport = await new Promise<'append' | 'replace' | 'cancel'>((resolve) => {
+					if (content && content.trim()) {
+						console.log('编辑器有内容，询问用户');
+						const modal = Modal.info({
+							title: '当前编辑器有内容',
+							content: 'Word 文档中包含图片需要上传，是否继续导入？',
+							icon: null,
+							closable: true,
+							okButtonProps: { style: { display: 'none' } },
+							footer: (
+								<div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+									<Button
+										onClick={() => {
+											console.log('用户取消导入');
+											modal.destroy();
+											resolve('cancel');
+										}}
+									>
+										取消
+									</Button>
+									<Button
+										onClick={() => {
+											console.log('用户选择: 替换');
+											modal.destroy();
+											resolve('replace');
+										}}
+									>
+										替换内容
+									</Button>
+									<Button
+										type="primary"
+										onClick={() => {
+											console.log('用户选择: 追加');
+											modal.destroy();
+											resolve('append');
+										}}
+									>
+										追加到末尾
+									</Button>
+								</div>
+							)
+						});
+					} else {
+						resolve('replace');
+					}
+				});
+				
+				if (shouldImport === 'cancel') {
+					message.info('已取消导入');
+					console.log('用户取消导入');
+					return;
+				}
+				
 				// 处理图片：提取 base64 图片并上传
 				const base64Images = processedHtml.match(/<img src="data:image\/(.*?);base64,(.*?)"(.*?)>/gi) || [];
 				console.log(`找到 ${base64Images.length} 张 base64 图片`);
@@ -436,54 +494,74 @@ const ArticleEdit: FC<IProps> = props => {
 				if (base64Images.length > 0) {
 					message.loading(`正在上传 ${base64Images.length} 张图片...`, 0);
 					
-					// 上传所有图片
-					const uploadPromises = base64Images.map(async (imgTag, index) => {
-						try {
-							// 提取 base64 数据和图片类型
-							const match = imgTag.match(/data:image\/(.*?);base64,(.*?)"/);
-							if (!match) return null;
-							
-							const [, imageType, base64Data] = match;
-							console.log(`上传图片 ${index + 1}/${base64Images.length}, 类型: ${imageType}`);
-							
-							// 将 base64 转换为 Blob
-							const byteString = atob(base64Data);
-							const arrayBuffer = new ArrayBuffer(byteString.length);
-							const uint8Array = new Uint8Array(arrayBuffer);
-							for (let i = 0; i < byteString.length; i++) {
-								uint8Array[i] = byteString.charCodeAt(i);
-							}
-							const blob = new Blob([arrayBuffer], { type: `image/${imageType}` });
-							
-							// 创建 File 对象
-							const file = new File([blob], `word-image-${Date.now()}-${index}.${imageType}`, {
-								type: `image/${imageType}`
-							});
-							
-							// 上传图片
-							const formData = new FormData();
-							formData.append('image', file);
-							
-							const response = await uploadImgApi(formData);
-							const { status, result } = response || {};
-							const { code } = status || {};
-							const { imagePath } = result || {};
-							
-							if (code === 0 && imagePath) {
-								console.log(`图片 ${index + 1} 上传成功:`, imagePath);
-								return { original: imgTag, uploaded: imagePath };
-							} else {
-								console.error(`图片 ${index + 1} 上传失败`);
+					// 并发上传图片，最多同时 5 个请求
+					const concurrency = 5;
+					const uploadResults: Array<{ original: string; uploaded: string } | null> = [];
+					
+					// 分批处理
+					for (let i = 0; i < base64Images.length; i += concurrency) {
+						const batch = base64Images.slice(i, i + concurrency);
+						console.log(`上传批次: ${Math.floor(i / concurrency) + 1}, 包含 ${batch.length} 张图片`);
+						
+						// 并发上传当前批次
+						const batchPromises = batch.map(async (imgTag, batchIndex) => {
+							const index = i + batchIndex;
+							try {
+								// 提取 base64 数据和图片类型
+								const match = imgTag.match(/data:image\/(.*?);base64,(.*?)"/);
+								if (!match) return null;
+								
+								const [, imageType, base64Data] = match;
+								console.log(`上传图片 ${index + 1}/${base64Images.length}, 类型: ${imageType}`);
+								
+								// 将 base64 转换为 Blob
+								const byteString = atob(base64Data);
+								const arrayBuffer = new ArrayBuffer(byteString.length);
+								const uint8Array = new Uint8Array(arrayBuffer);
+								for (let j = 0; j < byteString.length; j++) {
+									uint8Array[j] = byteString.charCodeAt(j);
+								}
+								const blob = new Blob([arrayBuffer], { type: `image/${imageType}` });
+								
+								// 创建 File 对象，增加更多随机性避免文件名和请求冲突
+								const timestamp = Date.now();
+								const random = Math.random().toString(36).substring(2, 15);
+								const fileName = `word-image-${timestamp}-${random}-${index}.${imageType}`;
+								const file = new File([blob], fileName, {
+									type: `image/${imageType}`
+								});
+								
+								// 上传图片，使用更唯一的标识
+								const formData = new FormData();
+								formData.append('image', file);
+								
+								const response = await uploadImgApi(formData);
+								const { status, result } = response || {};
+								const { code } = status || {};
+								const { imagePath } = result || {};
+								
+								if (code === 0 && imagePath) {
+									console.log(`图片 ${index + 1} 上传成功:`, imagePath);
+									return { original: imgTag, uploaded: imagePath };
+								} else {
+									console.error(`图片 ${index + 1} 上传失败`);
+									return null;
+								}
+							} catch (error) {
+								console.error(`图片 ${index + 1} 上传出错:`, error);
 								return null;
 							}
-						} catch (error) {
-							console.error(`图片 ${index + 1} 上传出错:`, error);
-							return null;
+						});
+						
+						// 等待当前批次完成
+						const batchResults = await Promise.all(batchPromises);
+						uploadResults.push(...batchResults);
+						
+						// 批次间增加短暂延迟，避免请求过于密集
+						if (i + concurrency < base64Images.length) {
+							await new Promise(resolve => setTimeout(resolve, 100));
 						}
-					});
-					
-					// 等待所有图片上传完成
-					const uploadResults = await Promise.all(uploadPromises);
+					}
 					
 					// 替换 HTML 中的图片
 					let successCount = 0;
@@ -610,33 +688,18 @@ const ArticleEdit: FC<IProps> = props => {
 				// 先关闭 loading
 				message.destroy();
 				
-				// 如果编辑器有内容，使用 Modal 询问用户
-				if (content && content.trim()) {
-					console.log('编辑器有内容，询问用户');
-					Modal.confirm({
-						title: '当前编辑器有内容',
-						content: '是否追加到末尾？点击"确定"追加，点击"取消"替换现有内容。',
-						okText: '追加到末尾',
-						cancelText: '替换内容',
-						icon: null,
-						onOk: () => {
-							console.log('用户选择: 追加');
-							const finalMarkdown = content + '\n\n---\n\n' + markdown;
-							setContent(finalMarkdown);
-							handleChange({ content: finalMarkdown });
-							message.success('Word 文档已追加到末尾');
-						},
-						onCancel: () => {
-							console.log('用户选择: 替换');
-							setContent(markdown);
-							handleChange({ content: markdown });
-							message.success('Word 文档已导入');
-						}
-					});
+				// 根据用户之前的选择来处理内容
+				if (shouldImport === 'append') {
+					console.log('执行追加操作');
+					const finalMarkdown = content + '\n\n---\n\n' + markdown;
+					setContent(finalMarkdown);
+					handleChange({ content: finalMarkdown });
+					message.success('Word 文档已追加到末尾');
 				} else {
+					console.log('执行替换操作');
 					setContent(markdown);
 					handleChange({ content: markdown });
-					message.success('Word 文档导入成功！');
+					message.success('Word 文档已导入');
 				}
 				
 				console.log('=== Word 导入完成 ===');
