@@ -2,21 +2,50 @@
 	display: flex;
 	min-width: 950px;
 	height: 100%;
+	max-width: 100%;
+	overflow-x: hidden;
+	box-sizing: border-box;
+	
 	.ant-layout-sider {
 		box-sizing: border-box;
+		flex-shrink: 0;
 	}
 	.ant-layout {
 		/* 防止 tabs 超出不收缩 */
 		overflow-x: hidden;
+		min-width: 0;
+		flex: 1;
+		
 		.ant-layout-content {
 			box-sizing: border-box;
 			flex: 1;
 			padding: 10px 12px;
 			overflow-x: hidden;
+			max-width: 100%;
 		}
 
 		&-sider {
 			background: #001529;
+		}
+	}
+
+	// 平板和手机端适配
+	@media (max-width: 768px) {
+		min-width: 100%;
+		
+		.ant-layout {
+			width: 100%;
+			min-width: 0;
+		}
+		
+		.ant-layout-content {
+			padding: 8px 6px;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.ant-layout-content {
+			padding: 4px 2px;
 		}
 	}
 }

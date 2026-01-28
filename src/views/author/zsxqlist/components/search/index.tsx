@@ -31,7 +31,7 @@ const Search: FC<IProps> = ({ handleSearchChange, handleSearch, radioValue, hand
 						<Input
 							allowClear
 							placeholder="请输入星球编号"
-							style={{ width: 142 }}
+							className="search-input"
 							onChange={e => {
 								handleSearchChange({ starNumber: e.target.value });
 							}}
@@ -41,7 +41,7 @@ const Search: FC<IProps> = ({ handleSearchChange, handleSearch, radioValue, hand
 						<Input
 							allowClear
 							placeholder="请输入登录用户名"
-							style={{ width: 152 }}
+							className="search-input"
 							onChange={e => handleSearchChange({ userCode: e.target.value })}
 						/>
 					</div>
@@ -49,7 +49,7 @@ const Search: FC<IProps> = ({ handleSearchChange, handleSearch, radioValue, hand
 						<Input
 							allowClear
 							placeholder="请输入用户昵称"
-							style={{ width: 152 }}
+							className="search-input"
 							onChange={e => handleSearchChange({ name: e.target.value })}
 						/>
 					</div>
@@ -60,7 +60,7 @@ const Search: FC<IProps> = ({ handleSearchChange, handleSearch, radioValue, hand
 							// 默认值
 							placeholder="选择状态"
 							options={UserAIStatList}
-							style={{ width: 100 }}
+							className="search-select"
 							// 触发搜索
 							onChange={value => handleSearchChange({ state: Number(value || -1) })}
 						></Select>

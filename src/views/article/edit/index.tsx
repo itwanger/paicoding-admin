@@ -11,6 +11,7 @@ import { Editor } from '@bytemd/react';
 import { Button, Drawer, Form, Input, message,Radio, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import zhHans from 'bytemd/locales/zh_Hans.json';
+import mammoth from 'mammoth';
 
 import { getArticleApi, saveArticleApi, saveImgApi } from "@/api/modules/article";
 import { uploadImgApi } from "@/api/modules/common";
@@ -330,6 +331,312 @@ const ArticleEdit: FC<IProps> = props => {
 		}
 	}
 
+	// 导入 Word 文档
+	const handleImportWord = () => {
+		console.log('=== 开始导入 Word 文档 ===');
+		
+		// 创建文件输入元素
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+		input.style.display = 'none';
+		
+		input.onchange = async (e: Event) => {
+			console.log('change 事件触发');
+			const target = e.target as HTMLInputElement;
+			const file = target.files?.[0];
+			console.log('选中的文件:', file);
+			
+			// 清理 DOM
+			if (document.body.contains(input)) {
+				document.body.removeChild(input);
+			}
+			
+			if (!file) {
+				console.log('没有选择文件');
+				return;
+			}
+			
+			if (!file.name.endsWith('.docx')) {
+				console.error('文件类型错误:', file.name);
+				message.error('仅支持 .docx 格式的 Word 文档');
+				return;
+			}
+			
+			try {
+				console.log('开始转换文件...');
+				message.loading('正在导入 Word 文档...', 0);
+				
+				const arrayBuffer = await file.arrayBuffer();
+				console.log('文件读取成功，大小:', arrayBuffer.byteLength);
+				
+				// 配置 mammoth 选项
+				const options = {
+					styleMap: [
+						// Word 文档中的代码样式（根据警告信息得出）
+						"p[style-name='_Style 23'] => pre.code-block",
+						// 其他常见代码样式作为备选
+						"p[style-name='Code'] => pre.code-block",
+						"p[style-name='代码'] => pre.code-block",
+						"p[style-name='HTML Preformatted'] => pre.code-block",
+						"p[style-name='Preformatted Text'] => pre.code-block",
+						"p[style-name='Source Code'] => pre.code-block"
+					],
+					includeDefaultStyleMap: true
+				};
+				
+				const result = await mammoth.convertToHtml({ arrayBuffer, ...options });
+				const html = result.value;
+				console.log('HTML 转换成功，长度:', html.length);
+				
+				// 打印样式警告信息（可以看到文档中有哪些样式）
+				if (result.messages && result.messages.length > 0) {
+					console.warn('样式信息和警告:');
+					result.messages.forEach(msg => {
+						console.warn(`- ${msg.type}: ${msg.message}`);
+					});
+				}
+				
+				// 打印完整的 HTML（移除 base64 图片避免过长）
+				const htmlWithoutImages = html.replace(/src="data:image[^"]*"/g, 'src="[base64]"');
+				console.log('=== 完整的 HTML 内容开始 ===');
+				console.log(htmlWithoutImages);
+				console.log('=== 完整的 HTML 内容结束 ===');
+				
+				// 预处理：将包含多个 br 的段落转换为代码块
+				let processedHtml = html.replace(/<p>([\s\S]*?)<\/p>/gi, (match, content) => {
+					// 统计 br 标签数量
+					const brCount = (content.match(/<br\s*\/?>/gi) || []).length;
+					
+					// 如果有 3 个以上的 br，并且包含代码关键字
+					if (brCount >= 3) {
+						const codeKeywords = /(?:FROM|RUN|COPY|WORKDIR|ENTRYPOINT|CMD|ENV|EXPOSE|VOLUME|ARG|#\s*[阶段|步骤]|import|export|const|let|var|function|class|def|public|private|docker|maven)/i;
+						const textContent = content.replace(/<[^>]+>/g, ''); // 移除所有标签查看纯文本
+						
+						if (codeKeywords.test(textContent)) {
+							console.log('检测到代码块，br 数量:', brCount);
+							console.log('内容预览:', textContent.substring(0, 100));
+							return '<pre class="code-block">' + content + '</pre>';
+						}
+					}
+					return match;
+				});
+				
+				console.log('=== 预处理后的 HTML 开始 ===');
+				const processedWithoutImages = processedHtml.replace(/src="data:image[^"]*"/g, 'src="[base64]"');
+				console.log(processedWithoutImages);
+				console.log('=== 预处理后的 HTML 结束 ===');
+				
+				// 处理图片：提取 base64 图片并上传
+				const base64Images = processedHtml.match(/<img src="data:image\/(.*?);base64,(.*?)"(.*?)>/gi) || [];
+				console.log(`找到 ${base64Images.length} 张 base64 图片`);
+				
+				let htmlWithUploadedImages = processedHtml;
+				
+				if (base64Images.length > 0) {
+					message.loading(`正在上传 ${base64Images.length} 张图片...`, 0);
+					
+					// 上传所有图片
+					const uploadPromises = base64Images.map(async (imgTag, index) => {
+						try {
+							// 提取 base64 数据和图片类型
+							const match = imgTag.match(/data:image\/(.*?);base64,(.*?)"/);
+							if (!match) return null;
+							
+							const [, imageType, base64Data] = match;
+							console.log(`上传图片 ${index + 1}/${base64Images.length}, 类型: ${imageType}`);
+							
+							// 将 base64 转换为 Blob
+							const byteString = atob(base64Data);
+							const arrayBuffer = new ArrayBuffer(byteString.length);
+							const uint8Array = new Uint8Array(arrayBuffer);
+							for (let i = 0; i < byteString.length; i++) {
+								uint8Array[i] = byteString.charCodeAt(i);
+							}
+							const blob = new Blob([arrayBuffer], { type: `image/${imageType}` });
+							
+							// 创建 File 对象
+							const file = new File([blob], `word-image-${Date.now()}-${index}.${imageType}`, {
+								type: `image/${imageType}`
+							});
+							
+							// 上传图片
+							const formData = new FormData();
+							formData.append('image', file);
+							
+							const response = await uploadImgApi(formData);
+							const { status, result } = response || {};
+							const { code } = status || {};
+							const { imagePath } = result || {};
+							
+							if (code === 0 && imagePath) {
+								console.log(`图片 ${index + 1} 上传成功:`, imagePath);
+								return { original: imgTag, uploaded: imagePath };
+							} else {
+								console.error(`图片 ${index + 1} 上传失败`);
+								return null;
+							}
+						} catch (error) {
+							console.error(`图片 ${index + 1} 上传出错:`, error);
+							return null;
+						}
+					});
+					
+					// 等待所有图片上传完成
+					const uploadResults = await Promise.all(uploadPromises);
+					
+					// 替换 HTML 中的图片
+					let successCount = 0;
+					uploadResults.forEach(result => {
+						if (result) {
+							htmlWithUploadedImages = htmlWithUploadedImages.replace(
+								result.original,
+								`<img src="${result.uploaded}">`
+							);
+							successCount++;
+						}
+					});
+					
+					message.destroy();
+					if (successCount > 0) {
+						message.success(`成功上传 ${successCount} 张图片`);
+					}
+					if (successCount < base64Images.length) {
+						message.warning(`${base64Images.length - successCount} 张图片上传失败`);
+					}
+				}
+				
+				let markdown = htmlWithUploadedImages
+					.replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n')
+					.replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n')
+					.replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n')
+					.replace(/<h4>(.*?)<\/h4>/gi, '#### $1\n\n')
+					.replace(/<h5>(.*?)<\/h5>/gi, '##### $1\n\n')
+					.replace(/<h6>(.*?)<\/h6>/gi, '###### $1\n\n')
+					.replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+					.replace(/<b>(.*?)<\/b>/gi, '**$1**')
+					.replace(/<em>(.*?)<\/em>/gi, '*$1*')
+					.replace(/<i>(.*?)<\/i>/gi, '*$1*')
+					.replace(/<li>(.*?)<\/li>/gi, '- $1\n')
+					.replace(/<\/ul>/gi, '\n')
+					.replace(/<\/ol>/gi, '\n')
+					.replace(/<ul>/gi, '')
+					.replace(/<ol>/gi, '')
+					// 处理表格 - 转换为 Markdown 表格格式
+					.replace(/<table>([\s\S]*?)<\/table>/gi, (match, tableContent) => {
+						// 解析表格行
+						const rows = tableContent.match(/<tr>([\s\S]*?)<\/tr>/gi) || [];
+						if (rows.length === 0) return match;
+						
+						let markdownTable = '\n';
+						
+						rows.forEach((row, rowIndex) => {
+							// 提取单元格（支持 td 和 th）
+							const cells = row.match(/<t[dh]>([\s\S]*?)<\/t[dh]>/gi) || [];
+							const cellContents = cells.map(cell => {
+								// 移除单元格标签，保留内容
+								let content = cell
+									.replace(/<t[dh]>/gi, '')
+									.replace(/<\/t[dh]>/gi, '')
+									.replace(/<p>/gi, '')
+									.replace(/<\/p>/gi, ' ')
+									.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1')
+									.replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+									.replace(/<em>(.*?)<\/em>/gi, '*$1*')
+									.replace(/<[^>]+>/g, '')
+									.trim();
+								return content || ' ';
+							});
+							
+							// 构建 Markdown 表格行
+							markdownTable += '| ' + cellContents.join(' | ') + ' |\n';
+							
+							// 第一行后添加分隔线
+							if (rowIndex === 0) {
+								markdownTable += '| ' + cellContents.map(() => '---').join(' | ') + ' |\n';
+							}
+						});
+						
+						return markdownTable + '\n';
+					})
+					// 处理代码块 - 匹配我们自定义的 class
+					.replace(/<pre class="code-block">([\s\S]*?)<\/pre>/gi, (match, code) => {
+						const decoded = code
+							.replace(/<p>/gi, '')
+							.replace(/<\/p>/gi, '\n')
+							.replace(/&lt;/g, '<')
+							.replace(/&gt;/g, '>')
+							.replace(/&amp;/g, '&')
+							.replace(/&quot;/g, '"')
+							.replace(/&#39;/g, "'")
+							.trim();
+						return '```\n' + decoded + '\n```\n\n';
+					})
+					// 处理普通的 pre 标签
+					.replace(/<pre><code>([\s\S]*?)<\/code><\/pre>/gi, (match, code) => {
+						const decoded = code
+							.replace(/&lt;/g, '<')
+							.replace(/&gt;/g, '>')
+							.replace(/&amp;/g, '&')
+							.replace(/&quot;/g, '"')
+							.replace(/&#39;/g, "'");
+						return '```\n' + decoded + '\n```\n\n';
+					})
+					.replace(/<pre>([\s\S]*?)<\/pre>/gi, (match, code) => {
+						const decoded = code
+							.replace(/&lt;/g, '<')
+							.replace(/&gt;/g, '>')
+							.replace(/&amp;/g, '&')
+							.replace(/&quot;/g, '"')
+							.replace(/&#39;/g, "'");
+						return '```\n' + decoded + '\n```\n\n';
+					})
+					// 行内代码
+					.replace(/<code>(.*?)<\/code>/gi, '`$1`')
+					.replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
+					.replace(/<a href="(.*?)">(.*?)<\/a>/gi, '[$2]($1)')
+					.replace(/<img src="(.*?)" alt="(.*?)">/gi, '![$2]($1)')
+					.replace(/<img src="(.*?)">/gi, '![]($1)')
+					.replace(/<br\s*\/?>/gi, '\n')
+					.replace(/<[^>]+>/g, '')
+					.replace(/\n{3,}/g, '\n\n')
+					.trim();
+				
+				console.log('Markdown 转换成功，长度:', markdown.length);
+				console.log('=== 完整的 Markdown 内容开始 ===');
+				console.log(markdown);
+				console.log('=== 完整的 Markdown 内容结束 ===');
+				
+				if (content && content.trim()) {
+					console.log('编辑器有内容，询问用户');
+					const shouldAppend = window.confirm('当前编辑器有内容，是否追加到末尾？\n\n点击"确定"追加，点击"取消"替换');
+					console.log('用户选择:', shouldAppend ? '追加' : '替换');
+					if (shouldAppend) {
+						markdown = content + '\n\n---\n\n' + markdown;
+					}
+				}
+				
+				setContent(markdown);
+				handleChange({ content: markdown });
+				
+				message.destroy();
+				message.success('Word 文档导入成功！');
+				console.log('=== Word 导入完成 ===');
+			} catch (error) {
+				console.error('❌ 导入失败:', error);
+				message.destroy();
+				message.error('导入失败，请确保文件格式正确');
+			}
+		};
+		
+		// 必须先添加到 DOM，Chrome 才允许触发
+		document.body.appendChild(input);
+		console.log('input 已添加到 DOM');
+		// 立即触发 click，必须在同一个事件循环中
+		input.click();
+		console.log('click 事件已触发');
+	};
+
 	// 编辑或者新增时提交数据到服务器端
 	const handleSubmit = async () => {
 		// 又从form中获取数据，需要转换格式的数据
@@ -496,6 +803,7 @@ const ArticleEdit: FC<IProps> = props => {
 				<Search
 					status={status}
 					handleReplaceImgUrl={handleReplaceImgUrl}
+					handleImportWord={handleImportWord}
 					handleSave={handleSaveOrUpdate}
 					goBack={goBack}
 				/>

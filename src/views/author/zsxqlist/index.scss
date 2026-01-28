@@ -1,11 +1,15 @@
-// 移动端卡片列表（默认隐藏）
+// 移动端卡片列表(默认隐藏)
 .mobile-card-list {
 	display: none;
+	max-width: 100%;
+	overflow-x: hidden;
 }
 
-// 桌面端表格（默认显示）
+// 桌面端表格(默认显示)
 .desktop-table {
 	display: block;
+	max-width: 100%;
+	overflow-x: auto;
 }
 
 // 平板端适配
@@ -19,6 +23,9 @@
 	.mobile-card-list {
 		display: block;
 		padding: 0;
+		max-width: 100%;
+		overflow-x: hidden;
+		box-sizing: border-box;
 
 		.user-card {
 			background: #fff;
@@ -26,6 +33,9 @@
 			padding: 16px;
 			margin-bottom: 12px;
 			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+			max-width: 100%;
+			overflow-x: hidden;
+			box-sizing: border-box;
 
 			.card-header {
 				display: flex;
@@ -34,6 +44,8 @@
 				margin-bottom: 12px;
 				padding-bottom: 12px;
 				border-bottom: 1px solid #f0f0f0;
+				max-width: 100%;
+				overflow: hidden;
 
 				.user-info {
 					flex: 1;
@@ -53,20 +65,33 @@
 						font-size: 13px;
 						color: #1890ff;
 						text-decoration: none;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+						display: block;
 					}
 				}
 
 				.user-status {
 					flex-shrink: 0;
+
+					.ant-select {
+						min-width: 100px;
+					}
 				}
 			}
 
 			.card-body {
+				max-width: 100%;
+				overflow-x: hidden;
+
 				.info-row {
 					display: flex;
 					align-items: center;
 					padding: 8px 0;
 					font-size: 14px;
+					max-width: 100%;
+					overflow: hidden;
 
 					.label {
 						width: 90px;
@@ -78,6 +103,9 @@
 						flex: 1;
 						color: #333;
 						font-weight: 500;
+						min-width: 0;
+						overflow: hidden;
+						text-overflow: ellipsis;
 					}
 				}
 			}
@@ -91,6 +119,7 @@
 
 				button {
 					flex: 1;
+					min-width: 0;
 				}
 			}
 		}
@@ -100,6 +129,8 @@
 			border-radius: 8px;
 			padding: 16px;
 			margin-top: 12px;
+			max-width: 100%;
+			box-sizing: border-box;
 
 			.pagination-info {
 				text-align: center;
@@ -113,12 +144,18 @@
 				justify-content: center;
 				align-items: center;
 				gap: 12px;
+				max-width: 100%;
 
 				.current-page {
 					font-size: 14px;
 					color: #333;
 					min-width: 60px;
 					text-align: center;
+					white-space: nowrap;
+				}
+
+				button {
+					flex-shrink: 0;
 				}
 			}
 		}

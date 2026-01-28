@@ -5,6 +5,8 @@
   flex-direction: column;
   box-sizing: border-box;
   overflow-y: auto;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 .content-inter-wrap {
@@ -13,4 +15,28 @@
   padding: 20px;
   border-radius: 6px;
   box-sizing: border-box;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .content-wrap {
+    padding: 8px 4px;
+  }
+
+  .content-inter-wrap {
+    padding: 16px 12px;
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-wrap {
+    padding: 4px 2px;
+  }
+
+  .content-inter-wrap {
+    padding: 12px 8px;
+    border-radius: 4px;
+  }
 }

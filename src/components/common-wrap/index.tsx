@@ -9,13 +9,13 @@ interface IProps {
 }
 
 export const ContentWrap = ({ children, className, style }: IProps) => (
-	<div className={`content-wrap ${className}`} style={style}>
+	<div className={`content-wrap ${className || ""}`} style={style}>
 		{children}
 	</div>
 );
 
 export const ContentInterWrap = ({ children, className, style }: IProps) => (
-	<div className={`content-inter-wrap ${className}`} style={style}>
+	<div className={`content-inter-wrap ${className || ""}`} style={style}>
 		{children}
 	</div>
 );

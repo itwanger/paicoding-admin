@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { FC } from "react";
-import { ArrowLeftOutlined, RetweetOutlined, SaveOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, FileWordOutlined, RetweetOutlined, SaveOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
@@ -11,11 +11,12 @@ import "./index.scss";
 interface IProps {
 	handleSave: (e: object) => void;
 	handleReplaceImgUrl: (e: object) => void;
+	handleImportWord: () => void;
 	goBack: () => void;
 	status: number;
 }
 
-const Search: FC<IProps> = ({ handleSave, goBack, status, handleReplaceImgUrl }) => {
+const Search: FC<IProps> = ({ handleSave, goBack, status, handleReplaceImgUrl, handleImportWord }) => {
 	return (
 		<div className="article-edit-search">
 			{/* 搜索 */}
@@ -25,9 +26,16 @@ const Search: FC<IProps> = ({ handleSave, goBack, status, handleReplaceImgUrl })
 						<Button onClick={goBack}><ArrowLeftOutlined />返回文章列表</Button>
 					</div>
 					<div className="article-edit-search__search-btn">
+						<Button type="default" 
+							icon={<FileWordOutlined />} 
+							style={{ marginRight: "10px" }} 
+							onClick={handleImportWord}>
+							导入Word
+						</Button>
+
 						<Button type="primary" 
 							icon={<RetweetOutlined />} 
-							style={{ marginRight: "25px" }} 
+							style={{ marginRight: "10px" }} 
 							onClick={handleReplaceImgUrl}>
 							转链
 						</Button>

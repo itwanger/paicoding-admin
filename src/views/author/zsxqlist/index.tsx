@@ -483,7 +483,7 @@ const Zsxqlist: FC<IProps> = props => {
 
 	return (
 		<div className="article zsxq-list-page">
-			<ContentWrap>
+			<ContentWrap style={{ overflowX: 'hidden', maxWidth: '100%' }}>
 				{/* 搜索 */}
 				<Search
 					handleSearchChange={handleSearchChange}
@@ -515,7 +515,7 @@ const Zsxqlist: FC<IProps> = props => {
 										value={item.state.toString()}
 										options={UserAIStatList}
 										onChange={value => handleStatusChange(item.id, Number(value))}
-										style={{ width: 80 }}
+										style={{ width: 100 }}
 									></Select>
 								</div>
 							</div>
@@ -571,28 +571,30 @@ const Zsxqlist: FC<IProps> = props => {
 						</div>
 					))}
 					{/* 移动端分页 */}
-					<div className="mobile-pagination">
-						<div className="pagination-info">
-							共 {pagination.total || 0} 条
+					{tableData.length > 0 && (
+						<div className="mobile-pagination">
+							<div className="pagination-info">
+								共 {pagination.total || 0} 条
+							</div>
+							<div className="pagination-controls">
+								<Button 
+									size="small" 
+									disabled={current === 1}
+									onClick={() => setPagination({ ...pagination, current: current - 1 })}
+								>
+									上一页
+								</Button>
+								<span className="current-page">{current} / {Math.ceil((pagination.total || 0) / pageSize)}</span>
+								<Button 
+									size="small"
+									disabled={current >= Math.ceil((pagination.total || 0) / pageSize)}
+									onClick={() => setPagination({ ...pagination, current: current + 1 })}
+								>
+									下一页
+								</Button>
+							</div>
 						</div>
-						<div className="pagination-controls">
-							<Button 
-								size="small" 
-								disabled={current === 1}
-								onClick={() => setPagination({ ...pagination, current: current - 1 })}
-							>
-								上一页
-							</Button>
-							<span className="current-page">{current} / {Math.ceil((pagination.total || 0) / pageSize)}</span>
-							<Button 
-								size="small"
-								disabled={current >= Math.ceil((pagination.total || 0) / pageSize)}
-								onClick={() => setPagination({ ...pagination, current: current + 1 })}
-							>
-								下一页
-							</Button>
-						</div>
-					</div>
+					)}
 				</div>
 			</ContentWrap>
 			{/* 弹窗 */}
