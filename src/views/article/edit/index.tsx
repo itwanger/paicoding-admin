@@ -8,7 +8,7 @@ import highlight from "@bytemd/plugin-highlight";
 import math from '@bytemd/plugin-math';
 import mediumZoom from '@bytemd/plugin-medium-zoom';
 import { Editor } from '@bytemd/react';
-import { Button, Drawer, Form, Input, message,Radio, Space, UploadFile } from "antd";
+import { Button, Drawer, Form, Input, message, Modal, Radio, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import zhHans from 'bytemd/locales/zh_Hans.json';
 import mammoth from 'mammoth';
@@ -607,20 +607,38 @@ const ArticleEdit: FC<IProps> = props => {
 				console.log(markdown);
 				console.log('=== 完整的 Markdown 内容结束 ===');
 				
+				// 先关闭 loading
+				message.destroy();
+				
+				// 如果编辑器有内容，使用 Modal 询问用户
 				if (content && content.trim()) {
 					console.log('编辑器有内容，询问用户');
-					const shouldAppend = window.confirm('当前编辑器有内容，是否追加到末尾？\n\n点击"确定"追加，点击"取消"替换');
-					console.log('用户选择:', shouldAppend ? '追加' : '替换');
-					if (shouldAppend) {
-						markdown = content + '\n\n---\n\n' + markdown;
-					}
+					Modal.confirm({
+						title: '当前编辑器有内容',
+						content: '是否追加到末尾？点击"确定"追加，点击"取消"替换现有内容。',
+						okText: '追加到末尾',
+						cancelText: '替换内容',
+						icon: null,
+						onOk: () => {
+							console.log('用户选择: 追加');
+							const finalMarkdown = content + '\n\n---\n\n' + markdown;
+							setContent(finalMarkdown);
+							handleChange({ content: finalMarkdown });
+							message.success('Word 文档已追加到末尾');
+						},
+						onCancel: () => {
+							console.log('用户选择: 替换');
+							setContent(markdown);
+							handleChange({ content: markdown });
+							message.success('Word 文档已导入');
+						}
+					});
+				} else {
+					setContent(markdown);
+					handleChange({ content: markdown });
+					message.success('Word 文档导入成功！');
 				}
 				
-				setContent(markdown);
-				handleChange({ content: markdown });
-				
-				message.destroy();
-				message.success('Word 文档导入成功！');
 				console.log('=== Word 导入完成 ===');
 			} catch (error) {
 				console.error('❌ 导入失败:', error);
