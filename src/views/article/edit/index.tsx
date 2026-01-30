@@ -8,7 +8,7 @@ import highlight from "@bytemd/plugin-highlight";
 import math from '@bytemd/plugin-math';
 import mediumZoom from '@bytemd/plugin-medium-zoom';
 import { Editor } from '@bytemd/react';
-import { Button, Drawer, Form, Input, message, Modal, Radio, Space, UploadFile } from "antd";
+import { Button, Drawer, Form, Input, message, Modal, Radio, Select, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import zhHans from 'bytemd/locales/zh_Hans.json';
 import mammoth from 'mammoth';
@@ -132,8 +132,8 @@ const ArticleEdit: FC<IProps> = props => {
 	const [coverList, setCoverList] = useState<UploadFile[]>([]);
 
 	//@ts-ignore
-	const { CategoryTypeList, CategoryType} = props || {};
-	console.log("CategoryTypeList", CategoryTypeList, CategoryType);
+	const { CategoryTypeList, CategoryType, PushStatusList } = props || {};
+	console.log("CategoryTypeList", CategoryTypeList, CategoryType, PushStatusList);
 
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
@@ -950,7 +950,8 @@ const ArticleEdit: FC<IProps> = props => {
 				// 2. 准备回填数据
 				const updateData: MapItem = {
 					title,
-					summary: description
+					summary: description,
+					status: 0
 				};
 
 				// 3. 设置分类默认值为“星球专栏”
@@ -993,6 +994,7 @@ const ArticleEdit: FC<IProps> = props => {
 				formRef.setFieldsValue({
 					title,
 					summary: description,
+					status: "0",
 					categoryId: updateData.categoryId
 				});
 
@@ -1029,6 +1031,7 @@ const ArticleEdit: FC<IProps> = props => {
 		// 新的值传递到后端
 		const newValues = {
 			...values,
+			status: Number(values.status),
 			content: content,
 			tagIds: tagIds,
 			shortTitle: shortTitle,
@@ -1085,6 +1088,7 @@ const ArticleEdit: FC<IProps> = props => {
 					shortTitle: result?.shortTitle,
 					summary: result?.summary,
 					cover: coverUrl,
+					status: result?.status?.toString(),
 					categoryId: result?.category?.categoryId,
 					tagName: result?.tags?.map((item: TagValue) => ({
 						key: item?.tagId,
@@ -1098,6 +1102,7 @@ const ArticleEdit: FC<IProps> = props => {
 					content: result?.content,
 					articleId: result?.articleId,
 					shortTitle: result?.shortTitle,
+					status: result?.status,
 				});
 			 }
 		};
@@ -1143,6 +1148,15 @@ const ArticleEdit: FC<IProps> = props => {
 					coverName={coverName}
 					setCoverList={setCoverList}
 					handleFormRefChange={handleFormRefChange}
+				/>
+			</Form.Item>
+			<Form.Item label="状态" name="status">
+				<Select
+					placeholder="请选择文章状态"
+					options={PushStatusList}
+					onChange={value => {
+						handleChange({ status: Number(value) });
+					}}
 				/>
 			</Form.Item>
 			<Form.Item

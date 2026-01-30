@@ -14,9 +14,10 @@ interface IProps {
 	PushStatusList: Array<{ label: string; value: number }>;
 	ToppingStatusList: Array<{ label: string; value: number }>;
 	OfficalStatusList: Array<{ label: string; value: number }>;
+	ColumnList: Array<{ label: string; value: number }>;
 }
 
-const Search: FC<IProps> = ({ handleSearchChange, handleSearch, PushStatusList, ToppingStatusList, OfficalStatusList }) => {
+const Search: FC<IProps> = ({ handleSearchChange, handleSearch, PushStatusList, ToppingStatusList, OfficalStatusList, ColumnList }) => {
 	const navigate = useNavigate();
 	return (
 		<div className="article-search">
@@ -41,6 +42,18 @@ const Search: FC<IProps> = ({ handleSearchChange, handleSearch, PushStatusList, 
 							style={{ width: 142 }}
 							onChange={e => handleSearchChange({ title: e.target.value })}
 						/>
+					</div>
+					<div className="article-search__search-item">
+						<Select
+							// 可以清空
+							allowClear
+							// 默认值
+							placeholder="选择专栏"
+							options={ColumnList}
+							style={{ width: 142 }}
+							// 触发搜索
+							onChange={value => handleSearchChange({ columnId: Number(value || -1) })}
+						></Select>
 					</div>
 					<div className="article-search__search-item">
 						<Select

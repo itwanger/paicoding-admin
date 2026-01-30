@@ -8,6 +8,7 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 
 import { delArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
+import { getColumnListApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -27,6 +28,8 @@ interface DataType {
 	officalStat: number;
 	toppingStat: number;
 	creamStat: number;
+	urlSlug?: string;
+	shortTitle?: string;
 }
 
 interface IProps {}
@@ -47,6 +50,7 @@ interface ISearchForm {
 	status: number;
 	toppingStat: number;
 	officalStat: number;
+	columnId: number;
 }
 
 // 编辑表单默认值
@@ -64,7 +68,8 @@ const defaultSearchForm = {
 	title: "",
 	status: -1,
 	toppingStat : -1,
-	officalStat : -1
+	officalStat : -1,
+	columnId: -1
 };
 
 const Article: FC<IProps> = props => {
@@ -79,6 +84,8 @@ const Article: FC<IProps> = props => {
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
+	// 专栏列表
+	const [columnList, setColumnList] = useState<Array<{ label: string; value: number }>>([]);
 	// 刷新函数
 	const [query, setQuery] = useState<number>(0);
 
@@ -234,6 +241,27 @@ const Article: FC<IProps> = props => {
 		};
 		getSortList();
 	}, [query, current, pageSize]);
+
+	// 获取专栏列表
+	useEffect(() => {
+		const getColumnList = async () => {
+			const { status, result } = await getColumnListApi({
+				pageNumber: 1,
+				pageSize: 100 // 假设专栏不多，直接取 100 个
+			});
+			const { code } = status || {};
+			if (code === 0) {
+				//@ts-ignore
+				const { list } = result || {};
+				const newList = list.map((item: any) => ({
+					label: item.column,
+					value: item.columnId
+				}));
+				setColumnList(newList);
+			}
+		};
+		getColumnList();
+	}, []);
 
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
@@ -444,6 +472,7 @@ const Article: FC<IProps> = props => {
 					PushStatusList={PushStatusList}
 					ToppingStatusList={ToppingStatusList}
 					OfficalStatusList={OfficalStatusList}
+					ColumnList={columnList}
 				/>
 				{/* 表格 */}
 				<ContentInterWrap>
