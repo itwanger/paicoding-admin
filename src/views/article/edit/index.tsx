@@ -1,5 +1,7 @@
 /* eslint-disable prettier/prettier */
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import Moveable, { OnResize, OnResizeEnd } from "react-moveable";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
 import gemoji from '@bytemd/plugin-gemoji';
@@ -8,6 +10,7 @@ import highlight from "@bytemd/plugin-highlight";
 import math from '@bytemd/plugin-math';
 import mediumZoom from '@bytemd/plugin-medium-zoom';
 import { Editor } from '@bytemd/react';
+import { ReloadOutlined } from "@ant-design/icons";
 import { Button, Drawer, Form, Input, message, Modal, Radio, Select, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import zhHans from 'bytemd/locales/zh_Hans.json';
@@ -61,13 +64,159 @@ const imageAltPlugin = () => ({
 	}
 });
 
-const plugins = [
+// 自定义插件：为图片添加可移动和缩放功能
+const imageMoveablePlugin = (
+	setTarget: (el: HTMLElement | null) => void, 
+	onScroll: () => void,
+	setContainer: (el: HTMLElement | null) => void,
+	getScrollInfo: () => { pos: number, active: boolean, clear: () => void },
+	setEditor: (editor: any) => void,
+	getImageSizeMap: () => Map<string, { width: number, height: number } | 'reset'>
+) => ({
+	editorEffect({ editor }: { editor: any }) {
+		setEditor(editor);
+	},
+	viewerEffect({ markdownBody }: { markdownBody: HTMLElement }) {
+		const scrollContainer = markdownBody.parentElement;
+		
+		// 1. 应用缓存的图片尺寸
+		const sizeMap = getImageSizeMap();
+		const images = markdownBody.querySelectorAll('img');
+		
+		const resolveUrl = (urlStr: string) => {
+			if (!urlStr) return "";
+			try {
+				const cleanUrl = urlStr.split(/\s+/)[0];
+				return new URL(decodeURIComponent(cleanUrl), window.location.origin).href;
+			} catch (e) {
+				return urlStr;
+			}
+		};
+
+		images.forEach(img => {
+			const src = img.getAttribute('src');
+			if (!src) return;
+			const fullUrl = resolveUrl(src);
+			const state = sizeMap.get(fullUrl);
+			if (state === 'reset') {
+				// 强制清除样式（针对已经在源码中是 <img> 标签的情况）
+				img.style.width = '';
+				img.style.height = '';
+			} else if (state) {
+				img.style.width = `${state.width}px`;
+				img.style.height = `${state.height}px`;
+			}
+		});
+
+		// 2. 检查是否需要恢复滚动位置
+		const info = getScrollInfo();
+		if (info.active && scrollContainer) {
+			// 使用 requestAnimationFrame 确保在浏览器下一帧渲染前恢复位置
+			// 这能有效拦截 ByteMD 渲染导致的滚动跳动
+			requestAnimationFrame(() => {
+				scrollContainer.scrollTop = info.pos;
+				info.clear();
+				// 恢复位置后更新一下控制柄位置
+				onScroll();
+			});
+		}
+
+		const handleClick = (e: MouseEvent) => {
+			const target = e.target as HTMLElement;
+			if (target.tagName === 'IMG') {
+				e.preventDefault();
+				e.stopPropagation();
+				setTarget(target);
+				// 立即触发一次位置更新，确保控制柄出现
+				setTimeout(() => {
+					onScroll();
+				}, 0);
+			} else {
+				// 点击预览区其他地方取消选中
+				setTarget(null);
+			}
+		};
+
+		const handleScroll = () => {
+			onScroll();
+		};
+
+		// ByteMD 预览区的滚动容器通常是 markdownBody 的父元素 .bytemd-preview
+		setContainer(scrollContainer);
+
+		markdownBody.addEventListener('click', handleClick);
+		if (scrollContainer) {
+			scrollContainer.addEventListener('scroll', handleScroll);
+		}
+
+		return () => {
+			markdownBody.removeEventListener('click', handleClick);
+			if (scrollContainer) {
+				scrollContainer.removeEventListener('scroll', handleScroll);
+			}
+		};
+	}
+});
+
+// 自定义 Moveable Able：将复原按钮集成到控制框中
+const RestoreAble = {
+	name: "restoreAble",
+	always: true,
+	render(moveable: any, React: any) {
+		const { target, resetImageInMarkdown } = moveable.props;
+		// pos2 是右上角的坐标 [x, y]
+		const { pos2 } = moveable.state;
+
+		return (
+			<div
+				key="restore-button"
+				style={{
+					position: "absolute",
+					left: `${pos2[0]}px`,
+					top: `${pos2[1]}px`,
+					transform: "translate(-100%, -120%)", // 右侧对齐图片右上角，且位于上方
+					zIndex: 10,
+				}}
+			>
+				<Button
+					size="small"
+					type="primary"
+					icon={<ReloadOutlined />}
+					style={{ 
+						fontSize: '12px', 
+						height: '24px', 
+						padding: '0 8px',
+						boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+						border: 'none',
+						display: 'flex',
+						alignItems: 'center',
+						gap: '4px'
+					}}
+					onClick={(e) => {
+						e.stopPropagation();
+						resetImageInMarkdown(target);
+					}}
+				>复原
+				</Button>
+			</div>
+		);
+	}
+} as const;
+
+const plugins = (
+	setTarget: (el: HTMLElement | null) => void, 
+	onScroll: () => void,
+	setContainer: (el: HTMLElement | null) => void,
+	getScrollInfo: () => { pos: number, active: boolean, clear: () => void },
+	setEditor: (editor: any) => void,
+	getImageSizeMap: () => Map<string, { width: number, height: number } | 'reset'>
+) => [
 	gfm(),
 	highlight(),
 	gemoji(),
 	math(),
-	mediumZoom(),
 	imageAltPlugin(),
+	imageMoveablePlugin(setTarget, onScroll, setContainer, getScrollInfo, setEditor, getImageSizeMap),
 	// Add more plugins here
 ]
 
@@ -108,10 +257,72 @@ const ArticleEdit: FC<IProps> = props => {
 
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
 
-	// 抽屉
-	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
+	// Moveable target
+	const [target, setTarget] = useState<HTMLElement | null>(null);
+	const [container, setContainer] = useState<HTMLElement | null>(null);
+	const moveableRef = useRef<Moveable>(null);
+	const editorRef = useRef<any>(null);
+
+	// 缓存待提交的图片尺寸变更：Map<fullUrl, {width, height} | 'reset'>
+	const imageSizeMapRef = useRef<Map<string, { width: number, height: number } | 'reset'>>(new Map());
+
+	// 记录滚动位置，防止内容更新时预览区跳回顶部
+	const scrollPosRef = useRef<number>(0);
+	const isUpdatingContentRef = useRef<boolean>(false);
+
+	// 使用 Ref 存储最新的 update 函数，确保插件闭包能拿到最新逻辑而不触发重绘
+	const updateMoveableRef = useRef<() => void>();
+
+	const updateMoveable = useCallback(() => {
+		moveableRef.current?.updateRect();
+	}, []);
+
+	// 更新 Ref
+	useEffect(() => {
+		updateMoveableRef.current = updateMoveable;
+	}, [updateMoveable]);
+
+	// 封装获取滚动位置的逻辑给插件使用
+	const getScrollInfo = useCallback(() => ({
+		pos: scrollPosRef.current,
+		active: isUpdatingContentRef.current,
+		clear: () => { isUpdatingContentRef.current = false; }
+	}), []);
+
+	const setEditor = useCallback((editor: any) => {
+		editorRef.current = editor;
+	}, []);
+
+	const getImageSizeMap = useCallback(() => imageSizeMapRef.current, []);
+
+	// 保持 editorPlugins 绝对稳定，防止编辑器重绘导致 target 丢失
+	const editorPlugins = useMemo(() => {
+		return plugins(setTarget, () => updateMoveableRef.current?.(), setContainer, getScrollInfo, setEditor, getImageSizeMap);
+	}, [getScrollInfo, setEditor, getImageSizeMap]); // 没有任何依赖，只创建一次
+
+	useEffect(() => {
+		window.addEventListener('resize', updateMoveable);
+		return () => {
+			window.removeEventListener('resize', updateMoveable);
+		};
+	}, [updateMoveable]);
+
+	// 当选中图片目标变化时，立即强制更新一次控制柄位置
+	useEffect(() => {
+		if (target) {
+			const timer = setTimeout(() => {
+				updateMoveable();
+			}, 50); // 给予足够的渲染缓冲时间
+			return () => clearTimeout(timer);
+		}
+	}, [target, updateMoveable]);
+
 	// 文章内容
 	const [content, setContent] = useState<string>('');
+
+	// 抽屉
+	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
+
 	// 放图片的路径，和上传时间，30s 内防止重复提交
 	const lastUploadTimes = useRef<Map<string, number>>(new Map());
 
@@ -125,15 +336,13 @@ const ArticleEdit: FC<IProps> = props => {
 	const navigate = useNavigate();
 	// 取出来 articleId 和 status
 	// 当前的状态，用于新增还是更新，新增的时候不传递 id，更新的时候传递 id
-  const { articleId, status } = location.state || {};
-	console.log("看看前面是否把参数传递了过来", articleId, status);
+	const { articleId, status } = location.state || {};
 
 	// 声明一个 coverList，封面
 	const [coverList, setCoverList] = useState<UploadFile[]>([]);
 
 	//@ts-ignore
 	const { CategoryTypeList, CategoryType, PushStatusList } = props || {};
-	console.log("CategoryTypeList", CategoryTypeList, CategoryType, PushStatusList);
 
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
@@ -142,18 +351,74 @@ const ArticleEdit: FC<IProps> = props => {
 	const handleChange = (item: MapItem) => {
 		// 把变化的值放到 form 表单中，item 可以是 table 的一行数据（详情、编辑），也可以是单独的表单值发生变化
 		setForm({ ...form, ...item });
-		console.log("handleChange 时看看form的值", item);
 	};
 
 	const handleFormRefChange = (item: MapItem) => {
 		// 当自定义组件更新时，对 formRef 也进行更新
-		console.log("handleFormRefChange 时看看form的值", item);
 		formRef.setFieldsValue({ ...item });
 	};
 
 	// 抽屉关闭
 	const handleClose = () => {
 		setIsOpenDrawerShow(false);
+	};
+
+	// 更新 Markdown 中的图片尺寸 (Lazy Update 策略)
+	const updateImageInMarkdown = (imgElement: HTMLImageElement, width: number, height: number) => {
+		const src = imgElement.getAttribute('src');
+		if (!src) return;
+
+		// 辅助函数：归一化路径
+		const resolveUrl = (urlStr: string) => {
+			if (!urlStr) return "";
+			try {
+				const cleanUrl = urlStr.split(/\s+/)[0];
+				return new URL(decodeURIComponent(cleanUrl), window.location.origin).href;
+			} catch (e) {
+				return urlStr;
+			}
+		};
+
+		const fullUrl = resolveUrl(src);
+
+		// 1. 记录变更到缓存 Map 中，而不触发 content 更新
+		imageSizeMapRef.current.set(fullUrl, { width: Math.round(width), height: Math.round(height) });
+
+		// 2. 直接操作 DOM 样式以获得即时视觉反馈
+		imgElement.style.width = `${Math.round(width)}px`;
+		imgElement.style.height = `${Math.round(height)}px`;
+
+		// 3. 同步 Moveable 控件位置
+		updateMoveable();
+	};
+
+	// 复原图片尺寸
+	const resetImageInMarkdown = (imgElement: HTMLImageElement) => {
+		const src = imgElement.getAttribute('src');
+		if (!src) return;
+
+		const resolveUrl = (urlStr: string) => {
+			if (!urlStr) return "";
+			try {
+				const cleanUrl = urlStr.split(/\s+/)[0];
+				return new URL(decodeURIComponent(cleanUrl), window.location.origin).href;
+			} catch (e) {
+				return urlStr;
+			}
+		};
+
+		const fullUrl = resolveUrl(src);
+
+		// 1. 在缓存中标记为 'reset'，而不是直接删除，这样批量更新时能知道要还原
+		imageSizeMapRef.current.set(fullUrl, 'reset');
+
+		// 2. 清除 DOM 样式
+		imgElement.style.width = '';
+		imgElement.style.height = '';
+
+		// 3. 隐藏 Moveable
+		setTarget(null);
+		message.success("已重置尺寸（保存后同步到源码）");
 	};
 
 	const goBack = () => {
@@ -170,7 +435,67 @@ const ArticleEdit: FC<IProps> = props => {
 
 	// 保存或者更新
 	const handleSaveOrUpdate = async () => {
-		// 弹出抽屉
+		// 1. 将缓存的图片尺寸变更批量应用到 Markdown 内容中
+		const sizeMap = imageSizeMapRef.current;
+		if (sizeMap.size > 0) {
+			let newContent = content;
+			const resolveUrl = (urlStr: string) => {
+				if (!urlStr) return "";
+				try {
+					const cleanUrl = urlStr.split(/\s+/)[0];
+					return new URL(decodeURIComponent(cleanUrl), window.location.origin).href;
+				} catch (e) {
+					return urlStr;
+				}
+			};
+
+			// 匹配所有图片
+			const mdImgRegex = /!\[(.*?)\]\((.*?)\)/g;
+			const htmlImgRegex = /<img\s+[^>]*src=["'](.*?)["'][^>]*>/g;
+			
+			// 使用简单的 replace 回调处理批量更新
+			newContent = newContent.replace(mdImgRegex, (match, alt, src) => {
+				const fullUrl = resolveUrl(src);
+				const state = sizeMap.get(fullUrl);
+				if (state && typeof state === 'object') {
+					return `<img src="${src.split(/\s+/)[0]}" alt="${alt}" width="${state.width}" height="${state.height}" />`;
+				}
+				return match;
+			});
+
+			newContent = newContent.replace(htmlImgRegex, (match, src) => {
+				const fullUrl = resolveUrl(src);
+				const state = sizeMap.get(fullUrl);
+				
+				// 提取原标签中的 alt 属性
+				const altMatch = match.match(/alt=["'](.*?)["']/);
+				const currentAlt = altMatch ? altMatch[1] : "";
+
+				if (state === 'reset') {
+					// 还原为 Markdown 语法，保留提取到的 alt
+					return `![${currentAlt}](${src})`;
+				} else if (state && typeof state === 'object') {
+					// 替换或添加 width/height 属性，同时保留 alt
+					return `<img src="${src}" alt="${currentAlt}" width="${state.width}" height="${state.height}" />`;
+				}
+				return match;
+			});
+
+			if (newContent !== content) {
+				// 记录滚动位置，防止批量更新时跳动
+				if (container) {
+					scrollPosRef.current = container.scrollTop;
+					isUpdatingContentRef.current = true;
+				}
+				
+				setContent(newContent);
+				handleChange({ content: newContent });
+				// 清空缓存
+				sizeMap.clear();
+			}
+		}
+
+		// 2. 弹出抽屉
 		setIsOpenDrawerShow(true);
 	};
 
@@ -1203,10 +1528,10 @@ const ArticleEdit: FC<IProps> = props => {
 					goBack={goBack}
 				/>
 				<ContentInterWrap>
-					<div className="markdown-body">
+					<div className="markdown-body" style={{ position: 'relative' }}>
 						<Editor
 							value={content}
-							plugins={plugins}
+							plugins={editorPlugins}
 							locale={zhHans}
 							uploadImages={files => {
 								return Promise.all(
@@ -1242,6 +1567,41 @@ const ArticleEdit: FC<IProps> = props => {
 								handleChange({ content: v });
 							}}
 						/>
+						{target && container && createPortal(
+							<Moveable
+								ref={moveableRef}
+								target={target}
+								container={container}
+								draggable={false}
+								resizable={true}
+								keepRatio={true}
+								throttleResize={0}
+								renderDirections={["nw", "ne", "sw", "se"]} // 只显示四个角的缩放柄，更符合图片操作
+								ables={[RestoreAble]}
+								props={{
+									resetImageInMarkdown: resetImageInMarkdown
+								}}
+								onResize={({ target, width, height, drag }: OnResize) => {
+									// 限制最小尺寸为 20px，防止图片消失
+									const finalWidth = Math.max(20, width);
+									const finalHeight = Math.max(20, height);
+									
+									const el = target as HTMLElement;
+									el.style.width = `${finalWidth}px`;
+									el.style.height = `${finalHeight}px`;
+									
+									// 如果有位移（通常由于中心点偏移引起），也应用到位移上
+									el.style.transform = drag.transform;
+								}}
+								onResizeEnd={({ target }: OnResizeEnd) => {
+									const el = target as HTMLElement;
+									updateImageInMarkdown(el as HTMLImageElement, el.offsetWidth, el.offsetHeight);
+								}}
+								origin={false}
+								edge={false} // 设为 false，避免边缘点击冲突
+							/>,
+							container
+						)}
 					</div>
 				</ContentInterWrap>
 			</ContentWrap>

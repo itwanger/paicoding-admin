@@ -55,6 +55,12 @@
 
     img {
       display: block;
+      cursor: pointer;
+      transition: outline 0.2s;
+
+      &:hover {
+        outline: 2px solid #1677ff;
+      }
     }
 
     .img-caption {
@@ -65,5 +71,10 @@
       font-size: 12px;
       margin-top: 4px;
     }
+  }
+
+  // Moveable handles
+  .moveable-control-box {
+    z-index: 1000 !important;
   }
 }
