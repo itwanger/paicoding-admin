@@ -45,3 +45,8 @@ export const operateArticleApi = (params: object) => {
 export const examineArticleApi = (params: object | undefined) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/article/examine`, params);
 };
+
+// AI 生成标题和简介
+export const generateArticleAiApi = (params: { shortTitle: string; content: string }) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/article/generate/seo`, params);
+};

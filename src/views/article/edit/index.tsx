@@ -13,8 +13,9 @@ import TextArea from "antd/es/input/TextArea";
 import zhHans from 'bytemd/locales/zh_Hans.json';
 import mammoth from 'mammoth';
 
-import { getArticleApi, saveArticleApi, saveImgApi } from "@/api/modules/article";
+import { getArticleApi, saveArticleApi, saveImgApi, generateArticleAiApi } from "@/api/modules/article";
 import { uploadImgApi } from "@/api/modules/common";
+import { getTagListApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
@@ -90,6 +91,7 @@ export interface IFormType {
 	content: string; // 文章内容
 	cover: string; // 封面
 	tagIds: number[]; // 标签
+	shortTitle: string; // 短标题
 }
 
 const defaultInitForm: IFormType = {
@@ -98,6 +100,7 @@ const defaultInitForm: IFormType = {
 	content: "",
 	cover: "",
 	tagIds: [],
+	shortTitle: "",
 }
 
 const ArticleEdit: FC<IProps> = props => {
@@ -335,6 +338,52 @@ const ArticleEdit: FC<IProps> = props => {
 	const handleImportWord = () => {
 		console.log('=== 开始导入 Word 文档 ===');
 		
+		// 定义已知的代码块 styleId
+		const codeBlockStyleIds = [
+			'23', 
+			'_Style 23', 
+			'ne-codeblock', 
+			'Code', 
+			'代码', 
+			'Preformatted', 
+			'HTML Preformatted',
+			'Source Code',
+			'Plain Text',
+			'Consolas',
+			'Courier New',
+			'Monospaced'
+		];
+		
+		// 定义转换函数
+		function transformElement(element: any): any {
+			// 处理段落：如果有 styleId 但没有 styleName，尝试修复
+			if (element.type === 'paragraph' && element.styleId && !element.styleName) {
+				if (codeBlockStyleIds.some(id => element.styleId.includes(id))) {
+					element.styleName = element.styleId;  // 用 styleId 作为 styleName
+				}
+			}
+			
+			// 语雀代码块处理：语雀导出的 docx 中，代码块可能带有特定的 styleId
+			if (element.type === 'paragraph' && element.styleId && element.styleId.includes('code')) {
+				element.styleName = 'ne-codeblock';
+			}
+			
+			// 递归处理子元素
+			if (element.children) {
+				element.children = element.children.map(transformElement);
+			}
+			
+			return element;
+		}
+		
+		function transformDocument(document: any) {
+			// document 是整个文档对象，需要处理它的所有元素
+			if (document && document.children) {
+				document.children = document.children.map(transformElement);
+			}
+			return document;
+		}
+		
 		// 创建文件输入元素
 		const input = document.createElement('input');
 		input.type = 'file';
@@ -372,28 +421,35 @@ const ArticleEdit: FC<IProps> = props => {
 				console.log('文件读取成功，大小:', arrayBuffer.byteLength);
 				
 				// 配置 mammoth 选项
-				const options = {
-					styleMap: [
-						// Word 文档中的代码样式（根据警告信息得出）
-						"p[style-name='_Style 23'] => pre.code-block",
-						// 其他常见代码样式作为备选
-						"p[style-name='Code'] => pre.code-block",
-						"p[style-name='代码'] => pre.code-block",
-						"p[style-name='HTML Preformatted'] => pre.code-block",
-						"p[style-name='Preformatted Text'] => pre.code-block",
-						"p[style-name='Source Code'] => pre.code-block"
-					],
-					includeDefaultStyleMap: true
-				};
+				const styleMap = [
+					// 代码块样式
+					"p[style-name='_Style 23'] => pre.code-block",
+					"p[style-name='ne-codeblock'] => pre.code-block",  // 语雀导出的文档
+					"p[style-name='Code'] => pre.code-block",
+					"p[style-name='代码'] => pre.code-block",
+					"p[style-name='Preformatted'] => pre.code-block",
+					"p[style-name='HTML Preformatted'] => pre.code-block",
+					"p[style-name='Preformatted Text'] => pre.code-block",
+					"p[style-name='Source Code'] => pre.code-block",
+					"p[style-name='Plain Text'] => pre.code-block",
+					"p[style-name='Consolas'] => pre.code-block",
+					"p[style-name='Courier New'] => pre.code-block",
+					"p[style-name='Monospaced'] => pre.code-block"
+				].join('\n');
 				
-				const result = await mammoth.convertToHtml({ arrayBuffer, ...options });
+				const result = await (mammoth as any).convertToHtml({ 
+					arrayBuffer, 
+					styleMap: styleMap,
+					transformDocument: transformDocument,
+					includeDefaultStyleMap: true
+				});
 				const html = result.value;
 				console.log('HTML 转换成功，长度:', html.length);
 				
 				// 打印样式警告信息（可以看到文档中有哪些样式）
 				if (result.messages && result.messages.length > 0) {
 					console.warn('样式信息和警告:');
-					result.messages.forEach(msg => {
+					result.messages.forEach((msg: any) => {
 						console.warn(`- ${msg.type}: ${msg.message}`);
 					});
 				}
@@ -404,29 +460,82 @@ const ArticleEdit: FC<IProps> = props => {
 				console.log(htmlWithoutImages);
 				console.log('=== 完整的 HTML 内容结束 ===');
 				
-				// 预处理：将包含多个 br 的段落转换为代码块
-				let processedHtml = html.replace(/<p>([\s\S]*?)<\/p>/gi, (match, content) => {
+				// 预处理：将包含多个 br 的段落或符合代码特征的段落转换为代码块
+				let processedHtml = html.replace(/<p>([\s\S]*?)<\/p>/gi, (match: string, content: string) => {
 					// 统计 br 标签数量
 					const brCount = (content.match(/<br\s*\/?>/gi) || []).length;
 					
-					// 如果有 3 个以上的 br，并且包含代码关键字
-					if (brCount >= 3) {
-						const codeKeywords = /(?:FROM|RUN|COPY|WORKDIR|ENTRYPOINT|CMD|ENV|EXPOSE|VOLUME|ARG|#\s*[阶段|步骤]|import|export|const|let|var|function|class|def|public|private|docker|maven)/i;
-						const textContent = content.replace(/<[^>]+>/g, ''); // 移除所有标签查看纯文本
-						
-						if (codeKeywords.test(textContent)) {
-							console.log('检测到代码块，br 数量:', brCount);
-							console.log('内容预览:', textContent.substring(0, 100));
-							return '<pre class="code-block">' + content + '</pre>';
-						}
+					// 如果有 1 个以上的 br (至少两行)，或者包含明显的代码关键字
+					const codeKeywords = /\b(FROM|RUN|COPY|WORKDIR|ENTRYPOINT|CMD|ENV|EXPOSE|VOLUME|ARG|import|export|const|let|var|function|class|def|public|private|protected|package|interface|docker|maven|mvn|git|npm|yarn|pip|npm install|yarn add|void|static|return|if|else|for|while|switch|case|break|continue|try|catch|finally|throw|new|this|super|extends|implements|abstract|final|native|synchronized|transient|volatile|strictfp|assert|instanceof|boolean|byte|char|double|float|int|long|short|String|Integer|Long|Double|Float|Boolean|Map|List|Set|HashMap|ArrayList|HashSet|Stream|Optional|Response|Request|Controller|Service|Repository|Component|Autowired|Resource|Value|RequestMapping|GetMapping|PostMapping|PutMapping|DeleteMapping|PathVariable|RequestParam|RequestBody|ResponseBody|Data|AllArgsConstructor|NoArgsConstructor|Builder|Slf4j|SpringBootApplication|Configuration|Bean|Override|System\.out\.println|console\.log|println|def|fn|lambda|async|await|promise|resolve|reject|fetch|axios|api|admin|paicoding|CompletableFuture|supplyAsync|thenAccept|thenApply|thenRun|handle|exceptionally|executor|submit|execute|TtlRunnable|TtlExecutors|log|info|debug|error|warn|trace|logger|RequestContext)\b/i;
+					
+					const textContent = content.replace(/<[^>]+>/g, '').trim(); // 移除所有标签查看纯文本
+					
+					// 如果包含 CodeMirror 相关的类名，通常也是代码
+					const isCodeMirror = content.includes('CodeMirror-line') || content.includes('cm-text');
+
+					// 识别单行代码特征：Lambda 表达式、方法链、分号结尾、或者包含典型的代码符号组合
+					const isSingleLineCode = (
+						((textContent.includes('->') || textContent.includes('=>')) && textContent.includes('(')) || // Lambda
+						(textContent.includes('.') && textContent.includes('(') && textContent.includes(')')) || // 方法调用/链
+						(textContent.endsWith(';') && textContent.length > 5) || // 以分号结尾
+						(textContent.includes('{') && textContent.includes('}')) || // 包含大括号
+						(textContent.includes('(') && textContent.includes(')') && textContent.includes('=')) // 赋值调用
+					);
+
+					// 1. 如果有 1 个以上的 br 且匹配关键字
+					// 2. 如果文本内容看起来像代码（例如以特定字符开头或包含特定结构）
+					// 3. 包含 CodeMirror 特征
+					// 4. 符合单行代码特征且包含关键字
+					if (isCodeMirror || (brCount >= 1 && codeKeywords.test(textContent)) || 
+						(isSingleLineCode && codeKeywords.test(textContent)) ||
+						(textContent.length > 5 && (
+							(textContent.startsWith('import ') || textContent.startsWith('package ')) ||
+							(textContent.includes('public static void main')) ||
+							(textContent.includes('class ') && textContent.includes('{')) ||
+							(textContent.includes('function') && textContent.includes(')')) ||
+							(textContent.includes('const ') && textContent.includes('=')) ||
+							(textContent.includes('let ') && textContent.includes('='))
+						))) {
+						console.log('检测到潜在代码块，内容预览:', textContent.substring(0, 100));
+						return '<pre class="code-block">' + content + '</pre>';
 					}
 					return match;
 				});
+				
+				// 处理已经存在的 pre 标签（可能是 CodeMirror 产生的）
+				processedHtml = processedHtml.replace(/<pre[^>]*class="[^"]*CodeMirror-line[^"]*"[^>]*>([\s\S]*?)<\/pre>/gi, (match: string, content: string) => {
+					return '<pre class="code-block">' + content + '</pre>';
+				});
+
+				// 合并相邻的代码块
+				processedHtml = processedHtml.replace(/<\/pre>\s*<pre class="code-block">/gi, '<br/>');
 				
 				console.log('=== 预处理后的 HTML 开始 ===');
 				const processedWithoutImages = processedHtml.replace(/src="data:image[^"]*"/g, 'src="[base64]"');
 				console.log(processedWithoutImages);
 				console.log('=== 预处理后的 HTML 结束 ===');
+				
+				// 清理空锚点标签（包括有 id 或 name 属性但内容为空或仅有空白字符的 a 标签）
+				// 语雀的锚点通常是 <a id="xxx"></a>
+				console.log('=== 开始清理语雀锚点 ===');
+				processedHtml = processedHtml.replace(/<a(?![^>]*\bhref\b)[^>]*>([\s\S]*?)<\/a>/gi, (match: string, content: string) => {
+					const textContent = content.replace(/<[^>]+>/g, '').trim();
+					if (textContent === '') {
+						console.log('移除空锚点:', match);
+						return '';
+					}
+					// 如果不是空的，则保留内容但移除 a 标签
+					console.log('移除锚点标签但保留内容:', match);
+					return content;
+				});
+				
+				// 针对语雀特定的锚点格式进一步加强清理
+				processedHtml = processedHtml.replace(/<a\s+(?:id|name|data-anchor)="[^"]*"\s*>\s*<\/a>/gi, '');
+				processedHtml = processedHtml.replace(/<a\s+[^>]*\b(?:id|name|data-anchor)="[^"]*"[^>]*>\s*<\/a>/gi, '');
+				
+				const afterClean = processedHtml.substring(0, 500);
+				console.log('清理后（前500字符）:', afterClean);
+				console.log('=== 空锚点清理完成 ===');
 				
 				// 关闭初始的 loading
 				message.destroy(loadingKey);
@@ -504,7 +613,7 @@ const ArticleEdit: FC<IProps> = props => {
 						console.log(`上传批次: ${Math.floor(i / concurrency) + 1}, 包含 ${batch.length} 张图片`);
 						
 						// 并发上传当前批次
-						const batchPromises = batch.map(async (imgTag, batchIndex) => {
+						const batchPromises = batch.map(async (imgTag: string, batchIndex: number) => {
 							const index = i + batchIndex;
 							try {
 								// 提取 base64 数据和图片类型
@@ -584,34 +693,46 @@ const ArticleEdit: FC<IProps> = props => {
 					}
 				}
 				
-				let markdown = htmlWithUploadedImages
+				// 先清理空的 <a> 标签（锚点）
+				let cleanedHtml = htmlWithUploadedImages.replace(/<a(?![^>]*\bhref\b)[^>]*>([\s\S]*?)<\/a>/gi, (match: string, content: string) => {
+					const textContent = content.replace(/<[^>]+>/g, '').trim();
+					return textContent === '' ? '' : content;
+				});
+				cleanedHtml = cleanedHtml.replace(/<a\s+(?:id|name|data-anchor)="[^"]*"\s*>\s*<\/a>/gi, '');
+				
+				let markdown = cleanedHtml
 					.replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n')
 					.replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n')
 					.replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n')
 					.replace(/<h4>(.*?)<\/h4>/gi, '#### $1\n\n')
 					.replace(/<h5>(.*?)<\/h5>/gi, '##### $1\n\n')
 					.replace(/<h6>(.*?)<\/h6>/gi, '###### $1\n\n')
-					.replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
-					.replace(/<b>(.*?)<\/b>/gi, '**$1**')
+					.replace(/<(?:strong|b)>([\s\S]*?)([。，！？；：,.!?;:]*)<\/(?:strong|b)>/gi, '**$1**$2')
 					.replace(/<em>(.*?)<\/em>/gi, '*$1*')
 					.replace(/<i>(.*?)<\/i>/gi, '*$1*')
-					.replace(/<li>(.*?)<\/li>/gi, '- $1\n')
-					.replace(/<\/ul>/gi, '\n')
-					.replace(/<\/ol>/gi, '\n')
-					.replace(/<ul>/gi, '')
-					.replace(/<ol>/gi, '')
+					.replace(/<li>([\s\S]*?)<\/li>/gi, (match: string, content: string) => {
+						const innerContent = content
+							.replace(/<p>/gi, '')
+							.replace(/<\/p>/gi, '')
+							.trim();
+						return '- ' + innerContent + '\n';
+					})
+					.replace(/<\/ul>/gi, '\n\n')
+					.replace(/<\/ol>/gi, '\n\n')
+					.replace(/<ul>/gi, '\n')
+					.replace(/<ol>/gi, '\n')
 					// 处理表格 - 转换为 Markdown 表格格式
-					.replace(/<table>([\s\S]*?)<\/table>/gi, (match, tableContent) => {
+					.replace(/<table>([\s\S]*?)<\/table>/gi, (match: string, tableContent: string) => {
 						// 解析表格行
 						const rows = tableContent.match(/<tr>([\s\S]*?)<\/tr>/gi) || [];
 						if (rows.length === 0) return match;
 						
 						let markdownTable = '\n';
 						
-						rows.forEach((row, rowIndex) => {
+						rows.forEach((row: string, rowIndex: number) => {
 							// 提取单元格（支持 td 和 th）
 							const cells = row.match(/<t[dh]>([\s\S]*?)<\/t[dh]>/gi) || [];
-							const cellContents = cells.map(cell => {
+							const cellContents = cells.map((cell: string) => {
 								// 移除单元格标签，保留内容
 								let content = cell
 									.replace(/<t[dh]>/gi, '')
@@ -638,36 +759,85 @@ const ArticleEdit: FC<IProps> = props => {
 						return markdownTable + '\n';
 					})
 					// 处理代码块 - 匹配我们自定义的 class
-					.replace(/<pre class="code-block">([\s\S]*?)<\/pre>/gi, (match, code) => {
+					.replace(/<pre class="code-block">([\s\S]*?)<\/pre>/gi, (match: string, code: string) => {
 						const decoded = code
 							.replace(/<p>/gi, '')
 							.replace(/<\/p>/gi, '\n')
+							.replace(/<br\s*\/?>/gi, '\n')
+							.replace(/<[^>]+>/g, '') // 移除代码块内部的所有其他标签（如 CodeMirror 的 span）
+							.replace(/&ZeroWidthSpace;/g, '') // 移除零宽字符
 							.replace(/&lt;/g, '<')
 							.replace(/&gt;/g, '>')
 							.replace(/&amp;/g, '&')
 							.replace(/&quot;/g, '"')
 							.replace(/&#39;/g, "'")
 							.trim();
-						return '```\n' + decoded + '\n```\n\n';
+						
+						// 检测代码语言
+						let language = '';
+						
+						// Java 代码特征
+						if (/\b(public|private|protected|class|interface|enum|package|import)\s+/i.test(decoded) ||
+								/\bpublic\s+static\s+void\s+main/i.test(decoded)) {
+							language = 'java';
+						}
+						// Dockerfile 特征
+						else if (/^FROM\s+/im.test(decoded) || /^RUN\s+/im.test(decoded)) {
+							language = 'dockerfile';
+						}
+						
+						return '```' + language + '\n' + decoded + '\n```\n\n';
 					})
 					// 处理普通的 pre 标签
-					.replace(/<pre><code>([\s\S]*?)<\/code><\/pre>/gi, (match, code) => {
+					.replace(/<pre[^>]*><code>([\s\S]*?)<\/code><\/pre>/gi, (match: string, code: string) => {
 						const decoded = code
+							.replace(/<[^>]+>/g, '') // 移除内部标签
+							.replace(/&ZeroWidthSpace;/g, '')
 							.replace(/&lt;/g, '<')
 							.replace(/&gt;/g, '>')
 							.replace(/&amp;/g, '&')
 							.replace(/&quot;/g, '"')
 							.replace(/&#39;/g, "'");
-						return '```\n' + decoded + '\n```\n\n';
+						
+						// 检测代码语言
+						let language = '';
+						
+						// Java 代码特征
+						if (/\b(public|private|protected|class|interface|enum|package|import)\s+/i.test(decoded) ||
+								/\bpublic\s+static\s+void\s+main/i.test(decoded)) {
+							language = 'java';
+						}
+						// Dockerfile 特征
+						else if (/^FROM\s+/im.test(decoded) || /^RUN\s+/im.test(decoded)) {
+							language = 'dockerfile';
+						}
+						
+						return '```' + language + '\n' + decoded + '\n```\n\n';
 					})
-					.replace(/<pre>([\s\S]*?)<\/pre>/gi, (match, code) => {
+					.replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, (match: string, code: string) => {
 						const decoded = code
+							.replace(/<[^>]+>/g, '') // 移除内部标签
+							.replace(/&ZeroWidthSpace;/g, '')
 							.replace(/&lt;/g, '<')
 							.replace(/&gt;/g, '>')
 							.replace(/&amp;/g, '&')
 							.replace(/&quot;/g, '"')
 							.replace(/&#39;/g, "'");
-						return '```\n' + decoded + '\n```\n\n';
+						
+						// 检测代码语言
+						let language = '';
+						
+						// Java 代码特征
+						if (/\b(public|private|protected|class|interface|enum|package|import)\s+/i.test(decoded) ||
+								/\bpublic\s+static\s+void\s+main/i.test(decoded)) {
+							language = 'java';
+						}
+						// Dockerfile 特征
+						else if (/^FROM\s+/im.test(decoded) || /^RUN\s+/im.test(decoded)) {
+							language = 'dockerfile';
+						}
+						
+						return '```' + language + '\n' + decoded + '\n```\n\n';
 					})
 					// 行内代码
 					.replace(/<code>(.*?)<\/code>/gi, '`$1`')
@@ -677,10 +847,41 @@ const ArticleEdit: FC<IProps> = props => {
 					.replace(/<img src="(.*?)">/gi, '![]($1)')
 					.replace(/<br\s*\/?>/gi, '\n')
 					.replace(/<[^>]+>/g, '')
+				// 最终全局清洗：保护代码块内部的缩进
+				let inCodeBlock = false;
+				markdown = markdown
+					.replace(/&ZeroWidthSpace;/g, '') // 全局移除零宽字符
+					.split('\n')
+					.map((line: string) => {
+						const trimmedLine = line.trim();
+						// 检测代码块边界
+						if (trimmedLine.startsWith('```')) {
+							inCodeBlock = !inCodeBlock;
+							return trimmedLine;
+						}
+						// 如果在代码块内部，只清理行尾空格，保留行首缩进
+						if (inCodeBlock) {
+							return line.trimEnd();
+						}
+						// 普通行执行全量 trim
+						return trimmedLine;
+					})
+					.join('\n')
 					.replace(/\n{3,}/g, '\n\n')
 					.trim();
 				
 				console.log('Markdown 转换成功，长度:', markdown.length);
+
+				// 提取一级标题并同步到文章标题
+				let articleTitle = '';
+				const h1Match = markdown.match(/^#\s+(.+)$/m);
+				if (h1Match) {
+					articleTitle = h1Match[1].trim();
+					console.log('检测到一级标题，同步为文章标题:', articleTitle);
+					// 从正文中移除一级标题及其后的换行
+					markdown = markdown.replace(/^#\s+.+\n*/m, '').trimStart();
+				}
+
 				console.log('=== 完整的 Markdown 内容开始 ===');
 				console.log(markdown);
 				console.log('=== 完整的 Markdown 内容结束 ===');
@@ -698,7 +899,13 @@ const ArticleEdit: FC<IProps> = props => {
 				} else {
 					console.log('执行替换操作');
 					setContent(markdown);
-					handleChange({ content: markdown });
+					// 如果提取到了标题，同步更新标题
+					if (articleTitle) {
+						handleChange({ content: markdown, shortTitle: articleTitle });
+						formRef.setFieldsValue({ shortTitle: articleTitle });
+					} else {
+						handleChange({ content: markdown });
+					}
 					message.success('Word 文档已导入');
 				}
 				
@@ -718,10 +925,91 @@ const ArticleEdit: FC<IProps> = props => {
 		console.log('click 事件已触发');
 	};
 
+	// AI 初始化文章信息
+	const handleAiInit = async () => {
+		const { shortTitle, content } = form;
+		if (!shortTitle) {
+			message.warning("请先输入或从 Word 导入短标题");
+			return;
+		}
+
+		const loadingKey = 'ai-init-loading';
+		message.loading({ content: '正在 AI 初始化文章信息...', key: loadingKey, duration: 0 });
+
+		try {
+			// 1. 调用 AI 接口生成标题和简介
+			const { status: aiStatus, result: aiResult } = await generateArticleAiApi({
+				shortTitle: shortTitle,
+				content: content.substring(0, 400)
+			});
+
+			if (aiStatus?.code === 0 && aiResult) {
+				const { title, description } = aiResult as any;
+				console.log('AI 初始化成功:', { title, description });
+
+				// 2. 准备回填数据
+				const updateData: MapItem = {
+					title,
+					summary: description
+				};
+
+				// 3. 设置分类默认值为“星球专栏”
+				const planetCategory = CategoryTypeList?.find((item: any) => item.label === "星球专栏");
+				if (planetCategory) {
+					updateData.categoryId = planetCategory.value;
+					console.log('自动选择分类:', planetCategory.label);
+				}
+
+				// 4. 设置标签默认值为第一个
+				try {
+					const response = await getTagListApi({
+						status: 1,
+						tag: "",
+						pageNumber: 1,
+						pageSize: 1
+					}) as any;
+
+					const { status: tagStatus, result: tagResult } = response;
+
+					if (tagStatus?.code === 0 && tagResult?.list?.length > 0) {
+						const firstTag = tagResult.list[0];
+						updateData.tagIds = [firstTag.tagId];
+						// 同步回填到 DebounceSelect（它在 Form 中受控）
+						formRef.setFieldsValue({
+							tagName: [{
+								key: firstTag.tagId,
+								label: firstTag.tag,
+								value: firstTag.tag
+							}]
+						});
+						console.log('自动选择标签:', firstTag.tag);
+					}
+				} catch (tagError) {
+					console.warn('获取默认标签失败:', tagError);
+				}
+
+				// 5. 执行回填
+				handleChange(updateData);
+				formRef.setFieldsValue({
+					title,
+					summary: description,
+					categoryId: updateData.categoryId
+				});
+
+				message.success({ content: 'AI 初始化成功', key: loadingKey });
+			} else {
+				message.error({ content: aiStatus?.msg || 'AI 初始化失败', key: loadingKey });
+			}
+		} catch (error) {
+			console.error('AI 初始化出错:', error);
+			message.error({ content: '网络错误，AI 初始化失败', key: loadingKey });
+		}
+	};
+
 	// 编辑或者新增时提交数据到服务器端
 	const handleSubmit = async () => {
-		// 又从form中获取数据，需要转换格式的数据
-		const { articleId, cover, content, tagIds } = form;
+		// 又 from 中获取数据，需要转换格式的数据
+		const { articleId, cover, content, tagIds, shortTitle } = form;
 		console.log("handleSubmit 时看看form的值", form);
 		// content 为空的时候，提示用户
 		if (!content) {
@@ -743,6 +1031,7 @@ const ArticleEdit: FC<IProps> = props => {
 			...values,
 			content: content,
 			tagIds: tagIds,
+			shortTitle: shortTitle,
 			// 确定的参数
 			articleType: "BLOG",
 			source: 2,
@@ -793,6 +1082,7 @@ const ArticleEdit: FC<IProps> = props => {
 				// 填充表单
 				formRef.setFieldsValue({
 					title: result?.title,
+					shortTitle: result?.shortTitle,
 					summary: result?.summary,
 					cover: coverUrl,
 					categoryId: result?.category?.categoryId,
@@ -807,6 +1097,7 @@ const ArticleEdit: FC<IProps> = props => {
 				handleChange({
 					content: result?.content,
 					articleId: result?.articleId,
+					shortTitle: result?.shortTitle,
 				});
 			 }
 		};
@@ -824,6 +1115,15 @@ const ArticleEdit: FC<IProps> = props => {
 					maxLength={120}
 					onChange={e => {
 						handleChange({ title: e.target.value });
+					}}
+				/>
+			</Form.Item>
+			<Form.Item label="短标题" name="shortTitle">
+				<Input
+					allowClear
+					maxLength={40}
+					onChange={e => {
+						handleChange({ shortTitle: e.target.value });
 					}}
 				/>
 			</Form.Item>
@@ -940,9 +1240,10 @@ const ArticleEdit: FC<IProps> = props => {
 				onClose={handleClose}
 				extra={
 					<Space>
+						<Button onClick={handleAiInit}>初始</Button>
 						<Button onClick={resetFrom}>重置</Button>
 						<Button type="primary" onClick={handleSubmit}>
-							{status === UpdateEnum.Edit ? "确认更新" : "确认保存"}
+							{status === UpdateEnum.Edit ? "更新文章" : "确认保存"}
 						</Button>
 					</Space>
 				}

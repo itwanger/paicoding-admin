@@ -28,11 +28,15 @@ export const initPagination: IPagination = {
 };
 
 export interface IFormType {
+	// 上下线
+	status: number;
 	// 标签名
 	tag: string;
 }
 
 const defaultInitForm: IFormType = {
+	// 上下线
+	status: 1,
 	tag: ""
 }
 
@@ -67,8 +71,15 @@ function DebounceSelect<ValueType extends { key?: string; label: React.ReactNode
 	// @ts-ignore
 	const handleScroll = event => {
 		const { scrollTop, scrollHeight, clientHeight } = event.target;
-		if (scrollTop + clientHeight === scrollHeight) {
-			console.log("滚动到底部了");
+		// 距离底部 10px 时触发，增加一点缓冲
+		if (scrollTop + clientHeight >= scrollHeight - 10) {
+			if (fetching) return; // 如果正在加载，则不触发
+			
+			// 检查是否还有更多数据
+			if (pagination.total && options.length >= pagination.total) {
+				return;
+			}
+
 			setPagination(prev => ({ ...prev, current: prev.current + 1 }));
 			onSure();
 		}
@@ -85,13 +96,11 @@ function DebounceSelect<ValueType extends { key?: string; label: React.ReactNode
 
 	const debounceFetcher = useMemo(() => {
 		const loadOptions = debounce(async (value: string) => {
-			console.log("loadOptions debounce", value);
 			handleSearchChange({ tag: value });
 			setOptions([]);
 			setPagination(initPagination);
 			// 一切准备好后，开始请求数据
 			onSure();
-			console.log("开始请求数据");
 		}, debounceTimeout);
 	
 		return loadOptions;
@@ -112,21 +121,35 @@ function DebounceSelect<ValueType extends { key?: string; label: React.ReactNode
 				const { code } = status || {};
 				//@ts-ignore
 				const { list, pageNum, pageSize: resPageSize, pageTotal, total } = result || {};
-				if (code === 0 && list.length > 0) {
-					setPagination({ current: Number(pageNum), pageSize: resPageSize, total });
+				if (code === 0) {
+					if (list && list.length > 0) {
+						setPagination({ current: Number(pageNum), pageSize: resPageSize, total });
 
-					const newList = list.map((item: MapItem) => ({
-						key: item?.tagId,
-						label: item?.tag,
-						value: item?.tag
-					}));
-					setOptions(prevOptions => {
-						console.log("当前选项 (prevOptions):", prevOptions); // 打印当前选项
-						console.log("新加载的选项 (newOptions):", newList); // 打印新加载的选项
-						return [...prevOptions, ...newList]; // 追加新数据
-					});
+						const newList = list.map((item: MapItem) => ({
+							key: item?.tagId,
+							label: item?.tag,
+							value: item?.tag
+						}));
+						setOptions(prevOptions => {
+							// 使用 Map 过滤掉重复的 key
+							const allOptions = [...prevOptions, ...newList];
+							const uniqueOptionsMap = new Map();
+							allOptions.forEach(opt => {
+								if (opt.key) {
+									uniqueOptionsMap.set(opt.key, opt);
+								} else {
+									// 如果没有 key，用 value 作为 fallback
+									uniqueOptionsMap.set(opt.value, opt);
+								}
+							});
+							return Array.from(uniqueOptionsMap.values());
+						});
+					} else if (current === 1) {
+						// 只有在第一页且没有数据时才提示
+						console.warn('该搜索的值没有标签');
+					}
 				} else {
-					console.error('该搜索的值没有标签');
+					console.error('获取标签列表失败:', status?.msg);
 				}
 			}
 			setFetching(false);
@@ -140,7 +163,7 @@ function DebounceSelect<ValueType extends { key?: string; label: React.ReactNode
 	}, [query]);	
 
 	useEffect(() => {
-		console.log("options 更新:", options);
+		// console.log("options 更新:", options);
 	}, [options]);	
 
 	// 清空
@@ -165,10 +188,8 @@ function DebounceSelect<ValueType extends { key?: string; label: React.ReactNode
 			// 绑定防抖函数到onSearch事件上，触发搜索操作时，会调用防抖函数
 			onSearch={debounceFetcher}
 			onDropdownVisibleChange={visible => {
-				console.log("onDropdownVisibleChange", visible);
 				// 下拉列表展开时，重新获取选项列表(如果之前没有值的话)
 				if (visible) {
-					console.log("debounceFetcher，继续初始化");
 					handleClear();
 					onSure();
 				}

@@ -24,11 +24,13 @@ interface IProps {}
 export interface IFormType {
 	tagId: number; // 为0时，是保存，非0是更新
 	tag: string; // 标签名
+	status?: number; // 状态：1-上线，0-下线
 }
 
 const defaultInitForm: IFormType = {
 	tagId: -1,
-	tag: ""
+	tag: "",
+	status: undefined
 };
 
 const Tag: FC<IProps> = props => {

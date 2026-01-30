@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { FC } from "react";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Input } from "antd";
+import { Button, Input, Select } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
 
@@ -30,6 +30,19 @@ const Search: FC<IProps> = ({
 								style={{ width: 252 }}
 								placeholder="请输入标签名称"
 								onChange={e => handleSearchChange({ tag: e.target.value })}
+							/>
+						</div>
+						<div className="tag-search__search-item">
+							<label className="tag-search-label">状态</label>
+							<Select
+								allowClear
+								style={{ width: 120 }}
+								placeholder="请选择"
+								onChange={value => handleSearchChange({ status: value })}
+								options={[
+									{ value: 1, label: '上线' },
+									{ value: 0, label: '下线' },
+								]}
 							/>
 						</div>
 					</div>
