@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { FC } from "react";
-import { ArrowLeftOutlined, FileWordOutlined, RetweetOutlined, SaveOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, FileTextOutlined, FileWordOutlined, RetweetOutlined, SaveOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 
 import { ContentInterWrap } from "@/components/common-wrap";
@@ -12,11 +12,12 @@ interface IProps {
 	handleSave: (e: object) => void;
 	handleReplaceImgUrl: (e: object) => void;
 	handleImportWord: () => void;
+	handleImportMarkdown: () => void;
 	goBack: () => void;
 	status: number;
 }
 
-const Search: FC<IProps> = ({ handleSave, goBack, status, handleReplaceImgUrl, handleImportWord }) => {
+const Search: FC<IProps> = ({ handleSave, goBack, status, handleReplaceImgUrl, handleImportWord, handleImportMarkdown }) => {
 	return (
 		<div className="article-edit-search">
 			{/* 搜索 */}
@@ -31,6 +32,13 @@ const Search: FC<IProps> = ({ handleSave, goBack, status, handleReplaceImgUrl, h
 							style={{ marginRight: "10px" }} 
 							onClick={handleImportWord}>
 							导入Word
+						</Button>
+
+						<Button type="default" 
+							icon={<FileTextOutlined />} 
+							style={{ marginRight: "10px" }} 
+							onClick={handleImportMarkdown}>
+							导入Markdown
 						</Button>
 
 						<Button type="primary" 

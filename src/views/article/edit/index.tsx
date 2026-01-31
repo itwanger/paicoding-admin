@@ -4,19 +4,19 @@ import { createPortal } from "react-dom";
 import Moveable, { OnResize, OnResizeEnd } from "react-moveable";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
-import gemoji from '@bytemd/plugin-gemoji';
-import gfm from '@bytemd/plugin-gfm';
+import { ReloadOutlined, SwapOutlined } from "@ant-design/icons";
+import gemoji from "@bytemd/plugin-gemoji";
+import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
-import math from '@bytemd/plugin-math';
-import mediumZoom from '@bytemd/plugin-medium-zoom';
-import { Editor } from '@bytemd/react';
-import { ReloadOutlined } from "@ant-design/icons";
+import math from "@bytemd/plugin-math";
+import mediumZoom from "@bytemd/plugin-medium-zoom";
+import { Editor } from "@bytemd/react";
 import { Button, Drawer, Form, Input, message, Modal, Radio, Select, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import zhHans from 'bytemd/locales/zh_Hans.json';
-import mammoth from 'mammoth';
+import zhHans from "bytemd/locales/zh_Hans.json";
+import mammoth from "mammoth";
 
-import { getArticleApi, saveArticleApi, saveImgApi, generateArticleAiApi } from "@/api/modules/article";
+import { generateArticleAiApi, getArticleApi, saveArticleApi, saveImgApi } from "@/api/modules/article";
 import { uploadImgApi } from "@/api/modules/common";
 import { getTagListApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
@@ -27,11 +27,11 @@ import DebounceSelect from "@/views/article/components/debounceselect/index";
 import ImgUpload from "@/views/column/setting/components/imgupload";
 import Search from "./search";
 
-import 'katex/dist/katex.css';
-import 'highlight.js/styles/default.css';
-import 'bytemd/dist/index.css';
-import 'juejin-markdown-themes/dist/juejin.css';
 import "./index.scss";
+import "bytemd/dist/index.css";
+import "highlight.js/styles/default.css";
+import "juejin-markdown-themes/dist/juejin.css";
+import "katex/dist/katex.css";
 
 // 自定义插件：为图片添加 alt 标题
 const imageAltPlugin = () => ({
@@ -163,7 +163,7 @@ const RestoreAble = {
 	name: "restoreAble",
 	always: true,
 	render(moveable: any, React: any) {
-		const { target, resetImageInMarkdown } = moveable.props;
+		const { target, resetImageInMarkdown, replaceImageInMarkdown } = moveable.props;
 		// pos2 是右上角的坐标 [x, y]
 		const { pos2 } = moveable.state;
 
@@ -176,8 +176,32 @@ const RestoreAble = {
 					top: `${pos2[1]}px`,
 					transform: "translate(-100%, -120%)", // 右侧对齐图片右上角，且位于上方
 					zIndex: 10,
+					display: 'flex',
+					gap: '8px'
 				}}
 			>
+				<Button
+					size="small"
+					type="primary"
+					icon={<SwapOutlined />}
+					style={{ 
+						fontSize: '12px', 
+						height: '24px', 
+						padding: '0 8px',
+						boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+						border: 'none',
+						display: 'flex',
+						alignItems: 'center',
+						gap: '4px',
+						backgroundColor: '#52c41a' // 使用绿色区分替换功能
+					}}
+					onClick={(e) => {
+						e.stopPropagation();
+						replaceImageInMarkdown(target);
+					}}
+				>
+					替换
+				</Button>
 				<Button
 					size="small"
 					type="primary"
@@ -196,7 +220,8 @@ const RestoreAble = {
 						e.stopPropagation();
 						resetImageInMarkdown(target);
 					}}
-				>复原
+				>
+					复原
 				</Button>
 			</div>
 		);
@@ -294,6 +319,16 @@ const ArticleEdit: FC<IProps> = props => {
 	}, []);
 
 	const getImageSizeMap = useCallback(() => imageSizeMapRef.current, []);
+
+	const resolveUrl = useCallback((urlStr: string) => {
+		if (!urlStr) return "";
+		try {
+			const cleanUrl = urlStr.split(/\s+/)[0];
+			return new URL(decodeURIComponent(cleanUrl), window.location.origin).href;
+		} catch (e) {
+			return urlStr;
+		}
+	}, []);
 
 	// 保持 editorPlugins 绝对稳定，防止编辑器重绘导致 target 丢失
 	const editorPlugins = useMemo(() => {
@@ -397,16 +432,6 @@ const ArticleEdit: FC<IProps> = props => {
 		const src = imgElement.getAttribute('src');
 		if (!src) return;
 
-		const resolveUrl = (urlStr: string) => {
-			if (!urlStr) return "";
-			try {
-				const cleanUrl = urlStr.split(/\s+/)[0];
-				return new URL(decodeURIComponent(cleanUrl), window.location.origin).href;
-			} catch (e) {
-				return urlStr;
-			}
-		};
-
 		const fullUrl = resolveUrl(src);
 
 		// 1. 在缓存中标记为 'reset'，而不是直接删除，这样批量更新时能知道要还原
@@ -419,6 +444,184 @@ const ArticleEdit: FC<IProps> = props => {
 		// 3. 隐藏 Moveable
 		setTarget(null);
 		message.success("已重置尺寸（保存后同步到源码）");
+	};
+
+	// 替换图片功能 (立即更新策略)
+	const replaceImageInMarkdown = (imgElement: HTMLImageElement) => {
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'image/*';
+		input.onchange = async (e) => {
+			const file = (e.target as HTMLInputElement).files?.[0];
+			if (!file) return;
+
+			// 限制图片大小
+			if (file.size > 5 * 1024 * 1024) {
+				message.error("图片大小不能超过 5M");
+				return;
+			}
+
+			const formData = new FormData();
+			formData.append("image", file);
+
+			const hide = message.loading('正在上传新图片...', 0);
+			try {
+				// 发起上传请求
+				const response = await uploadImgApi(formData);
+				hide();
+				
+				// 这里的 response 已经是拦截器处理后的 data (ResultData)
+				const { status, result } = (response as any) || {};
+				
+				if (status?.code === 0 && result?.imagePath) {
+					const oldSrc = imgElement.getAttribute('src');
+					const newSrc = result.imagePath;
+					if (!oldSrc) return;
+
+					const oldFullUrl = resolveUrl(oldSrc);
+					const alt = imgElement.getAttribute('alt') || '';
+					
+					// 记录预览区当前滚动位置（用于预览区同步）
+					if (container) {
+						scrollPosRef.current = container.scrollTop;
+						isUpdatingContentRef.current = true;
+					}
+
+					// 策略：优先通过编辑器实例直接分发变更，这能保持光标和滚动位置
+					if (editorRef.current) {
+						try {
+							// 更加鲁棒的内容获取方式
+							const state = editorRef.current.state;
+							const doc = state?.doc?.toString() || (typeof editorRef.current.getValue === 'function' ? editorRef.current.getValue() : "");
+							
+							if (doc) {
+								// 1. 尝试匹配 Markdown 语法 ![alt](src)
+								const mdImgRegex = /!\[(.*?)\]\((.*?)\)/g;
+								let match;
+								let found = false;
+
+								while ((match = mdImgRegex.exec(doc)) !== null) {
+									if (resolveUrl(match[2]) === oldFullUrl) {
+										const mdAlt = match[1] || alt;
+										const replacement = `![${mdAlt}](${newSrc})`;
+										
+										// 检查是否支持 CM6 的 dispatch
+										if (typeof editorRef.current.dispatch === 'function') {
+											editorRef.current.dispatch({
+												changes: { from: match.index, to: match.index + (match[0]?.length || 0), insert: replacement },
+												selection: { anchor: match.index },
+												scrollIntoView: true
+											});
+										} else if (typeof editorRef.current.replaceRange === 'function') {
+											// 兼容 CM5
+											const posFrom = editorRef.current.posFromIndex(match.index);
+											const posTo = editorRef.current.posFromIndex(match.index + (match[0]?.length || 0));
+											editorRef.current.replaceRange(replacement, posFrom, posTo);
+											editorRef.current.setCursor(posFrom);
+										}
+										found = true;
+										break;
+									}
+								}
+
+								// 2. 如果 Markdown 语法没找到，尝试匹配已有的 HTML <img> 标签
+								if (!found) {
+									const htmlImgRegex = /<img\s+[^>]*src=["'](.*?)["'][^>]*>/g;
+									while ((match = htmlImgRegex.exec(doc)) !== null) {
+										if (resolveUrl(match[1]) === oldFullUrl) {
+											const altMatch = match[0].match(/alt=["'](.*?)["']/);
+											const currentAlt = altMatch ? altMatch[1] : alt;
+											const replacement = `<img src="${newSrc}" alt="${currentAlt}" />`;
+											
+											if (typeof editorRef.current.dispatch === 'function') {
+												editorRef.current.dispatch({
+													changes: { from: match.index, to: match.index + (match[0]?.length || 0), insert: replacement },
+													selection: { anchor: match.index },
+													scrollIntoView: true
+												});
+											} else if (typeof editorRef.current.replaceRange === 'function') {
+												const posFrom = editorRef.current.posFromIndex(match.index);
+												const posTo = editorRef.current.posFromIndex(match.index + (match[0]?.length || 0));
+												editorRef.current.replaceRange(replacement, posFrom, posTo);
+												editorRef.current.setCursor(posFrom);
+											}
+											found = true;
+											break;
+										}
+									}
+								}
+
+								if (found) {
+									// 清除该图片的尺寸缓存
+									imageSizeMapRef.current.delete(oldFullUrl);
+									message.success("图片替换成功");
+									setTarget(null);
+									return;
+								}
+							}
+						} catch (editorErr) {
+							console.error("Editor direct update failed, falling back to setContent:", editorErr);
+						}
+					}
+
+					// Fallback: 如果没有编辑器实例或直接更新失败，使用传统的 setContent
+					setContent(prevContent => {
+						const mdImgRegex = /!\[(.*?)\]\((.*?)\)/g;
+						let match;
+						let newContent = prevContent;
+						let found = false;
+
+						while ((match = mdImgRegex.exec(prevContent)) !== null) {
+							if (resolveUrl(match[2]) === oldFullUrl) {
+								const mdAlt = match[1] || alt;
+								const replacement = `![${mdAlt}](${newSrc})`;
+								newContent = prevContent.substring(0, match.index) + replacement + prevContent.substring(match.index + match[0].length);
+								found = true;
+								break;
+							}
+						}
+
+						if (!found) {
+							const htmlImgRegex = /<img\s+[^>]*src=["'](.*?)["'][^>]*>/g;
+							while ((match = htmlImgRegex.exec(prevContent)) !== null) {
+								if (resolveUrl(match[1]) === oldFullUrl) {
+									const altMatch = match[0].match(/alt=["'](.*?)["']/);
+									const currentAlt = altMatch ? altMatch[1] : alt;
+									const replacement = `<img src="${newSrc}" alt="${currentAlt}" />`;
+									newContent = prevContent.substring(0, match.index) + replacement + prevContent.substring(match.index + match[0].length);
+									found = true;
+									break;
+								}
+							}
+						}
+
+						if (newContent !== prevContent) {
+							handleChange({ content: newContent });
+							imageSizeMapRef.current.delete(oldFullUrl);
+							message.success("图片替换成功");
+							setTarget(null);
+						}
+						return newContent;
+					});
+				} else {
+					// status.code !== 0 的情况拦截器已经处理并报错了，这里不需要重复提示
+					// 除非拦截器没报错（虽然不太可能）
+					if (!status?.msg) {
+						message.error("图片上传失败");
+					}
+				}
+			} catch (err: any) {
+				hide();
+				console.error("Replace image error:", err);
+				// 如果拦截器已经报错并拒绝了 Promise，err 会包含 status 对象
+				if (err?.status?.msg) {
+					// 业务错误，拦截器已提示
+				} else {
+					message.error("网络错误或上传超时");
+				}
+			}
+		};
+		input.click();
 	};
 
 	const goBack = () => {
@@ -658,6 +861,180 @@ const ArticleEdit: FC<IProps> = props => {
 			message.info("没有需要转换的图片");
 		}
 	}
+
+	const sanitizeYuqueMarkdown = (raw: string) => {
+		const fixYuqueStrongMarkers = (input: string) => {
+			let inCodeBlock = false;
+
+			const fixLine = (line: string) => {
+				let out = line;
+
+				out = out.replace(/([A-Za-z0-9])\*\*([，,。.!?？；;：:])/g, "$1$2**");
+
+				const openMatch = out.match(/([，,])\*\*/);
+				if (openMatch?.index !== undefined) {
+					const openIndex = openMatch.index + openMatch[1].length;
+					const openEnd = openIndex + 2;
+
+					const minCommaSearchStart = openEnd + 2;
+					const commaPos = out.indexOf("，", minCommaSearchStart);
+					if (commaPos !== -1) {
+						const closeCandidatePos = out.indexOf("**", commaPos + 1);
+						if (closeCandidatePos !== -1) {
+							const right = out[closeCandidatePos + 2] ?? "";
+							if (!right || /[\s\p{P}\p{S}\p{Extended_Pictographic}\p{Emoji_Presentation}]/u.test(right)) {
+								out = out.slice(0, closeCandidatePos) + out.slice(closeCandidatePos + 2);
+								out = out.slice(0, commaPos) + "**" + out.slice(commaPos);
+							}
+						}
+					}
+				}
+
+				out = out.replace(/\*\*([\p{Extended_Pictographic}\p{Emoji_Presentation}\s]+)\*\*/gu, "$1");
+				out = out.replace(/\*{4,}/g, "**");
+
+				return out;
+			};
+
+			return input
+				.split("\n")
+				.map(line => {
+					const trimmed = line.trimStart();
+					if (trimmed.startsWith("```")) {
+						inCodeBlock = !inCodeBlock;
+						return line;
+					}
+					if (inCodeBlock) return line;
+					return fixLine(line);
+				})
+				.join("\n");
+		};
+
+		let text = raw || "";
+		text = text.replace(/^\uFEFF/, "");
+		text = text.replace(/\r\n?/g, "\n");
+		text = text.replace(/[\u200B-\u200D\uFEFF]/g, "");
+		text = text.replace(/<!--[\s\S]*?-->/g, "");
+		text = text.replace(/<\/?font\b[^>]*>/gi, "");
+		text = fixYuqueStrongMarkers(text);
+		text = text.replace(/!\[([^\]]*)\]\(\s*`?\s*([^`)\s]+)\s*`?\s*\)/g, (_m, alt, url) => {
+			const safeAlt = String(alt ?? "").trim();
+			const safeUrl = String(url ?? "").trim();
+			return `![${safeAlt}](${safeUrl})`;
+		});
+		text = text.replace(/\n{3,}/g, "\n\n");
+		return text.trim();
+	};
+
+	const handleImportMarkdown = () => {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = ".md,.markdown,.txt,text/markdown,text/plain";
+		input.style.display = "none";
+
+		input.onchange = async (e: Event) => {
+			const target = e.target as HTMLInputElement;
+			const file = target.files?.[0];
+
+			if (document.body.contains(input)) {
+				document.body.removeChild(input);
+			}
+
+			if (!file) return;
+
+			const fileName = file.name || "";
+			const isMarkdown = /\.(md|markdown|txt)$/i.test(fileName);
+			if (!isMarkdown) {
+				message.error("仅支持 .md/.markdown/.txt 文件");
+				return;
+			}
+
+			const loadingKey = "markdown-import-loading";
+			message.loading({ content: "正在导入 Markdown...", key: loadingKey, duration: 0 });
+
+			try {
+				const raw = await file.text();
+				let markdown = sanitizeYuqueMarkdown(raw);
+
+				const shouldImport = await new Promise<"append" | "replace" | "cancel">(resolve => {
+					if (content && content.trim()) {
+						const modal = Modal.info({
+							title: "当前编辑器有内容",
+							content: "是否替换或追加导入的 Markdown？",
+							icon: null,
+							closable: true,
+							okButtonProps: { style: { display: "none" } },
+							footer: (
+								<div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+									<Button
+										onClick={() => {
+											modal.destroy();
+											resolve("cancel");
+										}}
+									>
+										取消
+									</Button>
+									<Button
+										onClick={() => {
+											modal.destroy();
+											resolve("replace");
+										}}
+									>
+										替换内容
+									</Button>
+									<Button
+										type="primary"
+										onClick={() => {
+											modal.destroy();
+											resolve("append");
+										}}
+									>
+										追加到末尾
+									</Button>
+								</div>
+							)
+						});
+					} else {
+						resolve("replace");
+					}
+				});
+
+				if (shouldImport === "cancel") {
+					message.info({ content: "已取消导入", key: loadingKey });
+					return;
+				}
+
+				let articleTitle = "";
+				const h1Match = markdown.match(/^\s*#\s+(.+)\s*$/m);
+				if (h1Match) {
+					articleTitle = h1Match[1].trim();
+					markdown = markdown.replace(/^\s*#\s+.+\s*\n*/m, "").trimStart();
+				}
+
+				if (shouldImport === "append") {
+					const finalMarkdown = (content ? content.trimEnd() : "") + "\n\n---\n\n" + markdown;
+					setContent(finalMarkdown);
+					handleChange({ content: finalMarkdown });
+					message.success({ content: "Markdown 已追加到末尾", key: loadingKey });
+				} else {
+					setContent(markdown);
+					if (articleTitle) {
+						handleChange({ content: markdown, shortTitle: articleTitle });
+						formRef.setFieldsValue({ shortTitle: articleTitle });
+					} else {
+						handleChange({ content: markdown });
+					}
+					message.success({ content: "Markdown 已导入", key: loadingKey });
+				}
+			} catch (error) {
+				console.error("导入 Markdown 失败:", error);
+				message.error({ content: "导入失败，请确保文件内容正确", key: loadingKey });
+			}
+		};
+
+		document.body.appendChild(input);
+		input.click();
+	};
 
 	// 导入 Word 文档
 	const handleImportWord = () => {
@@ -1524,6 +1901,7 @@ const ArticleEdit: FC<IProps> = props => {
 					status={status}
 					handleReplaceImgUrl={handleReplaceImgUrl}
 					handleImportWord={handleImportWord}
+					handleImportMarkdown={handleImportMarkdown}
 					handleSave={handleSaveOrUpdate}
 					goBack={goBack}
 				/>
@@ -1579,7 +1957,8 @@ const ArticleEdit: FC<IProps> = props => {
 								renderDirections={["nw", "ne", "sw", "se"]} // 只显示四个角的缩放柄，更符合图片操作
 								ables={[RestoreAble]}
 								props={{
-									resetImageInMarkdown: resetImageInMarkdown
+									resetImageInMarkdown: resetImageInMarkdown,
+									replaceImageInMarkdown: replaceImageInMarkdown
 								}}
 								onResize={({ target, width, height, drag }: OnResize) => {
 									// 限制最小尺寸为 20px，防止图片消失
