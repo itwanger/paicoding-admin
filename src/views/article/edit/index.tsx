@@ -27,8 +27,8 @@ import DebounceSelect from "@/views/article/components/debounceselect/index";
 import ImgUpload from "@/views/column/setting/components/imgupload";
 import Search from "./search";
 
-import "./index.scss";
 import "bytemd/dist/index.css";
+import "./index.scss";
 import "highlight.js/styles/default.css";
 import "juejin-markdown-themes/dist/juejin.css";
 import "katex/dist/katex.css";
