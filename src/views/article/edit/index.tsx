@@ -9,7 +9,6 @@ import gemoji from "@bytemd/plugin-gemoji";
 import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
 import math from "@bytemd/plugin-math";
-import mediumZoom from "@bytemd/plugin-medium-zoom";
 import { Editor } from "@bytemd/react";
 import { Button, Drawer, Form, Input, message, Modal, Radio, Select, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
@@ -20,7 +19,7 @@ import { generateArticleAiApi, getArticleApi, saveArticleApi, saveImgApi } from 
 import { uploadImgApi } from "@/api/modules/common";
 import { getTagListApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { UpdateEnum } from "@/enums/common";
+import { PushStatusEnum, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
 import { getCompleteUrl } from "@/utils/util";
 import DebounceSelect from "@/views/article/components/debounceselect/index";
@@ -928,6 +927,39 @@ const ArticleEdit: FC<IProps> = props => {
 		return text.trim();
 	};
 
+	// 解析简单的 YAML 格式 Front Matter
+	const parseSimpleYaml = (yamlText: string) => {
+		const data: any = {};
+		const lines = yamlText.split("\n");
+		let currentKey = "";
+
+		for (let line of lines) {
+			const trimmedLine = line.trim();
+			if (!trimmedLine) continue;
+
+			// 匹配 key: value
+			const kvMatch = trimmedLine.match(/^(\w+):\s*(.*)$/);
+			if (kvMatch) {
+				currentKey = kvMatch[1];
+				const value = kvMatch[2].trim();
+				// 如果值为空，可能是列表开始
+				if (value === "" || value === "-") {
+					data[currentKey] = [];
+				} else {
+					data[currentKey] = value;
+				}
+			} else if (trimmedLine.startsWith("-") && currentKey) {
+				// 匹配列表项 - value
+				const value = trimmedLine.substring(1).trim();
+				if (!Array.isArray(data[currentKey])) {
+					data[currentKey] = [];
+				}
+				data[currentKey].push(value);
+			}
+		}
+		return data;
+	};
+
 	const handleImportMarkdown = () => {
 		const input = document.createElement("input");
 		input.type = "file";
@@ -957,6 +989,65 @@ const ArticleEdit: FC<IProps> = props => {
 			try {
 				const raw = await file.text();
 				let markdown = sanitizeYuqueMarkdown(raw);
+
+				// 1. 解析 Front Matter
+				const fmRegex = /^---\s*\n([\s\S]*?)\n\s*---\s*(\n|$)/;
+				const fmMatch = markdown.match(fmRegex);
+				let fmData: any = null;
+				if (fmMatch) {
+					const fmText = fmMatch[1];
+					// 从正文中剔除模板
+					markdown = markdown.replace(fmRegex, "").trimStart();
+					fmData = parseSimpleYaml(fmText);
+					console.log("解析到的 Front Matter:", fmData);
+				}
+
+				// 2. 解析 H1 标题
+				let articleTitle = "";
+				const h1Match = markdown.match(/^\s*#\s+(.+)\s*$/m);
+				if (h1Match) {
+					articleTitle = h1Match[1].trim();
+					markdown = markdown.replace(/^\s*#\s+.+\s*\n*/m, "").trimStart();
+				}
+
+				// 3. 准备元数据更新
+				const updateData: MapItem = {};
+				let foundTags: any[] = [];
+
+				if (fmData) {
+					if (fmData.title) updateData.title = fmData.title;
+					if (fmData.shortTitle) updateData.shortTitle = fmData.shortTitle;
+					if (fmData.description) updateData.summary = fmData.description;
+
+					// 状态设置为已发布 (Number 格式用于 form 状态)
+					updateData.status = Number(PushStatusEnum.Published);
+
+					// 分类匹配
+					if (fmData.category) {
+						const catName = Array.isArray(fmData.category) ? fmData.category[0] : fmData.category;
+						const category = CategoryTypeList?.find((item: any) => item.label === catName);
+						if (category) {
+							updateData.categoryId = category.value;
+						}
+					}
+
+					// 标签匹配 (限制最多3个)
+					if (fmData.tag) {
+						const tagNames = Array.isArray(fmData.tag) ? fmData.tag : [fmData.tag];
+						try {
+							const tagPromises = tagNames.slice(0, 3).map((name: string) =>
+								getTagListApi({ status: 1, tag: name.trim(), pageNumber: 1, pageSize: 1 })
+							);
+							const tagResults = await Promise.all(tagPromises);
+							foundTags = tagResults.map((res: any) => res.result?.list?.[0]).filter(t => t);
+							if (foundTags.length > 0) {
+								updateData.tagIds = foundTags.map(t => t.tagId);
+							}
+						} catch (e) {
+							console.warn("查找标签失败:", e);
+						}
+					}
+				}
 
 				const shouldImport = await new Promise<"append" | "replace" | "cancel">(resolve => {
 					if (content && content.trim()) {
@@ -1006,11 +1097,27 @@ const ArticleEdit: FC<IProps> = props => {
 					return;
 				}
 
-				let articleTitle = "";
-				const h1Match = markdown.match(/^\s*#\s+(.+)\s*$/m);
-				if (h1Match) {
-					articleTitle = h1Match[1].trim();
-					markdown = markdown.replace(/^\s*#\s+.+\s*\n*/m, "").trimStart();
+				// 4. 执行更新
+				if (fmData) {
+					// 更新内部 form 状态 (number 类型)
+					handleChange(updateData);
+
+					// 更新 AntD 表单 (string 类型)
+					const formValues: any = {
+						...updateData,
+						status: String(PushStatusEnum.Published), // 确保是字符串 "2"
+						categoryId: updateData.categoryId
+					};
+
+					if (foundTags.length > 0) {
+						formValues.tagName = foundTags.map(t => ({
+							key: t.tagId,
+							label: t.tag,
+							value: t.tag
+						}));
+					}
+					
+					formRef.setFieldsValue(formValues);
 				}
 
 				if (shouldImport === "append") {
@@ -1020,7 +1127,8 @@ const ArticleEdit: FC<IProps> = props => {
 					message.success({ content: "Markdown 已追加到末尾", key: loadingKey });
 				} else {
 					setContent(markdown);
-					if (articleTitle) {
+					// 如果没有 fmData 里的标题，才使用 H1 标题
+					if (!updateData.shortTitle && articleTitle) {
 						handleChange({ content: markdown, shortTitle: articleTitle });
 						formRef.setFieldsValue({ shortTitle: articleTitle });
 					} else {
