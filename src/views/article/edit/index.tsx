@@ -867,6 +867,8 @@ const ArticleEdit: FC<IProps> = props => {
 			let inCodeBlock = false;
 
 			const fixLine = (line: string) => {
+				if (/^\s*\*{3,}\s*$/.test(line)) return line;
+
 				let out = line;
 
 				out = out.replace(/([A-Za-z0-9])\*\*([，,。.!?？；;：:])/g, "$1$2**");
