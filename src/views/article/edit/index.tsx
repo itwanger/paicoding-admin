@@ -383,8 +383,8 @@ const ArticleEdit: FC<IProps> = props => {
 	}, []);
 
 	const handleChange = (item: MapItem) => {
-		// 把变化的值放到 form 表单中，item 可以是 table 的一行数据（详情、编辑），也可以是单独的表单值发生变化
-		setForm({ ...form, ...item });
+		// 使用函数式更新，避免多次连续调用时的状态覆盖问题
+		setForm(prev => ({ ...prev, ...item }));
 	};
 
 	const handleFormRefChange = (item: MapItem) => {
@@ -1098,44 +1098,42 @@ const ArticleEdit: FC<IProps> = props => {
 				}
 
 				// 4. 执行更新
-				if (fmData) {
-					// 更新内部 form 状态 (number 类型)
-					handleChange(updateData);
-
-					// 更新 AntD 表单 (string 类型)
-					const formValues: any = {
-						...updateData,
-						status: String(PushStatusEnum.Published), // 确保是字符串 "2"
-						categoryId: updateData.categoryId
-					};
-
-					if (foundTags.length > 0) {
-						formValues.tagName = foundTags.map(t => ({
-							key: t.tagId,
-							label: t.tag,
-							value: t.tag
-						}));
-					}
-					
-					formRef.setFieldsValue(formValues);
+				const finalUpdateData: MapItem = { ...updateData, content: markdown };
+				
+				// 处理标题逻辑：优先使用模板里的，没有则使用 H1
+				if (!finalUpdateData.shortTitle && articleTitle) {
+					finalUpdateData.shortTitle = articleTitle;
 				}
 
 				if (shouldImport === "append") {
-					const finalMarkdown = (content ? content.trimEnd() : "") + "\n\n---\n\n" + markdown;
-					setContent(finalMarkdown);
-					handleChange({ content: finalMarkdown });
-					message.success({ content: "Markdown 已追加到末尾", key: loadingKey });
+					const appendedContent = (content ? content.trimEnd() : "") + "\n\n---\n\n" + markdown;
+					finalUpdateData.content = appendedContent;
+					setContent(appendedContent);
 				} else {
 					setContent(markdown);
-					// 如果没有 fmData 里的标题，才使用 H1 标题
-					if (!updateData.shortTitle && articleTitle) {
-						handleChange({ content: markdown, shortTitle: articleTitle });
-						formRef.setFieldsValue({ shortTitle: articleTitle });
-					} else {
-						handleChange({ content: markdown });
-					}
-					message.success({ content: "Markdown 已导入", key: loadingKey });
 				}
+
+				// 统一执行状态更新
+				handleChange(finalUpdateData);
+
+				// 更新 AntD 表单 UI
+				const formValues: any = {
+					...finalUpdateData,
+					status: fmData ? String(PushStatusEnum.Published) : undefined,
+				};
+				if (foundTags.length > 0) {
+					formValues.tagName = foundTags.map(t => ({
+						key: t.tagId,
+						label: t.tag,
+						value: t.tag
+					}));
+				}
+				formRef.setFieldsValue(formValues);
+
+				message.success({ 
+					content: shouldImport === "append" ? "Markdown 已追加到末尾" : "Markdown 已导入", 
+					key: loadingKey 
+				});
 			} catch (error) {
 				console.error("导入 Markdown 失败:", error);
 				message.error({ content: "导入失败，请确保文件内容正确", key: loadingKey });

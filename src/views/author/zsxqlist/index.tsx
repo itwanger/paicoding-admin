@@ -74,6 +74,7 @@ const defaultSearchForm = {
 
 const Zsxqlist: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
+	const dateFormat = "YYYY-MM-DD";
 	// 编辑表单
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
 	// 查询表单
@@ -107,16 +108,35 @@ const Zsxqlist: FC<IProps> = props => {
 	const { UserAIStatList, UserAiStrategy, UserAiStrategyList, LoginType, LoginTypeList } = props || {};
 	console.log("UserAiStrategyList", UserAiStrategyList, LoginTypeList);
 
-	// 格式化日期函数，将Long型时间戳转换为年月日格式
+	const chinaOffsetMs = 8 * 60 * 60 * 1000;
+	const isDateOnly = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
+	const toChinaDateString = (value: string): string | null => {
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) return null;
+		const chinaDate = new Date(date.getTime() + chinaOffsetMs);
+		return chinaDate.toISOString().slice(0, 10);
+	};
+	const normalizeExpireValue = (value: string | null) => {
+		if (!value) return null;
+		if (isDateOnly(value)) return dayjs(value);
+		const chinaDateString = toChinaDateString(value);
+		return chinaDateString ? dayjs(chinaDateString) : null;
+	};
+
+	// 格式化日期函数，避免时区导致的日期偏移
 	const formatDate = (dateString: string | null): string => {
-		if (!dateString) return '-';
-		// 如果后台返回的是Date字符串格式，直接格式化显示
-		const date = new Date(dateString);
-		return date.toLocaleDateString('zh-CN', {
-			year: 'numeric',
-			month: '2-digit',
-			day: '2-digit'
-		});
+		if (!dateString) return "-";
+		if (typeof dateString === "string") {
+			if (isDateOnly(dateString)) return dateString;
+			if (dateString.includes("T")) {
+				const chinaDateString = toChinaDateString(dateString);
+				if (chinaDateString) return chinaDateString;
+			}
+			const match = dateString.match(/^(\d{4}-\d{2}-\d{2})/);
+			if (match) return match[1];
+		}
+		const parsed = dayjs(dateString);
+		return parsed.isValid() ? parsed.format("YYYY-MM-DD") : "-";
 	};
 
 	const colorStrategys = ["#f50", "#2db7f5", "#87d068", "#108ee9"];
@@ -261,7 +281,11 @@ const Zsxqlist: FC<IProps> = props => {
 
 	const handleSubmit = async () => {
 		const values = await formRef.validateFields();
-		const newValues = { ...values, id };
+		const newValues = {
+			...values,
+			id,
+			expireTime: values.expireTime ? dayjs(values.expireTime).format(dateFormat) : null
+		};
 		console.log("编辑 时提交的 newValues:", newValues);
 
 		const { status: successStatus } = (await updateZsxqWhiteApi(newValues)) || {};
@@ -420,13 +444,13 @@ const Zsxqlist: FC<IProps> = props => {
 								icon={<EditOutlined />}
 								style={{ marginRight: "10px" }}
 								onClick={() => {
-									setIsModalOpen(true);
-									handleChange({ ...item });
-									const formData = {
-										...item,
-										expireTime: item.expireTime ? dayjs(item.expireTime) : null
-									};
-									formRef.setFieldsValue(formData);
+										setIsModalOpen(true);
+										handleChange({ ...item });
+										const formData = {
+											...item,
+											expireTime: normalizeExpireValue(item.expireTime)
+										};
+										formRef.setFieldsValue(formData);
 									console.log("formRef item", formRef.getFieldsValue());
 								}}
 							>
@@ -473,6 +497,7 @@ const Zsxqlist: FC<IProps> = props => {
 				<DatePicker
 					style={{ width: "100%" }}
 					placeholder="选择过期时间"
+					format={dateFormat}
 					onChange={(date, dateString) => {
 						handleChange({ expireTime: dateString || null });
 					}}
@@ -553,14 +578,14 @@ const Zsxqlist: FC<IProps> = props => {
 									icon={<EditOutlined />}
 									size="small"
 									onClick={() => {
-										setIsModalOpen(true);
-										handleChange({ ...item });
-										const formData = {
-											...item,
-											expireTime: item.expireTime ? dayjs(item.expireTime) : null
-										};
-										formRef.setFieldsValue(formData);
-									}}
+									setIsModalOpen(true);
+									handleChange({ ...item });
+									const formData = {
+										...item,
+										expireTime: normalizeExpireValue(item.expireTime)
+									};
+									formRef.setFieldsValue(formData);
+								}}
 								>
 									编辑
 								</Button>

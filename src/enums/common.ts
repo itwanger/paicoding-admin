@@ -17,11 +17,11 @@ export const initPagination: IPagination = {
 
 export enum PushStatusEnum {
 	noPublish = "0",
-	Publishing = "1",
-	Published = "2"
+	Published = "1",
+	Offline = "2"
 }
 export const pushStatusInfo = {
 	[PushStatusEnum.noPublish]: "default",
-	[PushStatusEnum.Publishing]: "processing",
-	[PushStatusEnum.Published]: "success"
+	[PushStatusEnum.Published]: "success",
+	[PushStatusEnum.Offline]: "error"
 };
