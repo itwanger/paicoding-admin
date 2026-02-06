@@ -13,6 +13,7 @@ import { Editor } from "@bytemd/react";
 import { Button, Drawer, Form, Input, message, Modal, Radio, Select, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import zhHans from "bytemd/locales/zh_Hans.json";
+import { throttle } from "lodash";
 import mammoth from "mammoth";
 
 import { generateArticleAiApi, getArticleApi, saveArticleApi, saveImgApi } from "@/api/modules/article";
@@ -21,7 +22,7 @@ import { getTagListApi } from "@/api/modules/tag";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { PushStatusEnum, UpdateEnum } from "@/enums/common";
 import { MapItem } from "@/typings/common";
-import { getCompleteUrl } from "@/utils/util";
+import { getCompleteUrl, localGet, localRemove, localSet } from "@/utils/util";
 import DebounceSelect from "@/views/article/components/debounceselect/index";
 import ImgUpload from "@/views/column/setting/components/imgupload";
 import Search from "./search";
@@ -265,6 +266,9 @@ export interface IFormType {
 	cover: string; // 封面
 	tagIds: number[]; // 标签
 	shortTitle: string; // 短标题
+	title?: string;
+	summary?: string;
+	categoryId?: number;
 }
 
 const defaultInitForm: IFormType = {
@@ -374,6 +378,64 @@ const ArticleEdit: FC<IProps> = props => {
 
 	// 声明一个 coverList，封面
 	const [coverList, setCoverList] = useState<UploadFile[]>([]);
+
+	// 自动保存 Key
+	const draftKey = useMemo(() => {
+		return articleId ? `ARTICLE_DRAFT_${articleId}` : 'ARTICLE_DRAFT_NEW';
+	}, [articleId]);
+
+	// 自动保存函数 (10s 节流)
+	const autoSave = useRef(throttle((data) => {
+		localSet(draftKey, { ...data, timestamp: Date.now() });
+		console.log('自动保存草稿成功', new Date().toLocaleTimeString());
+	}, 10000, { leading: false, trailing: true }));
+
+	// 监听变化并触发自动保存
+	useEffect(() => {
+		if (content || form.title) {
+			const currentFormValues = formRef.getFieldsValue();
+			autoSave.current({
+				...form,
+				...currentFormValues,
+				content,
+			});
+		}
+	}, [content, form, formRef]);
+
+	// 新建文章时检查草稿
+	useEffect(() => {
+		if (status === UpdateEnum.Edit) return;
+
+		const draft = localGet(draftKey);
+		if (draft) {
+			const draftTime = new Date(draft.timestamp).toLocaleString();
+			Modal.confirm({
+				title: '发现未保存的草稿',
+				content: `检测到您在 ${draftTime} 有未保存的内容，是否恢复？`,
+				okText: '恢复',
+				cancelText: '丢弃',
+				onOk: () => {
+					setContent(draft.content);
+					setForm(prev => ({ ...prev, ...draft }));
+					formRef.setFieldsValue(draft);
+					if (draft.cover) {
+						let coverUrl = getCompleteUrl(draft.cover);
+						setCoverList([{
+							uid: "-1",
+							name: coverName,
+							status: "done",
+							thumbUrl: coverUrl,
+							url: coverUrl
+						}]);
+					}
+					message.success('已恢复草稿');
+				},
+				onCancel: () => {
+					localRemove(draftKey);
+				}
+			});
+		}
+	}, [draftKey, status, formRef]);
 
 	//@ts-ignore
 	const { CategoryTypeList, CategoryType, PushStatusList } = props || {};
@@ -1858,6 +1920,7 @@ const ArticleEdit: FC<IProps> = props => {
 		const { code, msg } = successStatus || {};
 		if (code === 0) {
 			message.success("成功");
+			localRemove(draftKey);
 			// 返回文章列表页
 			goBack();
 		} else {
@@ -1914,6 +1977,37 @@ const ArticleEdit: FC<IProps> = props => {
 					shortTitle: result?.shortTitle,
 					status: result?.status,
 				});
+
+				// 检查草稿
+				const draft = localGet(draftKey);
+				if (draft) {
+					const draftTime = new Date(draft.timestamp).toLocaleString();
+					Modal.confirm({
+						title: '发现未保存的草稿',
+						content: `检测到您在 ${draftTime} 对此文章有未保存的修改，是否覆盖当前服务器版本？`,
+						okText: '使用草稿',
+						cancelText: '使用服务器版本',
+						onOk: () => {
+							setContent(draft.content);
+							setForm(prev => ({ ...prev, ...draft }));
+							formRef.setFieldsValue(draft);
+							if (draft.cover) {
+								let coverUrl = getCompleteUrl(draft.cover);
+								setCoverList([{
+									uid: "-1",
+									name: coverName,
+									status: "done",
+									thumbUrl: coverUrl,
+									url: coverUrl
+								}]);
+							}
+							message.success('已加载本地草稿');
+						},
+						onCancel: () => {
+							localRemove(draftKey);
+						}
+					});
+				}
 			 }
 		};
 	
