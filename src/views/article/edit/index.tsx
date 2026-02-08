@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import Moveable, { OnResize, OnResizeEnd } from "react-moveable";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router";
-import { ReloadOutlined, SwapOutlined } from "@ant-design/icons";
+import { ReloadOutlined, SwapOutlined, CopyOutlined } from "@ant-design/icons";
 import gemoji from "@bytemd/plugin-gemoji";
 import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
@@ -163,7 +163,7 @@ const RestoreAble = {
 	name: "restoreAble",
 	always: true,
 	render(moveable: any, React: any) {
-		const { target, resetImageInMarkdown, replaceImageInMarkdown } = moveable.props;
+		const { target, resetImageInMarkdown, replaceImageInMarkdown, copyImageToClipboard } = moveable.props;
 		// pos2 是右上角的坐标 [x, y]
 		const { pos2 } = moveable.state;
 
@@ -180,6 +180,28 @@ const RestoreAble = {
 					gap: '8px'
 				}}
 			>
+				<Button
+					size="small"
+					type="primary"
+					icon={<CopyOutlined />}
+					style={{ 
+						fontSize: '12px', 
+						height: '24px', 
+						padding: '0 8px',
+						boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+						border: 'none',
+						display: 'flex',
+						alignItems: 'center',
+						gap: '4px',
+						backgroundColor: '#faad14' // 使用橙色区分复制功能
+					}}
+					onClick={(e) => {
+						e.stopPropagation();
+						copyImageToClipboard(target);
+					}}
+				>
+					复制
+				</Button>
 				<Button
 					size="small"
 					type="primary"
@@ -683,6 +705,99 @@ const ArticleEdit: FC<IProps> = props => {
 			}
 		};
 		input.click();
+	};
+
+	// 复制图片
+	const copyImageToClipboard = async (imgElement: HTMLImageElement) => {
+		const src = imgElement.getAttribute('src');
+		if (!src) return;
+		const fullUrl = resolveUrl(src);
+		
+		const hide = message.loading('正在处理图片...', 0);
+		
+		try {
+			// 使用 Canvas 方式将图片转换为 PNG Blob
+			// 创建一个 Promise，该 Promise 会解析为图片的 Blob 数据
+			const blobPromise = new Promise<Blob>((resolve, reject) => {
+				const img = new Image();
+				// 关键：设置 crossOrigin 为 Anonymous 以请求跨域访问权限
+				img.crossOrigin = "Anonymous";
+				// 添加时间戳以避开浏览器缓存，确保获取到最新的 CORS 响应头
+				img.src = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}t=${new Date().getTime()}`;
+				
+				img.onload = () => {
+					try {
+						const canvas = document.createElement('canvas');
+						canvas.width = img.naturalWidth;
+						canvas.height = img.naturalHeight;
+						const ctx = canvas.getContext('2d');
+						if (!ctx) {
+							reject(new Error('Canvas context failed'));
+							return;
+						}
+						ctx.drawImage(img, 0, 0);
+						// 导出为 PNG，这是剪贴板最通用的格式
+						canvas.toBlob((b) => {
+							if (b) resolve(b);
+							else reject(new Error('Blob creation failed'));
+						}, 'image/png');
+					} catch (e) {
+						reject(e);
+					}
+				};
+				
+				img.onerror = () => {
+					reject(new Error('Image load failed (CORS or Network)'));
+				};
+			});
+
+			try {
+				// 尝试 Safari/新版 Chrome 的 Promise 写法
+				// 直接将 Promise 传递给 ClipboardItem，确保在用户点击事件中立即调用 write
+				// @ts-ignore
+				const item = new ClipboardItem({ 'image/png': blobPromise });
+				await navigator.clipboard.write([item]);
+			} catch (e: any) {
+				// 兼容性降级：如果浏览器不支持 Promise 构造 (旧版 Chrome/Firefox 会报 TypeError)
+				// 尝试等待 Blob 生成后再写入
+				console.warn("ClipboardItem Promise approach failed, falling back to Blob...", e);
+				const blob = await blobPromise;
+				// @ts-ignore
+				const item = new ClipboardItem({ 'image/png': blob });
+				await navigator.clipboard.write([item]);
+			}
+			
+			hide();
+			message.success("图片已复制到剪贴板");
+		} catch (err) {
+			hide();
+			console.error('Copy image failed:', err);
+			
+			// 降级处理：如果因为跨域等原因失败，自动回退到复制链接
+			try {
+				await navigator.clipboard.writeText(fullUrl);
+				message.warning({
+					content: "因跨域限制无法复制图片数据，已为您复制图片链接",
+					duration: 3
+				});
+			} catch (clipboardErr) {
+				// 如果连链接都复制失败（极少见），再弹窗提示
+				Modal.error({
+					title: '复制图片失败',
+					content: (
+						<div>
+							<p>无法直接复制该图片数据，原因可能是：</p>
+							<ol>
+								<li>图片服务器未配置 CORS 允许跨域访问（最常见）</li>
+								<li>浏览器安全策略限制</li>
+							</ol>
+							<p>建议：尝试手动右键图片选择&quot;复制图片&quot;。</p>
+						</div>
+					),
+					okText: '知道了'
+				});
+			}
+		}
 	};
 
 	const goBack = () => {
@@ -2160,7 +2275,8 @@ const ArticleEdit: FC<IProps> = props => {
 								ables={[RestoreAble]}
 								props={{
 									resetImageInMarkdown: resetImageInMarkdown,
-									replaceImageInMarkdown: replaceImageInMarkdown
+									replaceImageInMarkdown: replaceImageInMarkdown,
+									copyImageToClipboard: copyImageToClipboard
 								}}
 								onResize={({ target, width, height, drag }: OnResize) => {
 									// 限制最小尺寸为 20px，防止图片消失

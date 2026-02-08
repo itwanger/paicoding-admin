@@ -38,7 +38,7 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 			host: "127.0.0.1", // 服务器主机名，如果允许外部访问，可设置为"0.0.0.0"
 			port: viteEnv.VITE_PORT,
 			open: viteEnv.VITE_OPEN,
-			// cors: false,
+			cors: true,
 			// https: false,
 			// 代理跨域（mock 不需要配置，这里只是个示例）
 			proxy: {
