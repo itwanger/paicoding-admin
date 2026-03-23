@@ -153,6 +153,7 @@ pacoding-admin
 │  └─ env.d.ts            # vite 声明文件
 ├─ .editorconfig          # 编辑器配置（格式化）
 ├─ .env                   # vite 常用配置
+├─ .env.deploy.example    # 部署脚本配置示例
 ├─ .env.development       # 开发环境配置
 ├─ .env.production        # 生产环境配置
 ├─ .env.test              # 测试环境配置
@@ -165,6 +166,7 @@ pacoding-admin
 ├─ .stylelintrc.js        # stylelint 样式格式化配置
 ├─ CHANGELOG.md           # 项目更新日志
 ├─ commitlint.config.js   # git 提交规范配置
+├─ deploy-front.sh        # 前端生产环境部署脚本
 ├─ index.html             # 入口 html
 ├─ LICENSE                # 开源协议文件
 ├─ lint-staged.config     # lint-staged 配置文件
@@ -185,13 +187,58 @@ pacoding-admin
 
 ## 八、生产环境部署
 
-1、执行 `npm run build:pro`，生成 dist 目录
+推荐使用根目录下的 `deploy-front.sh` 一键部署脚本。脚本会自动执行 `npm run build:pro`，将 `dist` 压缩为 `dist.zip`，上传到服务器指定目录，删除远端旧的 `dist` 目录并执行 `unzip` 解压。
 
-2、将 dist 目录上传到服务器的 `/home/admin/` 目录下
+1、先准备部署配置文件：
 
-或者执行 `zip -r dist.zip dist` 压缩为 dist.zip 包，然后上传到服务器的 `/home/admin/` 目录下。再执行 `unzip dist.zip` 解压即可。
+```bash
+cp .env.deploy.example .env.deploy
+```
 
-3、如果采用 Nginx 的话，请在 server 节点下进行 location 配置。
+2、修改 `.env.deploy` 中的部署参数：
+
+```bash
+DEPLOY_SERVER_HOST=你的服务器IP
+DEPLOY_SERVER_USER=admin
+DEPLOY_SERVER_KEY=/Users/yourname/.ssh/id_rsa
+DEPLOY_TARGET_DIR=/home/admin
+```
+
+其中：
+
+- `DEPLOY_SERVER_HOST`：服务器 IP 或域名
+- `DEPLOY_SERVER_USER`：SSH 登录用户，默认 `admin`
+- `DEPLOY_SERVER_KEY`：SSH 私钥路径；如果服务器已经配置免密登录，可以留空
+- `DEPLOY_TARGET_DIR`：上传并解压 `dist.zip` 的目标目录，默认 `/home/admin`
+
+3、执行部署脚本：
+
+```bash
+./deploy-front.sh
+```
+
+如果当前脚本没有执行权限，可以先执行：
+
+```bash
+chmod +x deploy-front.sh
+```
+
+4、脚本完成后，服务器上会得到最新的 `/home/admin/dist` 目录。
+
+如果你想手动部署，也可以按下面的流程执行：
+
+```bash
+npm run build:pro
+zip -r dist.zip dist
+scp dist.zip admin@你的服务器IP:/home/admin/dist.zip
+ssh admin@你的服务器IP
+cd /home/admin
+rm -rf dist
+unzip dist.zip
+rm -f dist.zip
+```
+
+5、如果采用 Nginx 的话，请在 server 节点下进行 location 配置。
 
 ```
 location ^~ /admin {

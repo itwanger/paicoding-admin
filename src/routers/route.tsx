@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import {
+	ApiOutlined,
 	BarsOutlined,
 	CalendarOutlined,
 	FileAddOutlined,
@@ -10,13 +11,16 @@ import {
 	SettingOutlined,
 	SmileOutlined,
 	TagsOutlined,
-	UserOutlined
+	UserOutlined,
+	WechatOutlined
 } from "@ant-design/icons";
 
 export const currentMenuList = [
 	{ key: "/statistics/index", icon: <LineChartOutlined />, children: undefined, label: "数据统计" },
 	{ key: "/config/index", icon: <CalendarOutlined />, children: undefined, label: "运营配置" },
 	{ key: "/global/index", icon: <SettingOutlined />, children: undefined, label: "全局配置" },
+	{ key: "/ai/config/index", icon: <ApiOutlined />, children: undefined, label: "AI模型配置" },
+	{ key: "/wx/menu/index", icon: <WechatOutlined />, children: undefined, label: "微信配置" },
 	{ key: "/category/index", icon: <BarsOutlined />, children: undefined, label: "分类管理" },
 	{ key: "/tag/index", icon: <TagsOutlined />, children: undefined, label: "标签管理" },
 	{ key: "/resume/index", icon: <FileTextOutlined />, children: undefined, label: "简历管理" },
