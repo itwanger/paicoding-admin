@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { connect } from "react-redux";
 import { CheckOutlined, DeleteOutlined, ReloadOutlined, SaveOutlined } from "@ant-design/icons";
-import { Alert, Button, Card, Col, Empty, Form, Input, message, Modal, Row, Space, Switch, Table, Tag } from "antd";
+import { Alert, Button, Card, Empty, Form, Input, message, Modal, Space, Switch, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 import {
@@ -58,11 +58,14 @@ const Sensitive: FC<IProps> = () => {
 	const allowWordsText = Form.useWatch("allowWordsText", formRef);
 	const [detail, setDetail] = useState<SensitiveWordConfigDTO>(defaultDetail);
 	const [hitWords, setHitWords] = useState<SensitiveWordHitDTO[]>([]);
+	const [selectedHitWords, setSelectedHitWords] = useState<string[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [hitLoading, setHitLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [addingWord, setAddingWord] = useState<string>("");
 	const [clearingWord, setClearingWord] = useState<string>("");
+	const [batchAdding, setBatchAdding] = useState(false);
+	const [batchClearing, setBatchClearing] = useState(false);
 	const [hitPagination, setHitPagination] = useState<IPagination>(initPagination);
 	const allowWordSet = useMemo(() => new Set(splitWordText(allowWordsText)), [allowWordsText]);
 	const { current: hitCurrent, pageSize: hitPageSize, total: hitTotal = 0 } = hitPagination;
@@ -135,6 +138,10 @@ const Sensitive: FC<IProps> = () => {
 		void fetchHitWords(hitCurrent, hitPageSize);
 	}, [fetchHitWords, hitCurrent, hitPageSize]);
 
+	useEffect(() => {
+		setSelectedHitWords(prev => prev.filter(word => hitWords.some(item => item.word === word)));
+	}, [hitWords]);
+
 	const getConfigPayload = async () => {
 		const values = await formRef.validateFields();
 		return {
@@ -147,6 +154,10 @@ const Sensitive: FC<IProps> = () => {
 	const refreshPageData = async () => {
 		await fetchDetail();
 		await fetchHitWords(hitCurrent, hitPageSize);
+	};
+
+	const clearHitWords = async (words: string[]) => {
+		await Promise.all(words.map(word => clearSensitiveWordHitApi(word)));
 	};
 
 	const handleSave = async () => {
@@ -196,7 +207,7 @@ const Sensitive: FC<IProps> = () => {
 			onOk: async () => {
 				setClearingWord(word);
 				try {
-					await clearSensitiveWordHitApi(word);
+					await clearHitWords([word]);
 					message.success("命中统计已清理");
 					await refreshPageData();
 				} finally {
@@ -204,6 +215,74 @@ const Sensitive: FC<IProps> = () => {
 				}
 			}
 		});
+	};
+
+	const handleBatchAddToAllowList = () => {
+		if (!selectedHitWords.length) {
+			message.info("请先选择命中词");
+			return;
+		}
+
+		Modal.warning({
+			title: `确认将选中的 ${selectedHitWords.length} 个命中词加入白名单吗`,
+			content: "加入后会一并清理这些词的命中统计，请谨慎操作。",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				const payload = await getConfigPayload();
+				const newWords = selectedHitWords.filter(word => !payload.allowWords.includes(word));
+				if (!newWords.length) {
+					message.info("所选词都已经在白名单中了");
+					return;
+				}
+
+				setBatchAdding(true);
+				try {
+					await saveSensitiveWordConfigApi({
+						...payload,
+						allowWords: [...payload.allowWords, ...newWords]
+					});
+					await clearHitWords(newWords);
+					setSelectedHitWords([]);
+					message.success(`已批量加入白名单 ${newWords.length} 项`);
+					await refreshPageData();
+				} finally {
+					setBatchAdding(false);
+				}
+			}
+		});
+	};
+
+	const handleBatchClearHitWords = () => {
+		if (!selectedHitWords.length) {
+			message.info("请先选择命中词");
+			return;
+		}
+
+		Modal.warning({
+			title: `确认清理选中的 ${selectedHitWords.length} 条命中统计吗`,
+			content: "清理后会移除这些词的命中记录，请谨慎操作。",
+			maskClosable: true,
+			closable: true,
+			onOk: async () => {
+				setBatchClearing(true);
+				try {
+					await clearHitWords(selectedHitWords);
+					setSelectedHitWords([]);
+					message.success(`已清理 ${selectedHitWords.length} 条命中统计`);
+					await refreshPageData();
+				} finally {
+					setBatchClearing(false);
+				}
+			}
+		});
+	};
+
+	const hitRowSelection = {
+		selectedRowKeys: selectedHitWords,
+		onChange: (selectedRowKeys: Array<string | number>) => {
+			setSelectedHitWords(selectedRowKeys.map(key => String(key)));
+		}
 	};
 
 	const columns: ColumnsType<SensitiveWordHitDTO> = [
@@ -223,11 +302,12 @@ const Sensitive: FC<IProps> = () => {
 		{
 			title: "操作",
 			key: "action",
-			width: 220,
+			width: 200,
 			render: (_, item) => (
-				<Space size="small" wrap>
+				<div className="sensitive-page__table-actions">
 					<Button
 						type="link"
+						className="sensitive-page__action-btn"
 						icon={<CheckOutlined />}
 						disabled={allowWordSet.has(item.word)}
 						loading={addingWord === item.word}
@@ -237,6 +317,7 @@ const Sensitive: FC<IProps> = () => {
 					</Button>
 					<Button
 						type="link"
+						className="sensitive-page__action-btn"
 						danger
 						icon={<DeleteOutlined />}
 						loading={clearingWord === item.word}
@@ -244,14 +325,14 @@ const Sensitive: FC<IProps> = () => {
 					>
 						清理
 					</Button>
-				</Space>
+				</div>
 			)
 		}
 	];
 
 	return (
 		<div className="banner sensitive-page">
-			<ContentWrap>
+			<ContentWrap className="sensitive-page__wrap" style={{ height: "auto", minHeight: "100%", overflowY: "visible" }}>
 				<ContentInterWrap className="sensitive-page__panel">
 					<div className="sensitive-page__hero">
 						<div>
@@ -296,44 +377,67 @@ const Sensitive: FC<IProps> = () => {
 						message={detail.enable ? "敏感词检测已开启，命中词会参与替换与统计。" : "敏感词检测当前关闭，保存后可立即启用。"}
 					/>
 
-					<Row gutter={[16, 16]}>
-						<Col xs={24} xl={14}>
-							<Card title="规则配置" bordered={false} className="sensitive-page__card">
-								<Form form={formRef} layout="vertical" initialValues={defaultFormValues}>
-									<Form.Item label="启用敏感词检测" name="enable" valuePropName="checked">
-										<Switch checkedChildren="开启" unCheckedChildren="关闭" />
-									</Form.Item>
+					<div className="sensitive-page__content">
+						<Card title="规则配置" bordered={false} className="sensitive-page__card">
+							<Form form={formRef} layout="vertical" initialValues={defaultFormValues}>
+								<Form.Item label="启用敏感词检测" name="enable" valuePropName="checked">
+									<Switch checkedChildren="开启" unCheckedChildren="关闭" />
+								</Form.Item>
+								<div className="sensitive-page__form-grid">
 									<Form.Item label="敏感词名单" name="denyWordsText" extra="保存时会自动去重并清理空白词条。">
 										<TextArea rows={10} showCount placeholder={"广告\n引流\n兼职"} />
 									</Form.Item>
 									<Form.Item label="白名单" name="allowWordsText" extra="命中后需要放行的词可加入白名单。">
-										<TextArea rows={8} showCount placeholder={"技术派\n开源项目"} />
+										<TextArea rows={10} showCount placeholder={"技术派\n开源项目"} />
 									</Form.Item>
-								</Form>
-							</Card>
-						</Col>
-						<Col xs={24} xl={10}>
-							<Card
-								title="命中统计"
-								bordered={false}
-								className="sensitive-page__card"
-								extra={<Tag color={hitTotal ? "processing" : "default"}>{hitTotal ? `共 ${hitTotal} 项` : "暂无命中"}</Tag>}
-							>
-								{hitTotal ? (
-									<Table
-										rowKey="word"
-										size="small"
-										columns={columns}
-										dataSource={hitWords}
-										pagination={hitPaginationInfo}
-										loading={hitLoading}
-									/>
-								) : (
-									<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无命中统计" />
-								)}
-							</Card>
-						</Col>
-					</Row>
+								</div>
+							</Form>
+						</Card>
+
+						<Card
+							title="命中统计"
+							bordered={false}
+							className="sensitive-page__card sensitive-page__table-card"
+							extra={
+								<Space size="small" wrap>
+									<Button
+										icon={<CheckOutlined />}
+										disabled={!selectedHitWords.length}
+										loading={batchAdding}
+										onClick={handleBatchAddToAllowList}
+									>
+										批量加入白名单
+									</Button>
+									<Button
+										danger
+										icon={<DeleteOutlined />}
+										disabled={!selectedHitWords.length}
+										loading={batchClearing}
+										onClick={handleBatchClearHitWords}
+									>
+										批量清理
+									</Button>
+									<Tag color={selectedHitWords.length ? "processing" : hitTotal ? "processing" : "default"}>
+										{selectedHitWords.length ? `已选 ${selectedHitWords.length} 项` : hitTotal ? `共 ${hitTotal} 项` : "暂无命中"}
+									</Tag>
+								</Space>
+							}
+						>
+							{hitTotal ? (
+								<Table
+									rowKey="word"
+									size="small"
+									rowSelection={hitRowSelection}
+									columns={columns}
+									dataSource={hitWords}
+									pagination={hitPaginationInfo}
+									loading={hitLoading || batchAdding || batchClearing}
+								/>
+							) : (
+								<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无命中统计" />
+							)}
+						</Card>
+					</div>
 				</ContentInterWrap>
 			</ContentWrap>
 		</div>
