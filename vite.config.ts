@@ -1,7 +1,7 @@
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import { visualizer } from "rollup-plugin-visualizer";
-import { ConfigEnv, defineConfig, loadEnv, UserConfig } from "vite";
+import { ConfigEnv, defineConfig, loadEnv, PluginOption, UserConfig } from "vite";
 import viteCompression from "vite-plugin-compression";
 import eslintPlugin from "vite-plugin-eslint";
 import { createHtmlPlugin } from "vite-plugin-html";
@@ -15,6 +15,48 @@ import { wrapperEnv } from "./src/utils/getEnv";
 export default defineConfig((mode: ConfigEnv): UserConfig => {
 	const env = loadEnv(mode.mode, process.cwd());
 	const viteEnv = wrapperEnv(env);
+	const plugins: PluginOption[] = [
+		react(),
+		createHtmlPlugin({
+			inject: {
+				data: {
+					title: viteEnv.VITE_GLOB_APP_TITLE
+				}
+			}
+		}),
+		createSvgIconsPlugin({
+			iconDirs: [resolve(process.cwd(), "src/assets/icons")],
+			symbolId: "icon-[dir]-[name]"
+		}),
+		createStyleImportPlugin({
+			libs: [
+				{
+					libraryName: "antd",
+					esModule: true,
+					resolveStyle: (name: any) => {
+						return `antd/es/${name}/style/index`;
+					}
+				}
+			]
+		}),
+		eslintPlugin()
+	];
+
+	if (viteEnv.VITE_REPORT) {
+		plugins.push(visualizer() as unknown as PluginOption);
+	}
+
+	if (viteEnv.VITE_BUILD_GZIP) {
+		plugins.push(
+			viteCompression({
+				verbose: true,
+				disable: false,
+				threshold: 10240,
+				algorithm: "gzip",
+				ext: ".gz"
+			}) as unknown as PluginOption
+		);
+	}
 
 	return {
 		// base: "/",
@@ -53,45 +95,7 @@ export default defineConfig((mode: ConfigEnv): UserConfig => {
 				}
 			}
 		},
-		plugins: [
-			react(),
-			createHtmlPlugin({
-				inject: {
-					data: {
-						title: viteEnv.VITE_GLOB_APP_TITLE
-					}
-				}
-			}),
-			// * 使用 svg 图标
-			createSvgIconsPlugin({
-				iconDirs: [resolve(process.cwd(), "src/assets/icons")],
-				symbolId: "icon-[dir]-[name]"
-			}),
-			createStyleImportPlugin({
-				libs: [
-					{
-						libraryName: "antd",
-						esModule: true,
-						resolveStyle: (name: any) => {
-							return `antd/es/${name}/style/index`;
-						}
-					}
-				]
-			}),
-			// * EsLint 报错信息显示在浏览器界面上
-			eslintPlugin(),
-			// * 是否生成包预览
-			viteEnv.VITE_REPORT && visualizer(),
-			// * gzip compress
-			viteEnv.VITE_BUILD_GZIP &&
-				viteCompression({
-					verbose: true,
-					disable: false,
-					threshold: 10240,
-					algorithm: "gzip",
-					ext: ".gz"
-				})
-		],
+		plugins,
 		esbuild: {
 			pure: viteEnv.VITE_DROP_CONSOLE ? ["console.log", "debugger"] : []
 		},

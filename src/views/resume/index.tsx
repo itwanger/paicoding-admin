@@ -96,15 +96,14 @@ const Resume: FC<IProps> = props => {
 					let filename = res.headers.get("Content-Disposition");
 					filename = `${uname}-${resumeName}`; //提 取文件名
 					console.log("下载文件并准备重命名", filename);
-					a.href = url;
-					a.download = filename; //给下载下来的文件起个名字
-					a.click();
-					window.URL.revokeObjectURL(url);
-					a = null;
+						a.href = url;
+						a.download = filename; //给下载下来的文件起个名字
+						a.click();
+						window.URL.revokeObjectURL(url);
 
-					await updateResumeStatus(item);
-				})
-			);
+						await updateResumeStatus(item);
+					})
+				);
 		}
 	};
 	// 下载附件之后，将状态更新为处理中

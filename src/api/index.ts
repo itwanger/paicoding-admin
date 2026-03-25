@@ -111,7 +111,7 @@ class RequestHttp {
 	}
 
 	// * 常用请求方法封装
-	down<T>(url: string, config: AxiosRequestConfig = {}): Promise<ResultData<T>> {
+	down<T>(url: string, config: AxiosRequestConfig = {}): Promise<AxiosResponse<T>> {
 		console.log("开始执行 get 请求，下载文件", url, config);
 		return this.service.get(url, config);
 	}

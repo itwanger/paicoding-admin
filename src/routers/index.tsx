@@ -4,7 +4,7 @@ import { RouteObject } from "@/routers/interface";
 import Login from "@/views/login/index";
 
 // * 导入所有router
-const metaRouters = import.meta.globEager("./modules/*.tsx");
+const metaRouters = import.meta.globEager("./modules/*.tsx") as Record<string, Record<string, RouteObject[]>>;
 console.log("metaRouters", metaRouters);
 
 // * 处理路由

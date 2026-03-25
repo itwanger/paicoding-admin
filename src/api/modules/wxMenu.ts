@@ -82,6 +82,7 @@ export interface WxMenuDetail {
 	aiPrompt?: string;
 	aiProvider?: string;
 	aiEnable?: boolean;
+	aiProviderOptions?: WxMenuAiProviderOption[];
 	clickReplies?: WxMenuClickReply[];
 	remoteJson?: string;
 	remoteMenu?: WxMenuTree;

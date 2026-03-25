@@ -1,0 +1,119 @@
+.sensitive-page {
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__hero {
+    --hero-glow-left: radial-gradient(circle at top left, rgb(255 215 64 / 16%), transparent 34%);
+    --hero-glow-right: radial-gradient(circle at right center, rgb(24 144 255 / 12%), transparent 30%);
+    --hero-base: linear-gradient(135deg, #fffaf0 0%, #fff 55%, #f6fbff 100%);
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px;
+    border: 1px solid #f0f0f0;
+    border-radius: 16px;
+    background: var(--hero-glow-left), var(--hero-glow-right), var(--hero-base);
+  }
+
+  &__eyebrow {
+    margin-bottom: 8px;
+    color: #d48806;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    margin: 0;
+    color: #1f1f1f;
+    font-size: 28px;
+    line-height: 1.2;
+  }
+
+  &__desc {
+    max-width: 720px;
+    margin: 12px 0 0;
+    color: #595959;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  &__stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 100px;
+    padding: 18px 20px;
+    border: 1px solid #f0f0f0;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+    box-shadow: 0 10px 30px rgb(31 35 41 / 4%);
+  }
+
+  &__stat-card span {
+    color: #8c8c8c;
+    font-size: 13px;
+  }
+
+  &__stat-card strong {
+    color: #262626;
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  &__card {
+    height: 100%;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgb(31 35 41 / 4%);
+  }
+
+  &__card .ant-card-body {
+    height: 100%;
+  }
+
+  &__hit-count {
+    color: #cf1322;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 1200px) {
+  .sensitive-page {
+    &__stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .sensitive-page {
+    &__hero {
+      padding: 18px;
+      border-radius: 12px;
+    }
+
+    &__title {
+      font-size: 24px;
+    }
+
+    &__stats {
+      grid-template-columns: 1fr;
+    }
+
+    &__stat-card {
+      min-height: auto;
+    }
+  }
+}

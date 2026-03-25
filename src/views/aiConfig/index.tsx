@@ -379,12 +379,13 @@ const AiConfigPage: FC = () => {
 									<Select
 										showSearch
 										mode="tags"
-										maxCount={1}
 										options={ZHIPU_MODEL_OPTIONS}
 										placeholder="请选择或输入智谱模型编码，例如：glm-5"
 										filterOption={(inputValue, option) =>
-											option?.value.toUpperCase().includes(inputValue.toUpperCase()) ||
-											option?.label?.toString().toUpperCase().includes(inputValue.toUpperCase())
+											Boolean(
+												option?.value.toUpperCase().includes(inputValue.toUpperCase()) ||
+													option?.label?.toString().toUpperCase().includes(inputValue.toUpperCase())
+											)
 										}
 									/>
 								</Form.Item>
@@ -402,12 +403,13 @@ const AiConfigPage: FC = () => {
 									<Select
 										showSearch
 										mode="tags"
-										maxCount={1}
 										options={ZHIPU_CODING_MODEL_OPTIONS}
 										placeholder="请选择或输入模型编码，例如：GLM-5"
 										filterOption={(inputValue, option) =>
-											option?.value.toUpperCase().includes(inputValue.toUpperCase()) ||
-											option?.label?.toString().toUpperCase().includes(inputValue.toUpperCase())
+											Boolean(
+												option?.value.toUpperCase().includes(inputValue.toUpperCase()) ||
+													option?.label?.toString().toUpperCase().includes(inputValue.toUpperCase())
+											)
 										}
 									/>
 								</Form.Item>

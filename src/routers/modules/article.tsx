@@ -32,6 +32,14 @@ const articleRouter: Array<RouteObject> = [
 							title: "文章编辑",
 							key: "/article/edit/index"
 						}
+					},
+					{
+						path: "/article/comment/index",
+						element: lazyLoad(React.lazy(() => import("@/views/comment/index"))),
+						meta: {
+							title: "评论管理",
+							key: "/article/comment/index"
+						}
 					}
 				]
 			}

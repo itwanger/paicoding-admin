@@ -36,3 +36,8 @@ export const resetAuthorWhiteApi = (authorId: number) => {
 export const updateAuthorWhiteApi = (authorId: number) => {
 	return http.get<Login.ResAuthButtons>(`${PORT1}/author/whitelist/add`, { authorId });
 };
+
+// 删除作者白名单
+export const delAuthorWhiteApi = (authorId: number) => {
+	return http.get<Login.ResAuthButtons>(`${PORT1}/author/whitelist/remove`, { authorId });
+};

@@ -27,7 +27,7 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { DataNode } from "antd/es/tree";
-import type { DropInfo } from "antd/es/tree";
+import type { TreeProps } from "antd/es/tree";
 
 import {
 	delColumnArticleApi,
@@ -119,7 +119,9 @@ const defaultInitForm: IFormType = {
 	shortTitle: "",
 	columnId: -1,
 	column: "",
-	sort: -1
+	sort: -1,
+	groupId: 0,
+	groupName: ""
 };
 
 // 查询表单默认值
@@ -315,9 +317,9 @@ const ColumnArticle: FC<IProps> = props => {
 		});
 	};
 
-	const handleUpdateChooseGroup = (item: MapItem) => {
+	const handleUpdateChooseGroup = (item: string | number | null) => {
 		if (currentArticle) {
-			currentArticle.groupId = item;
+			currentArticle.groupId = Number(item || 0);
 			setCurrentArticle(currentArticle);
 		}
 	};
@@ -416,8 +418,8 @@ const ColumnArticle: FC<IProps> = props => {
 		const { code } = status || {};
 		if (code === 0) {
 			// 请求成功的场景
-			const newList = (result as []).map((item: MapItem) => ({ ...item, key: item?.groupId }));
-			setGroupTree(newList as GroupData[]);
+			const newList = (result as GroupData[]).map((item: GroupData) => ({ ...item, key: item?.groupId }));
+			setGroupTree(newList as unknown as GroupData[]);
 		}
 	};
 
@@ -652,7 +654,7 @@ const ColumnArticle: FC<IProps> = props => {
 		}
 	};
 
-	const handleDrop = async (info: DropInfo) => {
+	const handleDrop: TreeProps["onDrop"] = async info => {
 		console.log("info", info);
 		const dropKey = info.node.key;
 		const dragKey = info.dragNode.key;
@@ -669,9 +671,9 @@ const ColumnArticle: FC<IProps> = props => {
 		// 解析groupId（从key中提取数字部分）
 		const getGroupId = (key: string) => parseInt(key.replace("group-", ""), 10);
 		// 目标节点
-		const targetGroupId = getGroupId(dropKey);
-		// 当前节点
-		const sourceGroupId = getGroupId(dragKey);
+			const targetGroupId = getGroupId(String(dropKey));
+			// 当前节点
+			const sourceGroupId = getGroupId(String(dragKey));
 
 		if (dropToGap) {
 			// 和目标节点是同一级
@@ -806,12 +808,12 @@ const ColumnArticle: FC<IProps> = props => {
 					onChange={handleChange}
 					treeData={(() => {
 						// 构建树形结构
-						const formatTreeNode = node => ({
+						const formatTreeNode = (node: GroupData): any => ({
 							...node,
 							key: node.groupId?.toString() || "",
 							value: node.groupId?.toString() || "",
 							label: node.title || "未命名分组",
-							children: node.children?.map(child => formatTreeNode(child))
+							children: node.children?.map((child: GroupData) => formatTreeNode(child))
 						});
 
 						return groupTree.map(group => formatTreeNode(group));
@@ -949,12 +951,12 @@ const ColumnArticle: FC<IProps> = props => {
 							onChange={handleUpdateChooseGroup}
 							treeData={(() => {
 								// 构建树形结构
-								const formatTreeNode = node => ({
+								const formatTreeNode = (node: GroupData): any => ({
 									...node,
 									key: node.groupId?.toString() || "",
 									value: node.groupId?.toString() || "",
 									label: node.title || "未命名分组",
-									children: node.children?.map(child => formatTreeNode(child))
+									children: node.children?.map((child: GroupData) => formatTreeNode(child))
 								});
 
 								return groupTree.map(group => formatTreeNode(group));

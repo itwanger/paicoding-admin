@@ -13,7 +13,7 @@ import "./index.scss";
 
 interface IProps {
 	handleChange: (e: any) => void;
-	handleFormRefChange: (e: any) => void;
+	handleFormRefChange?: (e: any) => void;
 	authorName:string;
 }
 
@@ -76,7 +76,7 @@ const AuthorSelect: FC<IProps> = ({
 				//@ts-ignore
 				const { key } = option || {};
 				handleChange({ author: key, authorName: value });
-				handleFormRefChange({author: key});
+				handleFormRefChange?.({author: key});
 			}}
 			// render
 			dropdownRender={menu => {

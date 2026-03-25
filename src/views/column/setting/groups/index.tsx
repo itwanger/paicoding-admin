@@ -5,15 +5,8 @@ import React from "react";
 import { connect } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DeleteOutlined, EditOutlined, EyeOutlined, ImportOutlined, PlusOutlined, SwapOutlined } from "@ant-design/icons";
-import type { DragEndEvent } from "@dnd-kit/core";
-import { DndContext, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { Button, Card, Descriptions, Drawer, Form, Input, InputNumber, message, Modal, Space, Table, Tooltip, Tree } from "antd";
-import type { ColumnsType } from "antd/es/table";
 import type { DataNode } from "antd/es/tree";
-import { group } from "console";
 
 import {
 	delColumnArticleApi,
@@ -26,10 +19,7 @@ import {
 	updateGroupApi
 } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
-import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
-import labelRouter from "@/routers/modules/resume";
 import { MapItem } from "@/typings/common";
-import { baseDomain } from "@/utils/util";
 import TableSelect from "@/views/column/article/components/tableselect/TableSelect";
 
 import "./index.scss";
@@ -115,8 +105,8 @@ const ColumnArticle: FC<IProps> = props => {
 		const { code } = status || {};
 		// @ts-ignore
 		if (code === 0) {
-			const newList = (result as []).map((item: MapItem) => ({ ...item, key: item?.groupId }));
-			setGroupTree(newList as GroupData[]);
+			const newList = (result as GroupData[]).map((item: GroupData) => ({ ...item, key: item?.groupId }));
+			setGroupTree(newList as unknown as GroupData[]);
 			console.log("获取到的groupTree:", groupTree);
 		}
 	};

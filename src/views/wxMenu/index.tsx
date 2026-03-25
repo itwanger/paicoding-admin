@@ -28,6 +28,7 @@ import {
 	syncWxMenuApi,
 	validateWxMenuApi,
 	WxMenuButton,
+	WxMenuAiProviderOption,
 	WxMenuClickReply,
 	WxMenuDetail,
 	WxMenuKeywordReply,
@@ -908,13 +909,15 @@ const WxMenuPage: FC = () => {
 			const serverAiEnable = Boolean(result.aiEnable ?? result.draftConfig?.aiEnable);
 			const localCache = readLocalDraftCache();
 			const detailProviderOptions = (result.aiProviderOptions || [])
-				.filter(item => item?.value && item.syncSupport !== false)
-				.map(item => ({
+				.filter((item: WxMenuAiProviderOption) => item?.value && item.syncSupport !== false)
+				.map((item: WxMenuAiProviderOption) => ({
 					label: item?.name || item?.value || "",
 					value: item?.value || ""
 				}))
-				.filter(item => item.value);
-			const syncEnabledSources = (aiConfigResult?.sources || []).filter(source => isSyncPreviewSupportedProvider(source));
+				.filter((item: AiProviderOptionViewModel) => item.value);
+			const syncEnabledSources = ((aiConfigResult?.sources || []) as AISourceValue[]).filter(source =>
+				isSyncPreviewSupportedProvider(source)
+			);
 			const fallbackProviderOptions = AI_PROVIDER_CATALOG.filter(item => syncEnabledSources.includes(item.value)).map(item => ({
 				label: item.label,
 				value: item.value
