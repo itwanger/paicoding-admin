@@ -3,11 +3,11 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { useNavigate } from "react-router";
 import { DeleteOutlined, EditOutlined, HighlightOutlined } from "@ant-design/icons";
-import { Avatar, Button, Form, Input, message, Modal, Select, Switch, Table, Tooltip } from "antd";
+import { Avatar, Button, Form, Input, message, Modal, Select, Space, Switch, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 
-import { delArticleApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
+import { delArticleApi, generateArticleSlugApi, getArticleListApi, operateArticleApi, updateArticleApi } from "@/api/modules/article";
 import { getColumnListApi } from "@/api/modules/column";
 import { ContentInterWrap, ContentWrap } from "@/components/common-wrap";
 import { initPagination, IPagination, UpdateEnum } from "@/enums/common";
@@ -76,14 +76,16 @@ const Article: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
 	// 编辑表单
 	const [form, setForm] = useState<IInitForm>(defaultInitForm);
-	const [urlSlugValidating, setUrlSlugValidating] = useState<boolean>(false);
-	const [urlSlugError, setUrlSlugError] = useState<string>("");
+	const [slugGenerating, setSlugGenerating] = useState<boolean>(false);
 	// 查询表单
 	const [searchForm, setSearchForm] = useState<ISearchForm>(defaultSearchForm);
 	// 弹窗
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	// 列表数据
 	const [tableData, setTableData] = useState<DataType[]>([]);
+	// 表格选中项
+	const [selectedRowKeys, setSelectedRowKeys] = useState<Array<string | number>>([]);
+	const [batchDeleting, setBatchDeleting] = useState<boolean>(false);
 	// 专栏列表
 	const [columnList, setColumnList] = useState<Array<{ label: string; value: number }>>([]);
 	// 刷新函数
@@ -113,10 +115,14 @@ const Article: FC<IProps> = props => {
 	const onSure = useCallback(() => {
 		setQuery(prev => prev + 1);
 	}, []);
+
+	const clearSelection = () => {
+		setSelectedRowKeys([]);
+	};
 	
 	// 编辑表单值改变
 	const handleChange = (item: MapItem) => {
-		setForm({ ...form, ...item });
+		setForm(prev => ({ ...prev, ...item }));
 	};
 
 	// 查询表单值改变
@@ -130,10 +136,40 @@ const Article: FC<IProps> = props => {
 	const handleSearch = () => {
 		// 目前是根据文章标题搜索，后面需要加上其他条件
 		console.log("查询条件", searchForm);
+		clearSelection();
 		// 查询的时候重置分页
 		setPagination({ current: 1, pageSize });
 		// 重新请求数据
 		onSure();
+	};
+
+	const deleteArticles = async (articleIds: number[]) => {
+		const results = [];
+		for (const id of articleIds) {
+			try {
+				const { status } = await delArticleApi(id);
+				results.push({
+					articleId: id,
+					success: status?.code === 0,
+					msg: status?.msg || ""
+				});
+			} catch (error) {
+				console.log("删除文章失败", error);
+				results.push({
+					articleId: id,
+					success: false,
+					msg: ""
+				});
+			}
+		}
+
+		const failedItems = results.filter(item => !item.success);
+		return {
+			successCount: results.length - failedItems.length,
+			failCount: failedItems.length,
+			failedIds: failedItems.map(item => item.articleId),
+			firstError: failedItems[0]?.msg || ""
+		};
 	};
 
 	// 删除
@@ -144,13 +180,56 @@ const Article: FC<IProps> = props => {
 			maskClosable: true,
 			closable: true,
 			onOk: async () => {
-				const { status } = await delArticleApi(articleId);
-				const { code, msg } = status || {};
-				if (code === 0) {
+				const { successCount, firstError } = await deleteArticles([articleId]);
+				if (successCount === 1) {
 					message.success("删除成功");
+					setSelectedRowKeys(prev => prev.filter(key => Number(key) !== articleId));
 					onSure();
 				} else {
-					message.error(msg || "删除失败");
+					message.error(firstError || "删除失败");
+				}
+			}
+		});
+	};
+
+	const handleBatchDel = () => {
+		if (!selectedRowKeys.length) {
+			message.warning("请先选择要删除的文章");
+			return;
+		}
+
+		Modal.confirm({
+			title: "确认批量删除选中的文章吗",
+			content: `本次将删除 ${selectedRowKeys.length} 篇文章，删除后无法恢复，请谨慎操作！`,
+			okText: "确认删除",
+			okButtonProps: { danger: true },
+			cancelText: "取消",
+			onOk: async () => {
+				setBatchDeleting(true);
+				try {
+					const articleIds = selectedRowKeys.map(key => Number(key));
+					const { successCount, failCount, failedIds, firstError } = await deleteArticles(articleIds);
+					if (successCount === articleIds.length) {
+						message.success(`成功删除 ${successCount} 篇文章`);
+						clearSelection();
+						onSure();
+						return;
+					}
+
+					if (successCount > 0) {
+						setSelectedRowKeys(failedIds);
+						message.warning(
+							firstError
+								? `已删除 ${successCount} 篇文章，${failCount} 篇删除失败：${firstError}`
+								: `已删除 ${successCount} 篇文章，${failCount} 篇删除失败`
+						);
+						onSure();
+						return;
+					}
+
+					message.error(firstError || "批量删除失败");
+				} finally {
+					setBatchDeleting(false);
 				}
 			}
 		});
@@ -208,7 +287,12 @@ const Article: FC<IProps> = props => {
 	
 		// 从 form 中取出 status
 		const { status } = form;
-		const newValues = { ...values, articleId, status };
+		const newValues = {
+			...values,
+			articleId,
+			status,
+			urlSlug: values.urlSlug?.trim() ?? ""
+		};
 		console.log("编辑 时提交的 newValues:", newValues);
 		
 		const { status: successStatus } = (await updateArticleApi(newValues)) || {};
@@ -219,6 +303,33 @@ const Article: FC<IProps> = props => {
 			onSure();
 		} else {
 			message.error(msg || "编辑失败");
+		}
+	};
+
+	const handleGenerateUrlSlug = async () => {
+		const values = formRef.getFieldsValue(["title", "shortTitle"]);
+		const title = values.title?.trim();
+		const shortTitle = values.shortTitle?.trim();
+		if (!title && !shortTitle) {
+			message.warning("请先填写标题或教程名");
+			return;
+		}
+
+		setSlugGenerating(true);
+		try {
+			const { result } = await generateArticleSlugApi({ title, shortTitle });
+			if (!result) {
+				message.warning("没有生成可用的语义 URL");
+				return;
+			}
+
+			formRef.setFieldsValue({ urlSlug: result });
+			handleChange({ urlSlug: result });
+			message.success("语义 URL 生成成功");
+		} catch (error) {
+			console.log("生成语义 URL 失败", error);
+		} finally {
+			setSlugGenerating(false);
 		}
 	};
 
@@ -262,6 +373,14 @@ const Article: FC<IProps> = props => {
 		};
 		getColumnList();
 	}, []);
+
+	const rowSelection = {
+		selectedRowKeys,
+		preserveSelectedRowKeys: true,
+		onChange: (keys: Array<string | number>) => {
+			setSelectedRowKeys(keys);
+		}
+	};
 
 	// 表头设置
 	const columns: ColumnsType<DataType> = [
@@ -390,9 +509,13 @@ const Article: FC<IProps> = props => {
 								style={{ marginRight: "10px" }}
 								onClick={() => {
 									setIsModalOpen(true);
-									handleChange({ ...item });
+									handleChange({
+										...item,
+										urlSlug: item.urlSlug || ""
+									});
 									formRef.setFieldsValue({
-										...item
+										...item,
+										urlSlug: item.urlSlug || ""
 									});
 								}}
 							></Button>
@@ -427,7 +550,7 @@ const Article: FC<IProps> = props => {
 				<Input
 					allowClear
 					onChange={e => {
-						handleChange({ tag: e.target.value });
+						handleChange({ title: e.target.value });
 					}}
 				/>
 			</Form.Item>
@@ -440,24 +563,26 @@ const Article: FC<IProps> = props => {
 				<Input
 					allowClear
 					onChange={e => {
-						handleChange({ tag: e.target.value });
+						handleChange({ shortTitle: e.target.value });
 					}}
 				/>
 			</Form.Item>
-			<Form.Item
-				label="语义 URL"
-				name="urlSlug"
-				tooltip="用于 SEO 友好的文章链接,例如:my-article-title"
-				rules={[{ required: false }]}
-			>
-				<Input
-					allowClear
-					placeholder="可选,留空则使用默认 ID"
-					onChange={e => {
-						const value = e.target.value;
-						handleChange({ urlSlug: value });
-					}}
-				/>
+			<Form.Item label="语义 URL" tooltip="用于 SEO 友好的文章链接,例如:my-article-title">
+				<Space.Compact style={{ width: "100%" }}>
+					<Form.Item name="urlSlug" noStyle rules={[{ required: false }]}>
+						<Input
+							allowClear
+							placeholder="可选,留空则使用默认 ID"
+							onChange={e => {
+								const value = e.target.value;
+								handleChange({ urlSlug: value });
+							}}
+						/>
+					</Form.Item>
+					<Button loading={slugGenerating} onClick={handleGenerateUrlSlug}>
+						生成
+					</Button>
+				</Space.Compact>
 			</Form.Item>
 		</Form>
 	);
@@ -476,7 +601,25 @@ const Article: FC<IProps> = props => {
 				/>
 				{/* 表格 */}
 				<ContentInterWrap>
-					<Table columns={columns} dataSource={tableData} pagination={paginationInfo} />
+					<div
+						style={{
+							display: "flex",
+							justifyContent: "space-between",
+							alignItems: "center",
+							marginBottom: "16px"
+						}}
+					>
+						<div>{selectedRowKeys.length ? `已选择 ${selectedRowKeys.length} 篇文章` : "请选择要批量操作的文章"}</div>
+						<Space>
+							<Button disabled={!selectedRowKeys.length} onClick={clearSelection}>
+								清空选择
+							</Button>
+							<Button danger type="primary" disabled={!selectedRowKeys.length} loading={batchDeleting} onClick={handleBatchDel}>
+								批量删除
+							</Button>
+						</Space>
+					</div>
+					<Table rowSelection={rowSelection} columns={columns} dataSource={tableData} pagination={paginationInfo} />
 				</ContentInterWrap>
 			</ContentWrap>
 			{/* 弹窗 */}

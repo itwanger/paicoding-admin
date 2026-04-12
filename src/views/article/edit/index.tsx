@@ -10,7 +10,7 @@ import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
 import math from "@bytemd/plugin-math";
 import { Editor } from "@bytemd/react";
-import { Button, Drawer, Form, Input, message, Modal, Radio, Select, Space, UploadFile } from "antd";
+import { Button, Drawer, Form, Input, InputNumber, message, Modal, Radio, Select, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import zhHans from "bytemd/locales/zh_Hans.json";
 import { throttle } from "lodash";
@@ -43,17 +43,17 @@ const imageAltPlugin = () => ({
 
 			// 检查是否已经添加过标题
 			const parent = imgElement.parentElement;
-			if (parent && parent.classList.contains('img-with-caption')) {
+			if (parent && parent.classList.contains("img-with-caption")) {
 				return;
 			}
 
 			// 创建包装容器
-			const wrapper = document.createElement('span');
-			wrapper.className = 'img-with-caption';
+			const wrapper = document.createElement("span");
+			wrapper.className = "img-with-caption";
 
 			// 创建标题元素
-			const caption = document.createElement('span');
-			caption.className = 'img-caption';
+			const caption = document.createElement("span");
+			caption.className = "img-caption";
 			caption.textContent = alt;
 
 			// 替换图片
@@ -66,23 +66,23 @@ const imageAltPlugin = () => ({
 
 // 自定义插件：为图片添加可移动和缩放功能
 const imageMoveablePlugin = (
-	setTarget: (el: HTMLElement | null) => void, 
+	setTarget: (el: HTMLElement | null) => void,
 	onScroll: () => void,
 	setContainer: (el: HTMLElement | null) => void,
-	getScrollInfo: () => { pos: number, active: boolean, clear: () => void },
+	getScrollInfo: () => { pos: number; active: boolean; clear: () => void },
 	setEditor: (editor: any) => void,
-	getImageSizeMap: () => Map<string, { width: number, height: number } | 'reset'>
+	getImageSizeMap: () => Map<string, { width: number; height: number } | "reset">
 ) => ({
 	editorEffect({ editor }: { editor: any }) {
 		setEditor(editor);
 	},
 	viewerEffect({ markdownBody }: { markdownBody: HTMLElement }) {
 		const scrollContainer = markdownBody.parentElement;
-		
+
 		// 1. 应用缓存的图片尺寸
 		const sizeMap = getImageSizeMap();
-		const images = markdownBody.querySelectorAll('img');
-		
+		const images = markdownBody.querySelectorAll("img");
+
 		const resolveUrl = (urlStr: string) => {
 			if (!urlStr) return "";
 			try {
@@ -94,14 +94,14 @@ const imageMoveablePlugin = (
 		};
 
 		images.forEach(img => {
-			const src = img.getAttribute('src');
+			const src = img.getAttribute("src");
 			if (!src) return;
 			const fullUrl = resolveUrl(src);
 			const state = sizeMap.get(fullUrl);
-			if (state === 'reset') {
+			if (state === "reset") {
 				// 强制清除样式（针对已经在源码中是 <img> 标签的情况）
-				img.style.width = '';
-				img.style.height = '';
+				img.style.width = "";
+				img.style.height = "";
 			} else if (state) {
 				img.style.width = `${state.width}px`;
 				img.style.height = `${state.height}px`;
@@ -123,7 +123,7 @@ const imageMoveablePlugin = (
 
 		const handleClick = (e: MouseEvent) => {
 			const target = e.target as HTMLElement;
-			if (target.tagName === 'IMG') {
+			if (target.tagName === "IMG") {
 				e.preventDefault();
 				e.stopPropagation();
 				setTarget(target);
@@ -144,15 +144,15 @@ const imageMoveablePlugin = (
 		// ByteMD 预览区的滚动容器通常是 markdownBody 的父元素 .bytemd-preview
 		setContainer(scrollContainer);
 
-		markdownBody.addEventListener('click', handleClick);
+		markdownBody.addEventListener("click", handleClick);
 		if (scrollContainer) {
-			scrollContainer.addEventListener('scroll', handleScroll);
+			scrollContainer.addEventListener("scroll", handleScroll);
 		}
 
 		return () => {
-			markdownBody.removeEventListener('click', handleClick);
+			markdownBody.removeEventListener("click", handleClick);
 			if (scrollContainer) {
-				scrollContainer.removeEventListener('scroll', handleScroll);
+				scrollContainer.removeEventListener("scroll", handleScroll);
 			}
 		};
 	}
@@ -176,26 +176,26 @@ const RestoreAble = {
 					top: `${pos2[1]}px`,
 					transform: "translate(-100%, -120%)", // 右侧对齐图片右上角，且位于上方
 					zIndex: 10,
-					display: 'flex',
-					gap: '8px'
+					display: "flex",
+					gap: "8px"
 				}}
 			>
 				<Button
 					size="small"
 					type="primary"
 					icon={<CopyOutlined />}
-					style={{ 
-						fontSize: '12px', 
-						height: '24px', 
-						padding: '0 8px',
-						boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-						border: 'none',
-						display: 'flex',
-						alignItems: 'center',
-						gap: '4px',
-						backgroundColor: '#faad14' // 使用橙色区分复制功能
+					style={{
+						fontSize: "12px",
+						height: "24px",
+						padding: "0 8px",
+						boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+						border: "none",
+						display: "flex",
+						alignItems: "center",
+						gap: "4px",
+						backgroundColor: "#faad14" // 使用橙色区分复制功能
 					}}
-					onClick={(e) => {
+					onClick={e => {
 						e.stopPropagation();
 						copyImageToClipboard(target);
 					}}
@@ -206,18 +206,18 @@ const RestoreAble = {
 					size="small"
 					type="primary"
 					icon={<SwapOutlined />}
-					style={{ 
-						fontSize: '12px', 
-						height: '24px', 
-						padding: '0 8px',
-						boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-						border: 'none',
-						display: 'flex',
-						alignItems: 'center',
-						gap: '4px',
-						backgroundColor: '#52c41a' // 使用绿色区分替换功能
+					style={{
+						fontSize: "12px",
+						height: "24px",
+						padding: "0 8px",
+						boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+						border: "none",
+						display: "flex",
+						alignItems: "center",
+						gap: "4px",
+						backgroundColor: "#52c41a" // 使用绿色区分替换功能
 					}}
-					onClick={(e) => {
+					onClick={e => {
 						e.stopPropagation();
 						replaceImageInMarkdown(target);
 					}}
@@ -228,17 +228,17 @@ const RestoreAble = {
 					size="small"
 					type="primary"
 					icon={<ReloadOutlined />}
-					style={{ 
-						fontSize: '12px', 
-						height: '24px', 
-						padding: '0 8px',
-						boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-						border: 'none',
-						display: 'flex',
-						alignItems: 'center',
-						gap: '4px'
+					style={{
+						fontSize: "12px",
+						height: "24px",
+						padding: "0 8px",
+						boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+						border: "none",
+						display: "flex",
+						alignItems: "center",
+						gap: "4px"
 					}}
-					onClick={(e) => {
+					onClick={e => {
 						e.stopPropagation();
 						resetImageInMarkdown(target);
 					}}
@@ -251,21 +251,21 @@ const RestoreAble = {
 } as const;
 
 const plugins = (
-	setTarget: (el: HTMLElement | null) => void, 
+	setTarget: (el: HTMLElement | null) => void,
 	onScroll: () => void,
 	setContainer: (el: HTMLElement | null) => void,
-	getScrollInfo: () => { pos: number, active: boolean, clear: () => void },
+	getScrollInfo: () => { pos: number; active: boolean; clear: () => void },
 	setEditor: (editor: any) => void,
-	getImageSizeMap: () => Map<string, { width: number, height: number } | 'reset'>
+	getImageSizeMap: () => Map<string, { width: number; height: number } | "reset">
 ) => [
 	gfm(),
 	highlight(),
 	gemoji(),
 	math(),
 	imageAltPlugin(),
-	imageMoveablePlugin(setTarget, onScroll, setContainer, getScrollInfo, setEditor, getImageSizeMap),
+	imageMoveablePlugin(setTarget, onScroll, setContainer, getScrollInfo, setEditor, getImageSizeMap)
 	// Add more plugins here
-]
+];
 
 interface IProps {}
 
@@ -275,35 +275,55 @@ interface TagValue {
 }
 
 interface ImageInfo {
-  img: string;
-  alt: string;
-	src: string; 
+	img: string;
+	alt: string;
+	src: string;
 	index: number; // 图片在文本中的位置
 }
 
 export interface IFormType {
-	articleId: number;// 文章id
+	articleId: number; // 文章id
 	status: number; // 文章状态
 	content: string; // 文章内容
 	cover: string; // 封面
 	tagIds: number[]; // 标签
 	shortTitle: string; // 短标题
+	readType: number; // 阅读类型
+	payWay: string; // 付费方式
+	payAmount: number; // 付费金额（元）
 	title?: string;
 	summary?: string;
 	categoryId?: number;
 }
 
 const defaultInitForm: IFormType = {
-	articleId: 0,// 后台默认为 0
+	articleId: 0, // 后台默认为 0
 	status: 0,
 	content: "",
 	cover: "",
 	tagIds: [],
 	shortTitle: "",
-}
+	readType: 0,
+	payWay: "wx_native",
+	payAmount: 0.99
+};
+
+const ArticleReadTypeList = [
+	{ label: "全部可读", value: 0 },
+	{ label: "登录阅读", value: 1 },
+	{ label: "付费阅读", value: 4 },
+	{ label: "星球专享", value: 3 }
+];
+
+const PayWayList = [
+	{ label: "个人收款码", value: "email" },
+	{ label: "统一微信支付", value: "wx_native" }
+];
 
 const ArticleEdit: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
+	const selectedReadType = Form.useWatch("readType", formRef) ?? defaultInitForm.readType;
+	const selectedPayWay = Form.useWatch("payWay", formRef) ?? defaultInitForm.payWay;
 
 	const [form, setForm] = useState<IFormType>(defaultInitForm);
 
@@ -314,7 +334,7 @@ const ArticleEdit: FC<IProps> = props => {
 	const editorRef = useRef<any>(null);
 
 	// 缓存待提交的图片尺寸变更：Map<fullUrl, {width, height} | 'reset'>
-	const imageSizeMapRef = useRef<Map<string, { width: number, height: number } | 'reset'>>(new Map());
+	const imageSizeMapRef = useRef<Map<string, { width: number; height: number } | "reset">>(new Map());
 
 	// 记录滚动位置，防止内容更新时预览区跳回顶部
 	const scrollPosRef = useRef<number>(0);
@@ -333,11 +353,16 @@ const ArticleEdit: FC<IProps> = props => {
 	}, [updateMoveable]);
 
 	// 封装获取滚动位置的逻辑给插件使用
-	const getScrollInfo = useCallback(() => ({
-		pos: scrollPosRef.current,
-		active: isUpdatingContentRef.current,
-		clear: () => { isUpdatingContentRef.current = false; }
-	}), []);
+	const getScrollInfo = useCallback(
+		() => ({
+			pos: scrollPosRef.current,
+			active: isUpdatingContentRef.current,
+			clear: () => {
+				isUpdatingContentRef.current = false;
+			}
+		}),
+		[]
+	);
 
 	const setEditor = useCallback((editor: any) => {
 		editorRef.current = editor;
@@ -361,9 +386,9 @@ const ArticleEdit: FC<IProps> = props => {
 	}, [getScrollInfo, setEditor, getImageSizeMap]); // 没有任何依赖，只创建一次
 
 	useEffect(() => {
-		window.addEventListener('resize', updateMoveable);
+		window.addEventListener("resize", updateMoveable);
 		return () => {
-			window.removeEventListener('resize', updateMoveable);
+			window.removeEventListener("resize", updateMoveable);
 		};
 	}, [updateMoveable]);
 
@@ -378,7 +403,7 @@ const ArticleEdit: FC<IProps> = props => {
 	}, [target, updateMoveable]);
 
 	// 文章内容
-	const [content, setContent] = useState<string>('');
+	const [content, setContent] = useState<string>("");
 
 	// 抽屉
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
@@ -403,14 +428,20 @@ const ArticleEdit: FC<IProps> = props => {
 
 	// 自动保存 Key
 	const draftKey = useMemo(() => {
-		return articleId ? `ARTICLE_DRAFT_${articleId}` : 'ARTICLE_DRAFT_NEW';
+		return articleId ? `ARTICLE_DRAFT_${articleId}` : "ARTICLE_DRAFT_NEW";
 	}, [articleId]);
 
 	// 自动保存函数 (10s 节流)
-	const autoSave = useRef(throttle((data) => {
-		localSet(draftKey, { ...data, timestamp: Date.now() });
-		console.log('自动保存草稿成功', new Date().toLocaleTimeString());
-	}, 10000, { leading: false, trailing: true }));
+	const autoSave = useRef(
+		throttle(
+			data => {
+				localSet(draftKey, { ...data, timestamp: Date.now() });
+				console.log("自动保存草稿成功", new Date().toLocaleTimeString());
+			},
+			10000,
+			{ leading: false, trailing: true }
+		)
+	);
 
 	// 监听变化并触发自动保存
 	useEffect(() => {
@@ -419,7 +450,7 @@ const ArticleEdit: FC<IProps> = props => {
 			autoSave.current({
 				...form,
 				...currentFormValues,
-				content,
+				content
 			});
 		}
 	}, [content, form, formRef]);
@@ -432,25 +463,27 @@ const ArticleEdit: FC<IProps> = props => {
 		if (draft) {
 			const draftTime = new Date(draft.timestamp).toLocaleString();
 			Modal.confirm({
-				title: '发现未保存的草稿',
+				title: "发现未保存的草稿",
 				content: `检测到您在 ${draftTime} 有未保存的内容，是否恢复？`,
-				okText: '恢复',
-				cancelText: '丢弃',
+				okText: "恢复",
+				cancelText: "丢弃",
 				onOk: () => {
 					setContent(draft.content);
 					setForm(prev => ({ ...prev, ...draft }));
 					formRef.setFieldsValue(draft);
 					if (draft.cover) {
 						let coverUrl = getCompleteUrl(draft.cover);
-						setCoverList([{
-							uid: "-1",
-							name: coverName,
-							status: "done",
-							thumbUrl: coverUrl,
-							url: coverUrl
-						}]);
+						setCoverList([
+							{
+								uid: "-1",
+								name: coverName,
+								status: "done",
+								thumbUrl: coverUrl,
+								url: coverUrl
+							}
+						]);
 					}
-					message.success('已恢复草稿');
+					message.success("已恢复草稿");
 				},
 				onCancel: () => {
 					localRemove(draftKey);
@@ -483,7 +516,7 @@ const ArticleEdit: FC<IProps> = props => {
 
 	// 更新 Markdown 中的图片尺寸 (Lazy Update 策略)
 	const updateImageInMarkdown = (imgElement: HTMLImageElement, width: number, height: number) => {
-		const src = imgElement.getAttribute('src');
+		const src = imgElement.getAttribute("src");
 		if (!src) return;
 
 		// 辅助函数：归一化路径
@@ -512,17 +545,17 @@ const ArticleEdit: FC<IProps> = props => {
 
 	// 复原图片尺寸
 	const resetImageInMarkdown = (imgElement: HTMLImageElement) => {
-		const src = imgElement.getAttribute('src');
+		const src = imgElement.getAttribute("src");
 		if (!src) return;
 
 		const fullUrl = resolveUrl(src);
 
 		// 1. 在缓存中标记为 'reset'，而不是直接删除，这样批量更新时能知道要还原
-		imageSizeMapRef.current.set(fullUrl, 'reset');
+		imageSizeMapRef.current.set(fullUrl, "reset");
 
 		// 2. 清除 DOM 样式
-		imgElement.style.width = '';
-		imgElement.style.height = '';
+		imgElement.style.width = "";
+		imgElement.style.height = "";
 
 		// 3. 隐藏 Moveable
 		setTarget(null);
@@ -531,10 +564,10 @@ const ArticleEdit: FC<IProps> = props => {
 
 	// 替换图片功能 (立即更新策略)
 	const replaceImageInMarkdown = (imgElement: HTMLImageElement) => {
-		const input = document.createElement('input');
-		input.type = 'file';
-		input.accept = 'image/*';
-		input.onchange = async (e) => {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = "image/*";
+		input.onchange = async e => {
 			const file = (e.target as HTMLInputElement).files?.[0];
 			if (!file) return;
 
@@ -547,23 +580,23 @@ const ArticleEdit: FC<IProps> = props => {
 			const formData = new FormData();
 			formData.append("image", file);
 
-			const hide = message.loading('正在上传新图片...', 0);
+			const hide = message.loading("正在上传新图片...", 0);
 			try {
 				// 发起上传请求
 				const response = await uploadImgApi(formData);
 				hide();
-				
+
 				// 这里的 response 已经是拦截器处理后的 data (ResultData)
 				const { status, result } = (response as any) || {};
-				
+
 				if (status?.code === 0 && result?.imagePath) {
-					const oldSrc = imgElement.getAttribute('src');
+					const oldSrc = imgElement.getAttribute("src");
 					const newSrc = result.imagePath;
 					if (!oldSrc) return;
 
 					const oldFullUrl = resolveUrl(oldSrc);
-					const alt = imgElement.getAttribute('alt') || '';
-					
+					const alt = imgElement.getAttribute("alt") || "";
+
 					// 记录预览区当前滚动位置（用于预览区同步）
 					if (container) {
 						scrollPosRef.current = container.scrollTop;
@@ -575,8 +608,9 @@ const ArticleEdit: FC<IProps> = props => {
 						try {
 							// 更加鲁棒的内容获取方式
 							const state = editorRef.current.state;
-							const doc = state?.doc?.toString() || (typeof editorRef.current.getValue === 'function' ? editorRef.current.getValue() : "");
-							
+							const doc =
+								state?.doc?.toString() || (typeof editorRef.current.getValue === "function" ? editorRef.current.getValue() : "");
+
 							if (doc) {
 								// 1. 尝试匹配 Markdown 语法 ![alt](src)
 								const mdImgRegex = /!\[(.*?)\]\((.*?)\)/g;
@@ -587,15 +621,15 @@ const ArticleEdit: FC<IProps> = props => {
 									if (resolveUrl(match[2]) === oldFullUrl) {
 										const mdAlt = match[1] || alt;
 										const replacement = `![${mdAlt}](${newSrc})`;
-										
+
 										// 检查是否支持 CM6 的 dispatch
-										if (typeof editorRef.current.dispatch === 'function') {
+										if (typeof editorRef.current.dispatch === "function") {
 											editorRef.current.dispatch({
 												changes: { from: match.index, to: match.index + (match[0]?.length || 0), insert: replacement },
 												selection: { anchor: match.index },
 												scrollIntoView: true
 											});
-										} else if (typeof editorRef.current.replaceRange === 'function') {
+										} else if (typeof editorRef.current.replaceRange === "function") {
 											// 兼容 CM5
 											const posFrom = editorRef.current.posFromIndex(match.index);
 											const posTo = editorRef.current.posFromIndex(match.index + (match[0]?.length || 0));
@@ -615,14 +649,14 @@ const ArticleEdit: FC<IProps> = props => {
 											const altMatch = match[0].match(/alt=["'](.*?)["']/);
 											const currentAlt = altMatch ? altMatch[1] : alt;
 											const replacement = `<img src="${newSrc}" alt="${currentAlt}" />`;
-											
-											if (typeof editorRef.current.dispatch === 'function') {
+
+											if (typeof editorRef.current.dispatch === "function") {
 												editorRef.current.dispatch({
 													changes: { from: match.index, to: match.index + (match[0]?.length || 0), insert: replacement },
 													selection: { anchor: match.index },
 													scrollIntoView: true
 												});
-											} else if (typeof editorRef.current.replaceRange === 'function') {
+											} else if (typeof editorRef.current.replaceRange === "function") {
 												const posFrom = editorRef.current.posFromIndex(match.index);
 												const posTo = editorRef.current.posFromIndex(match.index + (match[0]?.length || 0));
 												editorRef.current.replaceRange(replacement, posFrom, posTo);
@@ -658,7 +692,8 @@ const ArticleEdit: FC<IProps> = props => {
 							if (resolveUrl(match[2]) === oldFullUrl) {
 								const mdAlt = match[1] || alt;
 								const replacement = `![${mdAlt}](${newSrc})`;
-								newContent = prevContent.substring(0, match.index) + replacement + prevContent.substring(match.index + match[0].length);
+								newContent =
+									prevContent.substring(0, match.index) + replacement + prevContent.substring(match.index + match[0].length);
 								found = true;
 								break;
 							}
@@ -671,7 +706,8 @@ const ArticleEdit: FC<IProps> = props => {
 									const altMatch = match[0].match(/alt=["'](.*?)["']/);
 									const currentAlt = altMatch ? altMatch[1] : alt;
 									const replacement = `<img src="${newSrc}" alt="${currentAlt}" />`;
-									newContent = prevContent.substring(0, match.index) + replacement + prevContent.substring(match.index + match[0].length);
+									newContent =
+										prevContent.substring(0, match.index) + replacement + prevContent.substring(match.index + match[0].length);
 									found = true;
 									break;
 								}
@@ -709,12 +745,12 @@ const ArticleEdit: FC<IProps> = props => {
 
 	// 复制图片
 	const copyImageToClipboard = async (imgElement: HTMLImageElement) => {
-		const src = imgElement.getAttribute('src');
+		const src = imgElement.getAttribute("src");
 		if (!src) return;
 		const fullUrl = resolveUrl(src);
-		
-		const hide = message.loading('正在处理图片...', 0);
-		
+
+		const hide = message.loading("正在处理图片...", 0);
+
 		try {
 			// 使用 Canvas 方式将图片转换为 PNG Blob
 			// 创建一个 Promise，该 Promise 会解析为图片的 Blob 数据
@@ -723,31 +759,31 @@ const ArticleEdit: FC<IProps> = props => {
 				// 关键：设置 crossOrigin 为 Anonymous 以请求跨域访问权限
 				img.crossOrigin = "Anonymous";
 				// 添加时间戳以避开浏览器缓存，确保获取到最新的 CORS 响应头
-				img.src = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}t=${new Date().getTime()}`;
-				
+				img.src = `${fullUrl}${fullUrl.includes("?") ? "&" : "?"}t=${new Date().getTime()}`;
+
 				img.onload = () => {
 					try {
-						const canvas = document.createElement('canvas');
+						const canvas = document.createElement("canvas");
 						canvas.width = img.naturalWidth;
 						canvas.height = img.naturalHeight;
-						const ctx = canvas.getContext('2d');
+						const ctx = canvas.getContext("2d");
 						if (!ctx) {
-							reject(new Error('Canvas context failed'));
+							reject(new Error("Canvas context failed"));
 							return;
 						}
 						ctx.drawImage(img, 0, 0);
 						// 导出为 PNG，这是剪贴板最通用的格式
-						canvas.toBlob((b) => {
+						canvas.toBlob(b => {
 							if (b) resolve(b);
-							else reject(new Error('Blob creation failed'));
-						}, 'image/png');
+							else reject(new Error("Blob creation failed"));
+						}, "image/png");
 					} catch (e) {
 						reject(e);
 					}
 				};
-				
+
 				img.onerror = () => {
-					reject(new Error('Image load failed (CORS or Network)'));
+					reject(new Error("Image load failed (CORS or Network)"));
 				};
 			});
 
@@ -755,7 +791,7 @@ const ArticleEdit: FC<IProps> = props => {
 				// 尝试 Safari/新版 Chrome 的 Promise 写法
 				// 直接将 Promise 传递给 ClipboardItem，确保在用户点击事件中立即调用 write
 				// @ts-ignore
-				const item = new ClipboardItem({ 'image/png': blobPromise });
+				const item = new ClipboardItem({ "image/png": blobPromise });
 				await navigator.clipboard.write([item]);
 			} catch (e: any) {
 				// 兼容性降级：如果浏览器不支持 Promise 构造 (旧版 Chrome/Firefox 会报 TypeError)
@@ -763,16 +799,16 @@ const ArticleEdit: FC<IProps> = props => {
 				console.warn("ClipboardItem Promise approach failed, falling back to Blob...", e);
 				const blob = await blobPromise;
 				// @ts-ignore
-				const item = new ClipboardItem({ 'image/png': blob });
+				const item = new ClipboardItem({ "image/png": blob });
 				await navigator.clipboard.write([item]);
 			}
-			
+
 			hide();
 			message.success("图片已复制到剪贴板");
 		} catch (err) {
 			hide();
-			console.error('Copy image failed:', err);
-			
+			console.error("Copy image failed:", err);
+
 			// 降级处理：如果因为跨域等原因失败，自动回退到复制链接
 			try {
 				await navigator.clipboard.writeText(fullUrl);
@@ -783,7 +819,7 @@ const ArticleEdit: FC<IProps> = props => {
 			} catch (clipboardErr) {
 				// 如果连链接都复制失败（极少见），再弹窗提示
 				Modal.error({
-					title: '复制图片失败',
+					title: "复制图片失败",
 					content: (
 						<div>
 							<p>无法直接复制该图片数据，原因可能是：</p>
@@ -794,16 +830,16 @@ const ArticleEdit: FC<IProps> = props => {
 							<p>建议：尝试手动右键图片选择&quot;复制图片&quot;。</p>
 						</div>
 					),
-					okText: '知道了'
+					okText: "知道了"
 				});
 			}
 		}
 	};
 
 	const goBack = () => {
-    	// 跳转到文章列表页
-		navigate("/article/list/index");   
-  	};
+		// 跳转到文章列表页
+		navigate("/article/list/index");
+	};
 
 	// 重置表单
 	const resetFrom = () => {
@@ -831,12 +867,12 @@ const ArticleEdit: FC<IProps> = props => {
 			// 匹配所有图片
 			const mdImgRegex = /!\[(.*?)\]\((.*?)\)/g;
 			const htmlImgRegex = /<img\s+[^>]*src=["'](.*?)["'][^>]*>/g;
-			
+
 			// 使用简单的 replace 回调处理批量更新
 			newContent = newContent.replace(mdImgRegex, (match, alt, src) => {
 				const fullUrl = resolveUrl(src);
 				const state = sizeMap.get(fullUrl);
-				if (state && typeof state === 'object') {
+				if (state && typeof state === "object") {
 					return `<img src="${src.split(/\s+/)[0]}" alt="${alt}" width="${state.width}" height="${state.height}" />`;
 				}
 				return match;
@@ -845,15 +881,15 @@ const ArticleEdit: FC<IProps> = props => {
 			newContent = newContent.replace(htmlImgRegex, (match, src) => {
 				const fullUrl = resolveUrl(src);
 				const state = sizeMap.get(fullUrl);
-				
+
 				// 提取原标签中的 alt 属性
 				const altMatch = match.match(/alt=["'](.*?)["']/);
 				const currentAlt = altMatch ? altMatch[1] : "";
 
-				if (state === 'reset') {
+				if (state === "reset") {
 					// 还原为 Markdown 语法，保留提取到的 alt
 					return `![${currentAlt}](${src})`;
-				} else if (state && typeof state === 'object') {
+				} else if (state && typeof state === "object") {
 					// 替换或添加 width/height 属性，同时保留 alt
 					return `<img src="${src}" alt="${currentAlt}" width="${state.width}" height="${state.height}" />`;
 				}
@@ -866,7 +902,7 @@ const ArticleEdit: FC<IProps> = props => {
 					scrollPosRef.current = container.scrollTop;
 					isUpdatingContentRef.current = true;
 				}
-				
+
 				setContent(newContent);
 				handleChange({ content: newContent });
 				// 清空缓存
@@ -891,12 +927,12 @@ const ArticleEdit: FC<IProps> = props => {
 		// 更新上传时间
 		lastUploadTimes.current.set(url, now);
 		return true;
-	}
+	};
 
 	// 如果是外网的图片链接，转成内网的图片链接
 	const uploadImages = async (newVal: string) => {
 		// 正则表达式匹配所有图片
-		const reg = /!\[(.*?)\]\((.*?)\)/mg;
+		const reg = /!\[(.*?)\]\((.*?)\)/gm;
 		let match;
 
 		// 存储需要上传的图片信息及其上传任务
@@ -936,7 +972,7 @@ const ArticleEdit: FC<IProps> = props => {
 			} else if (isFailedImage) {
 				// 失败的图片，提取原始 URL 并重试
 				// URL 格式: https://files.mdnice.com/...?&cause=saveError!
-				const originalUrl = src.split('?')[0]; // 去掉 query 参数
+				const originalUrl = src.split("?")[0]; // 去掉 query 参数
 				console.log("重试失败的图片:", originalUrl);
 
 				const imageInfo: ImageInfo = { img, alt, src, index: match.index };
@@ -953,16 +989,14 @@ const ArticleEdit: FC<IProps> = props => {
 		}
 
 		// 同时上传所有图片
-		const results = await Promise.all(
-			uploadTasksWithInfo.map(task => task.uploadPromise)
-		);
+		const results = await Promise.all(uploadTasksWithInfo.map(task => task.uploadPromise));
 
 		// 按照图片在文本中的位置倒序排序，从后往前替换，避免索引错位
 		const sortedTasks = [...uploadTasksWithInfo].sort((a, b) => b.imageInfo.index - a.imageInfo.index);
 
 		// 替换所有图片链接
 		let newContent = newVal;
-		sortedTasks.forEach((task) => {
+		sortedTasks.forEach(task => {
 			// 找到对应的 result（需要用原始顺序的索引）
 			const originalIndex = uploadTasksWithInfo.indexOf(task);
 			const result = results[originalIndex];
@@ -992,7 +1026,7 @@ const ArticleEdit: FC<IProps> = props => {
 		});
 
 		return { newContent, successCount, failedCount, skippedCount };
-	}
+	};
 
 	const handleReplaceImgUrl = async () => {
 		const { content } = form;
@@ -1026,17 +1060,17 @@ const ArticleEdit: FC<IProps> = props => {
 		}
 
 		if (successCount > 0 && failedCount === 0) {
-			message.success(messages.join(', '));
+			message.success(messages.join(", "));
 		} else if (successCount > 0 && failedCount > 0) {
-			message.warning(messages.join(', '));
+			message.warning(messages.join(", "));
 		} else if (failedCount > 0) {
-			message.error(messages.join(', '));
+			message.error(messages.join(", "));
 		} else if (skippedCount > 0) {
 			message.info("所有外链图片都在 30 秒内已转换过,请稍后再试");
 		} else {
 			message.info("没有需要转换的图片");
 		}
-	}
+	};
 
 	const sanitizeYuqueMarkdown = (raw: string) => {
 		const fixYuqueStrongMarkers = (input: string) => {
@@ -1212,9 +1246,9 @@ const ArticleEdit: FC<IProps> = props => {
 					if (fmData.tag) {
 						const tagNames = Array.isArray(fmData.tag) ? fmData.tag : [fmData.tag];
 						try {
-							const tagPromises = tagNames.slice(0, 3).map((name: string) =>
-								getTagListApi({ status: 1, tag: name.trim(), pageNumber: 1, pageSize: 1 })
-							);
+							const tagPromises = tagNames
+								.slice(0, 3)
+								.map((name: string) => getTagListApi({ status: 1, tag: name.trim(), pageNumber: 1, pageSize: 1 }));
 							const tagResults = await Promise.all(tagPromises);
 							foundTags = tagResults.map((res: any) => res.result?.list?.[0]).filter(t => t);
 							if (foundTags.length > 0) {
@@ -1276,7 +1310,7 @@ const ArticleEdit: FC<IProps> = props => {
 
 				// 4. 执行更新
 				const finalUpdateData: MapItem = { ...updateData, content: markdown };
-				
+
 				// 处理标题逻辑：优先使用模板里的，没有则使用 H1
 				if (!finalUpdateData.shortTitle && articleTitle) {
 					finalUpdateData.shortTitle = articleTitle;
@@ -1296,7 +1330,7 @@ const ArticleEdit: FC<IProps> = props => {
 				// 更新 AntD 表单 UI
 				const formValues: any = {
 					...finalUpdateData,
-					status: fmData ? String(PushStatusEnum.Published) : undefined,
+					status: fmData ? String(PushStatusEnum.Published) : undefined
 				};
 				if (foundTags.length > 0) {
 					formValues.tagName = foundTags.map(t => ({
@@ -1307,9 +1341,9 @@ const ArticleEdit: FC<IProps> = props => {
 				}
 				formRef.setFieldsValue(formValues);
 
-				message.success({ 
-					content: shouldImport === "append" ? "Markdown 已追加到末尾" : "Markdown 已导入", 
-					key: loadingKey 
+				message.success({
+					content: shouldImport === "append" ? "Markdown 已追加到末尾" : "Markdown 已导入",
+					key: loadingKey
 				});
 			} catch (error) {
 				console.error("导入 Markdown 失败:", error);
@@ -1323,46 +1357,46 @@ const ArticleEdit: FC<IProps> = props => {
 
 	// 导入 Word 文档
 	const handleImportWord = () => {
-		console.log('=== 开始导入 Word 文档 ===');
-		
+		console.log("=== 开始导入 Word 文档 ===");
+
 		// 定义已知的代码块 styleId
 		const codeBlockStyleIds = [
-			'23', 
-			'_Style 23', 
-			'ne-codeblock', 
-			'Code', 
-			'代码', 
-			'Preformatted', 
-			'HTML Preformatted',
-			'Source Code',
-			'Plain Text',
-			'Consolas',
-			'Courier New',
-			'Monospaced'
+			"23",
+			"_Style 23",
+			"ne-codeblock",
+			"Code",
+			"代码",
+			"Preformatted",
+			"HTML Preformatted",
+			"Source Code",
+			"Plain Text",
+			"Consolas",
+			"Courier New",
+			"Monospaced"
 		];
-		
+
 		// 定义转换函数
 		function transformElement(element: any): any {
 			// 处理段落：如果有 styleId 但没有 styleName，尝试修复
-			if (element.type === 'paragraph' && element.styleId && !element.styleName) {
+			if (element.type === "paragraph" && element.styleId && !element.styleName) {
 				if (codeBlockStyleIds.some(id => element.styleId.includes(id))) {
-					element.styleName = element.styleId;  // 用 styleId 作为 styleName
+					element.styleName = element.styleId; // 用 styleId 作为 styleName
 				}
 			}
-			
+
 			// 语雀代码块处理：语雀导出的 docx 中，代码块可能带有特定的 styleId
-			if (element.type === 'paragraph' && element.styleId && element.styleId.includes('code')) {
-				element.styleName = 'ne-codeblock';
+			if (element.type === "paragraph" && element.styleId && element.styleId.includes("code")) {
+				element.styleName = "ne-codeblock";
 			}
-			
+
 			// 递归处理子元素
 			if (element.children) {
 				element.children = element.children.map(transformElement);
 			}
-			
+
 			return element;
 		}
-		
+
 		function transformDocument(document: any) {
 			// document 是整个文档对象，需要处理它的所有元素
 			if (document && document.children) {
@@ -1370,48 +1404,48 @@ const ArticleEdit: FC<IProps> = props => {
 			}
 			return document;
 		}
-		
+
 		// 创建文件输入元素
-		const input = document.createElement('input');
-		input.type = 'file';
-		input.accept = '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-		input.style.display = 'none';
-		
+		const input = document.createElement("input");
+		input.type = "file";
+		input.accept = ".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+		input.style.display = "none";
+
 		input.onchange = async (e: Event) => {
-			console.log('change 事件触发');
+			console.log("change 事件触发");
 			const target = e.target as HTMLInputElement;
 			const file = target.files?.[0];
-			console.log('选中的文件:', file);
-			
+			console.log("选中的文件:", file);
+
 			// 清理 DOM
 			if (document.body.contains(input)) {
 				document.body.removeChild(input);
 			}
-			
+
 			if (!file) {
-				console.log('没有选择文件');
+				console.log("没有选择文件");
 				return;
 			}
-			
-			if (!file.name.endsWith('.docx')) {
-				console.error('文件类型错误:', file.name);
-				message.error('仅支持 .docx 格式的 Word 文档');
+
+			if (!file.name.endsWith(".docx")) {
+				console.error("文件类型错误:", file.name);
+				message.error("仅支持 .docx 格式的 Word 文档");
 				return;
 			}
-			
+
 			try {
-				console.log('开始转换文件...');
-				const loadingKey = 'word-import-loading';
-				message.loading({ content: '正在导入 Word 文档...', key: loadingKey, duration: 0 });
-				
+				console.log("开始转换文件...");
+				const loadingKey = "word-import-loading";
+				message.loading({ content: "正在导入 Word 文档...", key: loadingKey, duration: 0 });
+
 				const arrayBuffer = await file.arrayBuffer();
-				console.log('文件读取成功，大小:', arrayBuffer.byteLength);
-				
+				console.log("文件读取成功，大小:", arrayBuffer.byteLength);
+
 				// 配置 mammoth 选项
 				const styleMap = [
 					// 代码块样式
 					"p[style-name='_Style 23'] => pre.code-block",
-					"p[style-name='ne-codeblock'] => pre.code-block",  // 语雀导出的文档
+					"p[style-name='ne-codeblock'] => pre.code-block", // 语雀导出的文档
 					"p[style-name='Code'] => pre.code-block",
 					"p[style-name='代码'] => pre.code-block",
 					"p[style-name='Preformatted'] => pre.code-block",
@@ -1422,137 +1456,143 @@ const ArticleEdit: FC<IProps> = props => {
 					"p[style-name='Consolas'] => pre.code-block",
 					"p[style-name='Courier New'] => pre.code-block",
 					"p[style-name='Monospaced'] => pre.code-block"
-				].join('\n');
-				
-				const result = await (mammoth as any).convertToHtml({ 
-					arrayBuffer, 
+				].join("\n");
+
+				const result = await (mammoth as any).convertToHtml({
+					arrayBuffer,
 					styleMap: styleMap,
 					transformDocument: transformDocument,
 					includeDefaultStyleMap: true
 				});
 				const html = result.value;
-				console.log('HTML 转换成功，长度:', html.length);
-				
+				console.log("HTML 转换成功，长度:", html.length);
+
 				// 打印样式警告信息（可以看到文档中有哪些样式）
 				if (result.messages && result.messages.length > 0) {
-					console.warn('样式信息和警告:');
+					console.warn("样式信息和警告:");
 					result.messages.forEach((msg: any) => {
 						console.warn(`- ${msg.type}: ${msg.message}`);
 					});
 				}
-				
+
 				// 打印完整的 HTML（移除 base64 图片避免过长）
 				const htmlWithoutImages = html.replace(/src="data:image[^"]*"/g, 'src="[base64]"');
-				console.log('=== 完整的 HTML 内容开始 ===');
+				console.log("=== 完整的 HTML 内容开始 ===");
 				console.log(htmlWithoutImages);
-				console.log('=== 完整的 HTML 内容结束 ===');
-				
+				console.log("=== 完整的 HTML 内容结束 ===");
+
 				// 预处理：将包含多个 br 的段落或符合代码特征的段落转换为代码块
 				let processedHtml = html.replace(/<p>([\s\S]*?)<\/p>/gi, (match: string, content: string) => {
 					// 统计 br 标签数量
 					const brCount = (content.match(/<br\s*\/?>/gi) || []).length;
-					
+
 					// 如果有 1 个以上的 br (至少两行)，或者包含明显的代码关键字
-					const codeKeywords = /\b(FROM|RUN|COPY|WORKDIR|ENTRYPOINT|CMD|ENV|EXPOSE|VOLUME|ARG|import|export|const|let|var|function|class|def|public|private|protected|package|interface|docker|maven|mvn|git|npm|yarn|pip|npm install|yarn add|void|static|return|if|else|for|while|switch|case|break|continue|try|catch|finally|throw|new|this|super|extends|implements|abstract|final|native|synchronized|transient|volatile|strictfp|assert|instanceof|boolean|byte|char|double|float|int|long|short|String|Integer|Long|Double|Float|Boolean|Map|List|Set|HashMap|ArrayList|HashSet|Stream|Optional|Response|Request|Controller|Service|Repository|Component|Autowired|Resource|Value|RequestMapping|GetMapping|PostMapping|PutMapping|DeleteMapping|PathVariable|RequestParam|RequestBody|ResponseBody|Data|AllArgsConstructor|NoArgsConstructor|Builder|Slf4j|SpringBootApplication|Configuration|Bean|Override|System\.out\.println|console\.log|println|def|fn|lambda|async|await|promise|resolve|reject|fetch|axios|api|admin|paicoding|CompletableFuture|supplyAsync|thenAccept|thenApply|thenRun|handle|exceptionally|executor|submit|execute|TtlRunnable|TtlExecutors|log|info|debug|error|warn|trace|logger|RequestContext)\b/i;
-					
-					const textContent = content.replace(/<[^>]+>/g, '').trim(); // 移除所有标签查看纯文本
-					
+					const codeKeywords =
+						/\b(FROM|RUN|COPY|WORKDIR|ENTRYPOINT|CMD|ENV|EXPOSE|VOLUME|ARG|import|export|const|let|var|function|class|def|public|private|protected|package|interface|docker|maven|mvn|git|npm|yarn|pip|npm install|yarn add|void|static|return|if|else|for|while|switch|case|break|continue|try|catch|finally|throw|new|this|super|extends|implements|abstract|final|native|synchronized|transient|volatile|strictfp|assert|instanceof|boolean|byte|char|double|float|int|long|short|String|Integer|Long|Double|Float|Boolean|Map|List|Set|HashMap|ArrayList|HashSet|Stream|Optional|Response|Request|Controller|Service|Repository|Component|Autowired|Resource|Value|RequestMapping|GetMapping|PostMapping|PutMapping|DeleteMapping|PathVariable|RequestParam|RequestBody|ResponseBody|Data|AllArgsConstructor|NoArgsConstructor|Builder|Slf4j|SpringBootApplication|Configuration|Bean|Override|System\.out\.println|console\.log|println|def|fn|lambda|async|await|promise|resolve|reject|fetch|axios|api|admin|paicoding|CompletableFuture|supplyAsync|thenAccept|thenApply|thenRun|handle|exceptionally|executor|submit|execute|TtlRunnable|TtlExecutors|log|info|debug|error|warn|trace|logger|RequestContext)\b/i;
+
+					const textContent = content.replace(/<[^>]+>/g, "").trim(); // 移除所有标签查看纯文本
+
 					// 如果包含 CodeMirror 相关的类名，通常也是代码
-					const isCodeMirror = content.includes('CodeMirror-line') || content.includes('cm-text');
+					const isCodeMirror = content.includes("CodeMirror-line") || content.includes("cm-text");
 
 					// 识别单行代码特征：Lambda 表达式、方法链、分号结尾、或者包含典型的代码符号组合
-					const isSingleLineCode = (
-						((textContent.includes('->') || textContent.includes('=>')) && textContent.includes('(')) || // Lambda
-						(textContent.includes('.') && textContent.includes('(') && textContent.includes(')')) || // 方法调用/链
-						(textContent.endsWith(';') && textContent.length > 5) || // 以分号结尾
-						(textContent.includes('{') && textContent.includes('}')) || // 包含大括号
-						(textContent.includes('(') && textContent.includes(')') && textContent.includes('=')) // 赋值调用
-					);
+					const isSingleLineCode =
+						((textContent.includes("->") || textContent.includes("=>")) && textContent.includes("(")) || // Lambda
+						(textContent.includes(".") && textContent.includes("(") && textContent.includes(")")) || // 方法调用/链
+						(textContent.endsWith(";") && textContent.length > 5) || // 以分号结尾
+						(textContent.includes("{") && textContent.includes("}")) || // 包含大括号
+						(textContent.includes("(") && textContent.includes(")") && textContent.includes("=")); // 赋值调用
 
 					// 1. 如果有 1 个以上的 br 且匹配关键字
 					// 2. 如果文本内容看起来像代码（例如以特定字符开头或包含特定结构）
 					// 3. 包含 CodeMirror 特征
 					// 4. 符合单行代码特征且包含关键字
-					if (isCodeMirror || (brCount >= 1 && codeKeywords.test(textContent)) || 
+					if (
+						isCodeMirror ||
+						(brCount >= 1 && codeKeywords.test(textContent)) ||
 						(isSingleLineCode && codeKeywords.test(textContent)) ||
-						(textContent.length > 5 && (
-							(textContent.startsWith('import ') || textContent.startsWith('package ')) ||
-							(textContent.includes('public static void main')) ||
-							(textContent.includes('class ') && textContent.includes('{')) ||
-							(textContent.includes('function') && textContent.includes(')')) ||
-							(textContent.includes('const ') && textContent.includes('=')) ||
-							(textContent.includes('let ') && textContent.includes('='))
-						))) {
-						console.log('检测到潜在代码块，内容预览:', textContent.substring(0, 100));
-						return '<pre class="code-block">' + content + '</pre>';
+						(textContent.length > 5 &&
+							(textContent.startsWith("import ") ||
+								textContent.startsWith("package ") ||
+								textContent.includes("public static void main") ||
+								(textContent.includes("class ") && textContent.includes("{")) ||
+								(textContent.includes("function") && textContent.includes(")")) ||
+								(textContent.includes("const ") && textContent.includes("=")) ||
+								(textContent.includes("let ") && textContent.includes("="))))
+					) {
+						console.log("检测到潜在代码块，内容预览:", textContent.substring(0, 100));
+						return '<pre class="code-block">' + content + "</pre>";
 					}
 					return match;
 				});
-				
+
 				// 处理已经存在的 pre 标签（可能是 CodeMirror 产生的）
-				processedHtml = processedHtml.replace(/<pre[^>]*class="[^"]*CodeMirror-line[^"]*"[^>]*>([\s\S]*?)<\/pre>/gi, (match: string, content: string) => {
-					return '<pre class="code-block">' + content + '</pre>';
-				});
+				processedHtml = processedHtml.replace(
+					/<pre[^>]*class="[^"]*CodeMirror-line[^"]*"[^>]*>([\s\S]*?)<\/pre>/gi,
+					(match: string, content: string) => {
+						return '<pre class="code-block">' + content + "</pre>";
+					}
+				);
 
 				// 合并相邻的代码块
-				processedHtml = processedHtml.replace(/<\/pre>\s*<pre class="code-block">/gi, '<br/>');
-				
-				console.log('=== 预处理后的 HTML 开始 ===');
+				processedHtml = processedHtml.replace(/<\/pre>\s*<pre class="code-block">/gi, "<br/>");
+
+				console.log("=== 预处理后的 HTML 开始 ===");
 				const processedWithoutImages = processedHtml.replace(/src="data:image[^"]*"/g, 'src="[base64]"');
 				console.log(processedWithoutImages);
-				console.log('=== 预处理后的 HTML 结束 ===');
-				
+				console.log("=== 预处理后的 HTML 结束 ===");
+
 				// 清理空锚点标签（包括有 id 或 name 属性但内容为空或仅有空白字符的 a 标签）
 				// 语雀的锚点通常是 <a id="xxx"></a>
-				console.log('=== 开始清理语雀锚点 ===');
+				console.log("=== 开始清理语雀锚点 ===");
 				processedHtml = processedHtml.replace(/<a(?![^>]*\bhref\b)[^>]*>([\s\S]*?)<\/a>/gi, (match: string, content: string) => {
-					const textContent = content.replace(/<[^>]+>/g, '').trim();
-					if (textContent === '') {
-						console.log('移除空锚点:', match);
-						return '';
+					const textContent = content.replace(/<[^>]+>/g, "").trim();
+					if (textContent === "") {
+						console.log("移除空锚点:", match);
+						return "";
 					}
 					// 如果不是空的，则保留内容但移除 a 标签
-					console.log('移除锚点标签但保留内容:', match);
+					console.log("移除锚点标签但保留内容:", match);
 					return content;
 				});
-				
+
 				// 针对语雀特定的锚点格式进一步加强清理
-				processedHtml = processedHtml.replace(/<a\s+(?:id|name|data-anchor)="[^"]*"\s*>\s*<\/a>/gi, '');
-				processedHtml = processedHtml.replace(/<a\s+[^>]*\b(?:id|name|data-anchor)="[^"]*"[^>]*>\s*<\/a>/gi, '');
-				
+				processedHtml = processedHtml.replace(/<a\s+(?:id|name|data-anchor)="[^"]*"\s*>\s*<\/a>/gi, "");
+				processedHtml = processedHtml.replace(/<a\s+[^>]*\b(?:id|name|data-anchor)="[^"]*"[^>]*>\s*<\/a>/gi, "");
+
 				const afterClean = processedHtml.substring(0, 500);
-				console.log('清理后（前500字符）:', afterClean);
-				console.log('=== 空锚点清理完成 ===');
-				
+				console.log("清理后（前500字符）:", afterClean);
+				console.log("=== 空锚点清理完成 ===");
+
 				// 关闭初始的 loading
 				message.destroy(loadingKey);
-				
+
 				// 先询问用户是否继续导入
-				const shouldImport = await new Promise<'append' | 'replace' | 'cancel'>((resolve) => {
+				const shouldImport = await new Promise<"append" | "replace" | "cancel">(resolve => {
 					if (content && content.trim()) {
-						console.log('编辑器有内容，询问用户');
+						console.log("编辑器有内容，询问用户");
 						const modal = Modal.info({
-							title: '当前编辑器有内容',
-							content: 'Word 文档中包含图片需要上传，是否继续导入？',
+							title: "当前编辑器有内容",
+							content: "Word 文档中包含图片需要上传，是否继续导入？",
 							icon: null,
 							closable: true,
-							okButtonProps: { style: { display: 'none' } },
+							okButtonProps: { style: { display: "none" } },
 							footer: (
-								<div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+								<div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
 									<Button
 										onClick={() => {
-											console.log('用户取消导入');
+											console.log("用户取消导入");
 											modal.destroy();
-											resolve('cancel');
+											resolve("cancel");
 										}}
 									>
 										取消
 									</Button>
 									<Button
 										onClick={() => {
-											console.log('用户选择: 替换');
+											console.log("用户选择: 替换");
 											modal.destroy();
-											resolve('replace');
+											resolve("replace");
 										}}
 									>
 										替换内容
@@ -1560,9 +1600,9 @@ const ArticleEdit: FC<IProps> = props => {
 									<Button
 										type="primary"
 										onClick={() => {
-											console.log('用户选择: 追加');
+											console.log("用户选择: 追加");
 											modal.destroy();
-											resolve('append');
+											resolve("append");
 										}}
 									>
 										追加到末尾
@@ -1571,34 +1611,34 @@ const ArticleEdit: FC<IProps> = props => {
 							)
 						});
 					} else {
-						resolve('replace');
+						resolve("replace");
 					}
 				});
-				
-				if (shouldImport === 'cancel') {
-					message.info('已取消导入');
-					console.log('用户取消导入');
+
+				if (shouldImport === "cancel") {
+					message.info("已取消导入");
+					console.log("用户取消导入");
 					return;
 				}
-				
+
 				// 处理图片：提取 base64 图片并上传
 				const base64Images = processedHtml.match(/<img src="data:image\/(.*?);base64,(.*?)"(.*?)>/gi) || [];
 				console.log(`找到 ${base64Images.length} 张 base64 图片`);
-				
+
 				let htmlWithUploadedImages = processedHtml;
-				
+
 				if (base64Images.length > 0) {
 					message.loading(`正在上传 ${base64Images.length} 张图片...`, 0);
-					
+
 					// 并发上传图片，最多同时 5 个请求
 					const concurrency = 5;
 					const uploadResults: Array<{ original: string; uploaded: string } | null> = [];
-					
+
 					// 分批处理
 					for (let i = 0; i < base64Images.length; i += concurrency) {
 						const batch = base64Images.slice(i, i + concurrency);
 						console.log(`上传批次: ${Math.floor(i / concurrency) + 1}, 包含 ${batch.length} 张图片`);
-						
+
 						// 并发上传当前批次
 						const batchPromises = batch.map(async (imgTag: string, batchIndex: number) => {
 							const index = i + batchIndex;
@@ -1606,10 +1646,10 @@ const ArticleEdit: FC<IProps> = props => {
 								// 提取 base64 数据和图片类型
 								const match = imgTag.match(/data:image\/(.*?);base64,(.*?)"/);
 								if (!match) return null;
-								
+
 								const [, imageType, base64Data] = match;
 								console.log(`上传图片 ${index + 1}/${base64Images.length}, 类型: ${imageType}`);
-								
+
 								// 将 base64 转换为 Blob
 								const byteString = atob(base64Data);
 								const arrayBuffer = new ArrayBuffer(byteString.length);
@@ -1618,7 +1658,7 @@ const ArticleEdit: FC<IProps> = props => {
 									uint8Array[j] = byteString.charCodeAt(j);
 								}
 								const blob = new Blob([arrayBuffer], { type: `image/${imageType}` });
-								
+
 								// 创建 File 对象，增加更多随机性避免文件名和请求冲突
 								const timestamp = Date.now();
 								const random = Math.random().toString(36).substring(2, 15);
@@ -1626,16 +1666,16 @@ const ArticleEdit: FC<IProps> = props => {
 								const file = new File([blob], fileName, {
 									type: `image/${imageType}`
 								});
-								
+
 								// 上传图片，使用更唯一的标识
 								const formData = new FormData();
-								formData.append('image', file);
-								
+								formData.append("image", file);
+
 								const response = await uploadImgApi(formData);
 								const { status, result } = response || {};
 								const { code } = status || {};
 								const { imagePath } = result || {};
-								
+
 								if (code === 0 && imagePath) {
 									console.log(`图片 ${index + 1} 上传成功:`, imagePath);
 									return { original: imgTag, uploaded: imagePath };
@@ -1648,29 +1688,26 @@ const ArticleEdit: FC<IProps> = props => {
 								return null;
 							}
 						});
-						
+
 						// 等待当前批次完成
 						const batchResults = await Promise.all(batchPromises);
 						uploadResults.push(...batchResults);
-						
+
 						// 批次间增加短暂延迟，避免请求过于密集
 						if (i + concurrency < base64Images.length) {
 							await new Promise(resolve => setTimeout(resolve, 100));
 						}
 					}
-					
+
 					// 替换 HTML 中的图片
 					let successCount = 0;
 					uploadResults.forEach(result => {
 						if (result) {
-							htmlWithUploadedImages = htmlWithUploadedImages.replace(
-								result.original,
-								`<img src="${result.uploaded}">`
-							);
+							htmlWithUploadedImages = htmlWithUploadedImages.replace(result.original, `<img src="${result.uploaded}">`);
 							successCount++;
 						}
 					});
-					
+
 					message.destroy();
 					if (successCount > 0) {
 						message.success(`成功上传 ${successCount} 张图片`);
@@ -1679,170 +1716,176 @@ const ArticleEdit: FC<IProps> = props => {
 						message.warning(`${base64Images.length - successCount} 张图片上传失败`);
 					}
 				}
-				
+
 				// 先清理空的 <a> 标签（锚点）
-				let cleanedHtml = htmlWithUploadedImages.replace(/<a(?![^>]*\bhref\b)[^>]*>([\s\S]*?)<\/a>/gi, (match: string, content: string) => {
-					const textContent = content.replace(/<[^>]+>/g, '').trim();
-					return textContent === '' ? '' : content;
-				});
-				cleanedHtml = cleanedHtml.replace(/<a\s+(?:id|name|data-anchor)="[^"]*"\s*>\s*<\/a>/gi, '');
-				
+				let cleanedHtml = htmlWithUploadedImages.replace(
+					/<a(?![^>]*\bhref\b)[^>]*>([\s\S]*?)<\/a>/gi,
+					(match: string, content: string) => {
+						const textContent = content.replace(/<[^>]+>/g, "").trim();
+						return textContent === "" ? "" : content;
+					}
+				);
+				cleanedHtml = cleanedHtml.replace(/<a\s+(?:id|name|data-anchor)="[^"]*"\s*>\s*<\/a>/gi, "");
+
 				let markdown = cleanedHtml
-					.replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n')
-					.replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n')
-					.replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n')
-					.replace(/<h4>(.*?)<\/h4>/gi, '#### $1\n\n')
-					.replace(/<h5>(.*?)<\/h5>/gi, '##### $1\n\n')
-					.replace(/<h6>(.*?)<\/h6>/gi, '###### $1\n\n')
-					.replace(/<(?:strong|b)>([\s\S]*?)([。，！？；：,.!?;:]*)<\/(?:strong|b)>/gi, '**$1**$2')
-					.replace(/<em>(.*?)<\/em>/gi, '*$1*')
-					.replace(/<i>(.*?)<\/i>/gi, '*$1*')
+					.replace(/<h1>(.*?)<\/h1>/gi, "# $1\n\n")
+					.replace(/<h2>(.*?)<\/h2>/gi, "## $1\n\n")
+					.replace(/<h3>(.*?)<\/h3>/gi, "### $1\n\n")
+					.replace(/<h4>(.*?)<\/h4>/gi, "#### $1\n\n")
+					.replace(/<h5>(.*?)<\/h5>/gi, "##### $1\n\n")
+					.replace(/<h6>(.*?)<\/h6>/gi, "###### $1\n\n")
+					.replace(/<(?:strong|b)>([\s\S]*?)([。，！？；：,.!?;:]*)<\/(?:strong|b)>/gi, "**$1**$2")
+					.replace(/<em>(.*?)<\/em>/gi, "*$1*")
+					.replace(/<i>(.*?)<\/i>/gi, "*$1*")
 					.replace(/<li>([\s\S]*?)<\/li>/gi, (match: string, content: string) => {
-						const innerContent = content
-							.replace(/<p>/gi, '')
-							.replace(/<\/p>/gi, '')
-							.trim();
-						return '- ' + innerContent + '\n';
+						const innerContent = content.replace(/<p>/gi, "").replace(/<\/p>/gi, "").trim();
+						return "- " + innerContent + "\n";
 					})
-					.replace(/<\/ul>/gi, '\n\n')
-					.replace(/<\/ol>/gi, '\n\n')
-					.replace(/<ul>/gi, '\n')
-					.replace(/<ol>/gi, '\n')
+					.replace(/<\/ul>/gi, "\n\n")
+					.replace(/<\/ol>/gi, "\n\n")
+					.replace(/<ul>/gi, "\n")
+					.replace(/<ol>/gi, "\n")
 					// 处理表格 - 转换为 Markdown 表格格式
 					.replace(/<table>([\s\S]*?)<\/table>/gi, (match: string, tableContent: string) => {
 						// 解析表格行
 						const rows = tableContent.match(/<tr>([\s\S]*?)<\/tr>/gi) || [];
 						if (rows.length === 0) return match;
-						
-						let markdownTable = '\n';
-						
+
+						let markdownTable = "\n";
+
 						rows.forEach((row: string, rowIndex: number) => {
 							// 提取单元格（支持 td 和 th）
 							const cells = row.match(/<t[dh]>([\s\S]*?)<\/t[dh]>/gi) || [];
 							const cellContents = cells.map((cell: string) => {
 								// 移除单元格标签，保留内容
 								let content = cell
-									.replace(/<t[dh]>/gi, '')
-									.replace(/<\/t[dh]>/gi, '')
-									.replace(/<p>/gi, '')
-									.replace(/<\/p>/gi, ' ')
-									.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1')
-									.replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
-									.replace(/<em>(.*?)<\/em>/gi, '*$1*')
-									.replace(/<[^>]+>/g, '')
+									.replace(/<t[dh]>/gi, "")
+									.replace(/<\/t[dh]>/gi, "")
+									.replace(/<p>/gi, "")
+									.replace(/<\/p>/gi, " ")
+									.replace(/<a[^>]*>(.*?)<\/a>/gi, "$1")
+									.replace(/<strong>(.*?)<\/strong>/gi, "**$1**")
+									.replace(/<em>(.*?)<\/em>/gi, "*$1*")
+									.replace(/<[^>]+>/g, "")
 									.trim();
-								return content || ' ';
+								return content || " ";
 							});
-							
+
 							// 构建 Markdown 表格行
-							markdownTable += '| ' + cellContents.join(' | ') + ' |\n';
-							
+							markdownTable += "| " + cellContents.join(" | ") + " |\n";
+
 							// 第一行后添加分隔线
 							if (rowIndex === 0) {
-								markdownTable += '| ' + cellContents.map(() => '---').join(' | ') + ' |\n';
+								markdownTable += "| " + cellContents.map(() => "---").join(" | ") + " |\n";
 							}
 						});
-						
-						return markdownTable + '\n';
+
+						return markdownTable + "\n";
 					})
 					// 处理代码块 - 匹配我们自定义的 class
 					.replace(/<pre class="code-block">([\s\S]*?)<\/pre>/gi, (match: string, code: string) => {
 						const decoded = code
-							.replace(/<p>/gi, '')
-							.replace(/<\/p>/gi, '\n')
-							.replace(/<br\s*\/?>/gi, '\n')
-							.replace(/<[^>]+>/g, '') // 移除代码块内部的所有其他标签（如 CodeMirror 的 span）
-							.replace(/&ZeroWidthSpace;/g, '') // 移除零宽字符
-							.replace(/&lt;/g, '<')
-							.replace(/&gt;/g, '>')
-							.replace(/&amp;/g, '&')
+							.replace(/<p>/gi, "")
+							.replace(/<\/p>/gi, "\n")
+							.replace(/<br\s*\/?>/gi, "\n")
+							.replace(/<[^>]+>/g, "") // 移除代码块内部的所有其他标签（如 CodeMirror 的 span）
+							.replace(/&ZeroWidthSpace;/g, "") // 移除零宽字符
+							.replace(/&lt;/g, "<")
+							.replace(/&gt;/g, ">")
+							.replace(/&amp;/g, "&")
 							.replace(/&quot;/g, '"')
 							.replace(/&#39;/g, "'")
 							.trim();
-						
+
 						// 检测代码语言
-						let language = '';
-						
+						let language = "";
+
 						// Java 代码特征
-						if (/\b(public|private|protected|class|interface|enum|package|import)\s+/i.test(decoded) ||
-								/\bpublic\s+static\s+void\s+main/i.test(decoded)) {
-							language = 'java';
+						if (
+							/\b(public|private|protected|class|interface|enum|package|import)\s+/i.test(decoded) ||
+							/\bpublic\s+static\s+void\s+main/i.test(decoded)
+						) {
+							language = "java";
 						}
 						// Dockerfile 特征
 						else if (/^FROM\s+/im.test(decoded) || /^RUN\s+/im.test(decoded)) {
-							language = 'dockerfile';
+							language = "dockerfile";
 						}
-						
-						return '```' + language + '\n' + decoded + '\n```\n\n';
+
+						return "```" + language + "\n" + decoded + "\n```\n\n";
 					})
 					// 处理普通的 pre 标签
 					.replace(/<pre[^>]*><code>([\s\S]*?)<\/code><\/pre>/gi, (match: string, code: string) => {
 						const decoded = code
-							.replace(/<[^>]+>/g, '') // 移除内部标签
-							.replace(/&ZeroWidthSpace;/g, '')
-							.replace(/&lt;/g, '<')
-							.replace(/&gt;/g, '>')
-							.replace(/&amp;/g, '&')
+							.replace(/<[^>]+>/g, "") // 移除内部标签
+							.replace(/&ZeroWidthSpace;/g, "")
+							.replace(/&lt;/g, "<")
+							.replace(/&gt;/g, ">")
+							.replace(/&amp;/g, "&")
 							.replace(/&quot;/g, '"')
 							.replace(/&#39;/g, "'");
-						
+
 						// 检测代码语言
-						let language = '';
-						
+						let language = "";
+
 						// Java 代码特征
-						if (/\b(public|private|protected|class|interface|enum|package|import)\s+/i.test(decoded) ||
-								/\bpublic\s+static\s+void\s+main/i.test(decoded)) {
-							language = 'java';
+						if (
+							/\b(public|private|protected|class|interface|enum|package|import)\s+/i.test(decoded) ||
+							/\bpublic\s+static\s+void\s+main/i.test(decoded)
+						) {
+							language = "java";
 						}
 						// Dockerfile 特征
 						else if (/^FROM\s+/im.test(decoded) || /^RUN\s+/im.test(decoded)) {
-							language = 'dockerfile';
+							language = "dockerfile";
 						}
-						
-						return '```' + language + '\n' + decoded + '\n```\n\n';
+
+						return "```" + language + "\n" + decoded + "\n```\n\n";
 					})
 					.replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, (match: string, code: string) => {
 						const decoded = code
-							.replace(/<[^>]+>/g, '') // 移除内部标签
-							.replace(/&ZeroWidthSpace;/g, '')
-							.replace(/&lt;/g, '<')
-							.replace(/&gt;/g, '>')
-							.replace(/&amp;/g, '&')
+							.replace(/<[^>]+>/g, "") // 移除内部标签
+							.replace(/&ZeroWidthSpace;/g, "")
+							.replace(/&lt;/g, "<")
+							.replace(/&gt;/g, ">")
+							.replace(/&amp;/g, "&")
 							.replace(/&quot;/g, '"')
 							.replace(/&#39;/g, "'");
-						
+
 						// 检测代码语言
-						let language = '';
-						
+						let language = "";
+
 						// Java 代码特征
-						if (/\b(public|private|protected|class|interface|enum|package|import)\s+/i.test(decoded) ||
-								/\bpublic\s+static\s+void\s+main/i.test(decoded)) {
-							language = 'java';
+						if (
+							/\b(public|private|protected|class|interface|enum|package|import)\s+/i.test(decoded) ||
+							/\bpublic\s+static\s+void\s+main/i.test(decoded)
+						) {
+							language = "java";
 						}
 						// Dockerfile 特征
 						else if (/^FROM\s+/im.test(decoded) || /^RUN\s+/im.test(decoded)) {
-							language = 'dockerfile';
+							language = "dockerfile";
 						}
-						
-						return '```' + language + '\n' + decoded + '\n```\n\n';
+
+						return "```" + language + "\n" + decoded + "\n```\n\n";
 					})
 					// 行内代码
-					.replace(/<code>(.*?)<\/code>/gi, '`$1`')
-					.replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
-					.replace(/<a href="(.*?)">(.*?)<\/a>/gi, '[$2]($1)')
-					.replace(/<img src="(.*?)" alt="(.*?)">/gi, '![$2]($1)')
-					.replace(/<img src="(.*?)">/gi, '![]($1)')
-					.replace(/<br\s*\/?>/gi, '\n')
-					.replace(/<[^>]+>/g, '')
+					.replace(/<code>(.*?)<\/code>/gi, "`$1`")
+					.replace(/<p>(.*?)<\/p>/gi, "$1\n\n")
+					.replace(/<a href="(.*?)">(.*?)<\/a>/gi, "[$2]($1)")
+					.replace(/<img src="(.*?)" alt="(.*?)">/gi, "![$2]($1)")
+					.replace(/<img src="(.*?)">/gi, "![]($1)")
+					.replace(/<br\s*\/?>/gi, "\n")
+					.replace(/<[^>]+>/g, "");
 				// 最终全局清洗：保护代码块内部的缩进
 				let inCodeBlock = false;
 				markdown = markdown
-					.replace(/&ZeroWidthSpace;/g, '') // 全局移除零宽字符
-					.split('\n')
+					.replace(/&ZeroWidthSpace;/g, "") // 全局移除零宽字符
+					.split("\n")
 					.map((line: string) => {
 						const trimmedLine = line.trim();
 						// 检测代码块边界
-						if (trimmedLine.startsWith('```')) {
+						if (trimmedLine.startsWith("```")) {
 							inCodeBlock = !inCodeBlock;
 							return trimmedLine;
 						}
@@ -1853,38 +1896,38 @@ const ArticleEdit: FC<IProps> = props => {
 						// 普通行执行全量 trim
 						return trimmedLine;
 					})
-					.join('\n')
-					.replace(/\n{3,}/g, '\n\n')
+					.join("\n")
+					.replace(/\n{3,}/g, "\n\n")
 					.trim();
-				
-				console.log('Markdown 转换成功，长度:', markdown.length);
+
+				console.log("Markdown 转换成功，长度:", markdown.length);
 
 				// 提取一级标题并同步到文章标题
-				let articleTitle = '';
+				let articleTitle = "";
 				const h1Match = markdown.match(/^#\s+(.+)$/m);
 				if (h1Match) {
 					articleTitle = h1Match[1].trim();
-					console.log('检测到一级标题，同步为文章标题:', articleTitle);
+					console.log("检测到一级标题，同步为文章标题:", articleTitle);
 					// 从正文中移除一级标题及其后的换行
-					markdown = markdown.replace(/^#\s+.+\n*/m, '').trimStart();
+					markdown = markdown.replace(/^#\s+.+\n*/m, "").trimStart();
 				}
 
-				console.log('=== 完整的 Markdown 内容开始 ===');
+				console.log("=== 完整的 Markdown 内容开始 ===");
 				console.log(markdown);
-				console.log('=== 完整的 Markdown 内容结束 ===');
-				
+				console.log("=== 完整的 Markdown 内容结束 ===");
+
 				// 先关闭 loading
 				message.destroy();
-				
+
 				// 根据用户之前的选择来处理内容
-				if (shouldImport === 'append') {
-					console.log('执行追加操作');
-					const finalMarkdown = content + '\n\n---\n\n' + markdown;
+				if (shouldImport === "append") {
+					console.log("执行追加操作");
+					const finalMarkdown = content + "\n\n---\n\n" + markdown;
 					setContent(finalMarkdown);
 					handleChange({ content: finalMarkdown });
-					message.success('Word 文档已追加到末尾');
+					message.success("Word 文档已追加到末尾");
 				} else {
-					console.log('执行替换操作');
+					console.log("执行替换操作");
 					setContent(markdown);
 					// 如果提取到了标题，同步更新标题
 					if (articleTitle) {
@@ -1893,23 +1936,23 @@ const ArticleEdit: FC<IProps> = props => {
 					} else {
 						handleChange({ content: markdown });
 					}
-					message.success('Word 文档已导入');
+					message.success("Word 文档已导入");
 				}
-				
-				console.log('=== Word 导入完成 ===');
+
+				console.log("=== Word 导入完成 ===");
 			} catch (error) {
-				console.error('❌ 导入失败:', error);
+				console.error("❌ 导入失败:", error);
 				message.destroy();
-				message.error('导入失败，请确保文件格式正确');
+				message.error("导入失败，请确保文件格式正确");
 			}
 		};
-		
+
 		// 必须先添加到 DOM，Chrome 才允许触发
 		document.body.appendChild(input);
-		console.log('input 已添加到 DOM');
+		console.log("input 已添加到 DOM");
 		// 立即触发 click，必须在同一个事件循环中
 		input.click();
-		console.log('click 事件已触发');
+		console.log("click 事件已触发");
 	};
 
 	// AI 初始化文章信息
@@ -1920,8 +1963,8 @@ const ArticleEdit: FC<IProps> = props => {
 			return;
 		}
 
-		const loadingKey = 'ai-init-loading';
-		message.loading({ content: '正在 AI 初始化文章信息...', key: loadingKey, duration: 0 });
+		const loadingKey = "ai-init-loading";
+		message.loading({ content: "正在 AI 初始化文章信息...", key: loadingKey, duration: 0 });
 
 		try {
 			// 1. 调用 AI 接口生成标题和简介
@@ -1932,7 +1975,7 @@ const ArticleEdit: FC<IProps> = props => {
 
 			if (aiStatus?.code === 0 && aiResult) {
 				const { title, description } = aiResult as any;
-				console.log('AI 初始化成功:', { title, description });
+				console.log("AI 初始化成功:", { title, description });
 
 				// 2. 准备回填数据
 				const updateData: MapItem = {
@@ -1945,17 +1988,18 @@ const ArticleEdit: FC<IProps> = props => {
 				const planetCategory = CategoryTypeList?.find((item: any) => item.label === "星球专栏");
 				if (planetCategory) {
 					updateData.categoryId = planetCategory.value;
-					console.log('自动选择分类:', planetCategory.label);
+					updateData.readType = 3;
+					console.log("自动选择分类:", planetCategory.label);
 				}
 
 				// 4. 设置标签默认值为第一个
 				try {
-					const response = await getTagListApi({
+					const response = (await getTagListApi({
 						status: 1,
 						tag: "",
 						pageNumber: 1,
 						pageSize: 1
-					}) as any;
+					})) as any;
 
 					const { status: tagStatus, result: tagResult } = response;
 
@@ -1964,16 +2008,18 @@ const ArticleEdit: FC<IProps> = props => {
 						updateData.tagIds = [firstTag.tagId];
 						// 同步回填到 DebounceSelect（它在 Form 中受控）
 						formRef.setFieldsValue({
-							tagName: [{
-								key: firstTag.tagId,
-								label: firstTag.tag,
-								value: firstTag.tag
-							}]
+							tagName: [
+								{
+									key: firstTag.tagId,
+									label: firstTag.tag,
+									value: firstTag.tag
+								}
+							]
 						});
-						console.log('自动选择标签:', firstTag.tag);
+						console.log("自动选择标签:", firstTag.tag);
 					}
 				} catch (tagError) {
-					console.warn('获取默认标签失败:', tagError);
+					console.warn("获取默认标签失败:", tagError);
 				}
 
 				// 5. 执行回填
@@ -1982,16 +2028,17 @@ const ArticleEdit: FC<IProps> = props => {
 					title,
 					summary: description,
 					status: "0",
-					categoryId: updateData.categoryId
+					categoryId: updateData.categoryId,
+					readType: updateData.readType ?? defaultInitForm.readType
 				});
 
-				message.success({ content: 'AI 初始化成功', key: loadingKey });
+				message.success({ content: "AI 初始化成功", key: loadingKey });
 			} else {
-				message.error({ content: aiStatus?.msg || 'AI 初始化失败', key: loadingKey });
+				message.error({ content: aiStatus?.msg || "AI 初始化失败", key: loadingKey });
 			}
 		} catch (error) {
-			console.error('AI 初始化出错:', error);
-			message.error({ content: '网络错误，AI 初始化失败', key: loadingKey });
+			console.error("AI 初始化出错:", error);
+			message.error({ content: "网络错误，AI 初始化失败", key: loadingKey });
 		}
 	};
 
@@ -2015,10 +2062,18 @@ const ArticleEdit: FC<IProps> = props => {
 		const values = await formRef.validateFields();
 		console.log("handleSubmit 时看看form的值 values", values);
 
+		const normalizedReadType = Number(values.readType ?? defaultInitForm.readType);
+		const normalizedPayWay = normalizedReadType === 4 ? values.payWay || defaultInitForm.payWay : undefined;
+		const normalizedPayAmount =
+			normalizedReadType === 4 && values.payAmount != null ? Math.round(Number(values.payAmount) * 100) : undefined;
+
 		// 新的值传递到后端
 		const newValues = {
 			...values,
 			status: Number(values.status),
+			readType: normalizedReadType,
+			payWay: normalizedPayWay,
+			payAmount: normalizedPayAmount,
 			content: content,
 			tagIds: tagIds,
 			shortTitle: shortTitle,
@@ -2027,7 +2082,7 @@ const ArticleEdit: FC<IProps> = props => {
 			source: 2,
 			// 草稿还是发布
 			actionType: "post",
-			articleId: status === UpdateEnum.Save ? UpdateEnum.Save : articleId,
+			articleId: status === UpdateEnum.Save ? UpdateEnum.Save : articleId
 		};
 		console.log("submit 之前的所有值:", newValues);
 
@@ -2047,11 +2102,9 @@ const ArticleEdit: FC<IProps> = props => {
 	useEffect(() => {
 		const getArticle = async () => {
 			console.log("此时是否还有 ", articleId, status);
-			const { status: resultStatus, result } = await getArticleApi(
-				articleId
-			);
+			const { status: resultStatus, result } = await getArticleApi(articleId);
 			const { code } = resultStatus || {};
-			if (code === 0 && status === UpdateEnum.Edit) { 
+			if (code === 0 && status === UpdateEnum.Edit) {
 				console.log("result", result);
 
 				// 如果 status 为编辑，就请求数据
@@ -2077,6 +2130,9 @@ const ArticleEdit: FC<IProps> = props => {
 					summary: result?.summary,
 					cover: coverUrl,
 					status: result?.status?.toString(),
+					readType: result?.readType ?? defaultInitForm.readType,
+					payWay: result?.payWay || defaultInitForm.payWay,
+					payAmount: result?.payAmount == null ? defaultInitForm.payAmount : Number(result?.payAmount),
 					categoryId: result?.category?.categoryId,
 					tagName: result?.tags?.map((item: TagValue) => ({
 						key: item?.tagId,
@@ -2091,6 +2147,9 @@ const ArticleEdit: FC<IProps> = props => {
 					articleId: result?.articleId,
 					shortTitle: result?.shortTitle,
 					status: result?.status,
+					readType: result?.readType ?? defaultInitForm.readType,
+					payWay: result?.payWay || defaultInitForm.payWay,
+					payAmount: result?.payAmount == null ? defaultInitForm.payAmount : Number(result?.payAmount)
 				});
 
 				// 检查草稿
@@ -2098,34 +2157,36 @@ const ArticleEdit: FC<IProps> = props => {
 				if (draft) {
 					const draftTime = new Date(draft.timestamp).toLocaleString();
 					Modal.confirm({
-						title: '发现未保存的草稿',
+						title: "发现未保存的草稿",
 						content: `检测到您在 ${draftTime} 对此文章有未保存的修改，是否覆盖当前服务器版本？`,
-						okText: '使用草稿',
-						cancelText: '使用服务器版本',
+						okText: "使用草稿",
+						cancelText: "使用服务器版本",
 						onOk: () => {
 							setContent(draft.content);
 							setForm(prev => ({ ...prev, ...draft }));
 							formRef.setFieldsValue(draft);
 							if (draft.cover) {
 								let coverUrl = getCompleteUrl(draft.cover);
-								setCoverList([{
-									uid: "-1",
-									name: coverName,
-									status: "done",
-									thumbUrl: coverUrl,
-									url: coverUrl
-								}]);
+								setCoverList([
+									{
+										uid: "-1",
+										name: coverName,
+										status: "done",
+										thumbUrl: coverUrl,
+										url: coverUrl
+									}
+								]);
 							}
-							message.success('已加载本地草稿');
+							message.success("已加载本地草稿");
 						},
 						onCancel: () => {
 							localRemove(draftKey);
 						}
 					});
 				}
-			 }
+			}
 		};
-	
+
 		getArticle();
 	}, []);
 
@@ -2179,33 +2240,81 @@ const ArticleEdit: FC<IProps> = props => {
 				/>
 			</Form.Item>
 			<Form.Item
-        name="categoryId"
-        label="分类"
-        rules={[{ required: true, message: '请选择一个分类' }]}
-      >
-        <Radio.Group 
+				label="阅读类型"
+				name="readType"
+				initialValue={defaultInitForm.readType}
+			>
+				<Radio.Group
 					className="custom-radio-group"
-					optionType="button" 
+					optionType="button"
 					buttonStyle="solid"
-					options={CategoryTypeList}>
-        </Radio.Group>
-      </Form.Item>
-			<Form.Item 
-				label="标签" 
-				name="tagName" 
-				rules={[{ required: true, message: "请选择标签!" }]}>
+					options={ArticleReadTypeList}
+					onChange={e => {
+						handleChange({ readType: Number(e.target.value) });
+					}}
+				/>
+			</Form.Item>
+			{selectedReadType === 4 && (
+				<>
+					<Form.Item label="支付方式" name="payWay" initialValue={defaultInitForm.payWay}>
+						<Radio.Group
+							options={PayWayList}
+							onChange={e => {
+								handleChange({ payWay: e.target.value });
+							}}
+						/>
+					</Form.Item>
+					<Form.Item
+						label="付费金额"
+						name="payAmount"
+						initialValue={defaultInitForm.payAmount}
+						rules={
+							selectedPayWay === "email"
+								? []
+								: [
+										{ required: true, message: "请输入付费金额" },
+										{
+											validator: (_, value) => {
+												if (value == null || Number(value) <= 0) {
+													return Promise.reject(new Error("付费金额必须大于 0"));
+												}
+												return Promise.resolve();
+											}
+										}
+								  ]
+						}
+					>
+						<InputNumber
+							min={0.01}
+							precision={2}
+							style={{ width: "100%" }}
+							addonAfter="元"
+							onChange={value => {
+								handleChange({ payAmount: Number(value || 0) });
+							}}
+						/>
+					</Form.Item>
+				</>
+			)}
+			<Form.Item name="categoryId" label="分类" rules={[{ required: true, message: "请选择一个分类" }]}>
+				<Radio.Group
+					className="custom-radio-group"
+					optionType="button"
+					buttonStyle="solid"
+					options={CategoryTypeList}
+				></Radio.Group>
+			</Form.Item>
+			<Form.Item label="标签" name="tagName" rules={[{ required: true, message: "请选择标签!" }]}>
 				{/*用下拉框做一个教程的选择 */}
 				<DebounceSelect
-					onChange={
-						(selectedValues) => {
-							console.log('选中的值:', selectedValues);
-							// @ts-ignore
-							const keys = selectedValues.map(item => Number(item.key));
+					onChange={selectedValues => {
+						console.log("选中的值:", selectedValues);
+						// @ts-ignore
+						const keys = selectedValues.map(item => Number(item.key));
 
-							console.log('keysString', keys);
-							handleChange({ tagIds: keys });
-						}
-					}
+						console.log("keysString", keys);
+						handleChange({ tagIds: keys });
+					}}
 				/>
 			</Form.Item>
 		</Form>
@@ -2223,7 +2332,7 @@ const ArticleEdit: FC<IProps> = props => {
 					goBack={goBack}
 				/>
 				<ContentInterWrap>
-					<div className="markdown-body" style={{ position: 'relative' }}>
+					<div className="markdown-body" style={{ position: "relative" }}>
 						<Editor
 							value={content}
 							plugins={editorPlugins}
@@ -2262,43 +2371,45 @@ const ArticleEdit: FC<IProps> = props => {
 								handleChange({ content: v });
 							}}
 						/>
-						{target && container && createPortal(
-							<Moveable
-								ref={moveableRef}
-								target={target}
-								container={container}
-								draggable={false}
-								resizable={true}
-								keepRatio={true}
-								throttleResize={0}
-								renderDirections={["nw", "ne", "sw", "se"]} // 只显示四个角的缩放柄，更符合图片操作
-								ables={[RestoreAble]}
-								props={{
-									resetImageInMarkdown: resetImageInMarkdown,
-									replaceImageInMarkdown: replaceImageInMarkdown,
-									copyImageToClipboard: copyImageToClipboard
-								}}
-								onResize={({ target, width, height, drag }: OnResize) => {
-									// 限制最小尺寸为 20px，防止图片消失
-									const finalWidth = Math.max(20, width);
-									const finalHeight = Math.max(20, height);
-									
-									const el = target as HTMLElement;
-									el.style.width = `${finalWidth}px`;
-									el.style.height = `${finalHeight}px`;
-									
-									// 如果有位移（通常由于中心点偏移引起），也应用到位移上
-									el.style.transform = drag.transform;
-								}}
-								onResizeEnd={({ target }: OnResizeEnd) => {
-									const el = target as HTMLElement;
-									updateImageInMarkdown(el as HTMLImageElement, el.offsetWidth, el.offsetHeight);
-								}}
-								origin={false}
-								edge={false} // 设为 false，避免边缘点击冲突
-							/>,
-							container
-						)}
+						{target &&
+							container &&
+							createPortal(
+								<Moveable
+									ref={moveableRef}
+									target={target}
+									container={container}
+									draggable={false}
+									resizable={true}
+									keepRatio={true}
+									throttleResize={0}
+									renderDirections={["nw", "ne", "sw", "se"]} // 只显示四个角的缩放柄，更符合图片操作
+									ables={[RestoreAble]}
+									props={{
+										resetImageInMarkdown: resetImageInMarkdown,
+										replaceImageInMarkdown: replaceImageInMarkdown,
+										copyImageToClipboard: copyImageToClipboard
+									}}
+									onResize={({ target, width, height, drag }: OnResize) => {
+										// 限制最小尺寸为 20px，防止图片消失
+										const finalWidth = Math.max(20, width);
+										const finalHeight = Math.max(20, height);
+
+										const el = target as HTMLElement;
+										el.style.width = `${finalWidth}px`;
+										el.style.height = `${finalHeight}px`;
+
+										// 如果有位移（通常由于中心点偏移引起），也应用到位移上
+										el.style.transform = drag.transform;
+									}}
+									onResizeEnd={({ target }: OnResizeEnd) => {
+										const el = target as HTMLElement;
+										updateImageInMarkdown(el as HTMLImageElement, el.offsetWidth, el.offsetHeight);
+									}}
+									origin={false}
+									edge={false} // 设为 false，避免边缘点击冲突
+								/>,
+								container
+							)}
 					</div>
 				</ContentInterWrap>
 			</ContentWrap>

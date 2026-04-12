@@ -50,3 +50,11 @@ export const examineArticleApi = (params: object | undefined) => {
 export const generateArticleAiApi = (params: { shortTitle: string; content: string }) => {
 	return http.post<Login.ResAuthButtons>(`${PORT1}/article/generate/seo`, params);
 };
+
+// 生成语义 URL
+export const generateArticleSlugApi = (params: { title?: string; shortTitle?: string }) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/article/generate/slug`, params, {
+		headers: { noLoading: true },
+		timeout: 15000
+	});
+};
