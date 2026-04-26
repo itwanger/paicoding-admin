@@ -52,6 +52,7 @@ export interface ZhipuCodingConfig {
 export interface DeepSeekConfig {
 	apiKey?: string;
 	apiHost?: string;
+	model?: string;
 	timeout?: number;
 }
 

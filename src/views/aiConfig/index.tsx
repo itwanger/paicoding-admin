@@ -13,7 +13,6 @@ import {
 	message,
 	Modal,
 	Row,
-	Select,
 	Space,
 	Typography
 } from "antd";
@@ -56,6 +55,7 @@ interface AiConfigFormValues {
 	deepSeek: {
 		apiKey: string;
 		apiHost: string;
+		model: string;
 		timeout?: number | null;
 	};
 	doubao: {
@@ -83,31 +83,6 @@ const AI_SOURCE_LABEL_MAP = AI_SOURCE_OPTIONS.reduce<Record<AISourceValue, strin
 	return result;
 }, {} as Record<AISourceValue, string>);
 const AI_TEST_PROMPT = "你正在执行后台 AI 配置连通性测试。请忽略其他上下文，只输出“连接成功”。";
-const ZHIPU_MODEL_OPTIONS = [
-	{ value: "glm-5", label: "glm-5（官方当前推荐旗舰）" },
-	{ value: "glm-4.7", label: "glm-4.7" },
-	{ value: "glm-4.6", label: "glm-4.6" },
-	{ value: "glm-4.5-air", label: "glm-4.5-air" },
-	{ value: "glm-4.5-flash", label: "glm-4.5-flash" }
-];
-const ZHIPU_CODING_MODEL_OPTIONS = [
-	{ value: "GLM-5", label: "GLM-5（官方当前推荐）" },
-	{ value: "GLM-4.7", label: "GLM-4.7" },
-	{ value: "GLM-4.6", label: "GLM-4.6" },
-	{ value: "GLM-4.5-Air", label: "GLM-4.5-Air" }
-];
-
-const normalizeModelValue = (value?: string | string[] | null) => {
-	if (Array.isArray(value)) {
-		return value[value.length - 1] || "";
-	}
-	return value || "";
-};
-
-const modelSelectValueProps = (value?: string | string[] | null) => {
-	const model = normalizeModelValue(value);
-	return { value: model ? [model] : [] };
-};
 
 const defaultFormValues: AiConfigFormValues = {
 	sources: [],
@@ -133,6 +108,7 @@ const defaultFormValues: AiConfigFormValues = {
 	deepSeek: {
 		apiKey: "",
 		apiHost: "",
+		model: "deepseek-chat",
 		timeout: undefined
 	},
 	doubao: {
@@ -169,6 +145,7 @@ const normalizeFormValues = (detail?: AiConfigAdminDTO): AiConfigFormValues => (
 	deepSeek: {
 		apiKey: detail?.deepSeek?.apiKey || "",
 		apiHost: detail?.deepSeek?.apiHost || "",
+		model: detail?.deepSeek?.model || "deepseek-chat",
 		timeout: detail?.deepSeek?.timeout
 	},
 	doubao: {
@@ -241,6 +218,7 @@ const AiConfigPage: FC = () => {
 		deepSeek: {
 			apiKey: values.deepSeek.apiKey || "",
 			apiHost: values.deepSeek.apiHost || "",
+			model: values.deepSeek.model || "",
 			timeout: values.deepSeek.timeout ?? undefined
 		},
 		doubao: {
@@ -387,21 +365,8 @@ const AiConfigPage: FC = () => {
 									label="模型名"
 									name={["zhipu", "model"]}
 									extra="当前后端智谱配置未开放 Base URL，默认走智谱 SDK 内置地址；这里提供官方常用模型，也支持手动输入新编码。"
-									getValueProps={modelSelectValueProps}
-									getValueFromEvent={normalizeModelValue}
 								>
-									<Select
-										showSearch
-										mode="tags"
-										options={ZHIPU_MODEL_OPTIONS}
-										placeholder="请选择或输入智谱模型编码，例如：glm-5"
-										filterOption={(inputValue, option) =>
-											Boolean(
-												option?.value?.toString().toUpperCase().includes(inputValue.toUpperCase()) ||
-													option?.label?.toString().toUpperCase().includes(inputValue.toUpperCase())
-											)
-										}
-									/>
+									<Input allowClear placeholder="请输入智谱模型编码，例如：glm-5" />
 								</Form.Item>
 								{renderTestingHint("ZHI_PU_AI")}
 							</Card>
@@ -413,24 +378,8 @@ const AiConfigPage: FC = () => {
 								<Form.Item label="API Host" name={["zhipuCoding", "apiHost"]} extra="这里可配置智谱 Coding 的 Base URL。">
 									<Input allowClear placeholder="例如：https://open.bigmodel.cn/api/coding/paas/v4" />
 								</Form.Item>
-								<Form.Item
-									label="模型名"
-									name={["zhipuCoding", "model"]}
-									getValueProps={modelSelectValueProps}
-									getValueFromEvent={normalizeModelValue}
-								>
-									<Select
-										showSearch
-										mode="tags"
-										options={ZHIPU_CODING_MODEL_OPTIONS}
-										placeholder="请选择或输入模型编码，例如：GLM-5"
-										filterOption={(inputValue, option) =>
-											Boolean(
-												option?.value?.toString().toUpperCase().includes(inputValue.toUpperCase()) ||
-													option?.label?.toString().toUpperCase().includes(inputValue.toUpperCase())
-											)
-										}
-									/>
+								<Form.Item label="模型名" name={["zhipuCoding", "model"]}>
+									<Input allowClear placeholder="请输入模型编码，例如：GLM-5" />
 								</Form.Item>
 								<Form.Item label="超时时间" name={["zhipuCoding", "timeout"]}>
 									<InputNumber className="ai-config-page__number-input" min={0} precision={0} placeholder="单位：毫秒" />
@@ -480,6 +429,9 @@ const AiConfigPage: FC = () => {
 								</Form.Item>
 								<Form.Item label="API Host" name={["deepSeek", "apiHost"]}>
 									<Input allowClear placeholder="例如：https://api.deepseek.com" />
+								</Form.Item>
+								<Form.Item label="模型名" name={["deepSeek", "model"]}>
+									<Input allowClear placeholder="请输入 DeepSeek 模型名，例如：deepseek-chat" />
 								</Form.Item>
 								<Form.Item label="超时时间" name={["deepSeek", "timeout"]}>
 									<InputNumber className="ai-config-page__number-input" min={0} precision={0} placeholder="单位：毫秒" />
