@@ -12,7 +12,7 @@ const columnRouter: Array<RouteObject> = [
 				path: "/author",
 				meta: {
 					// requiresAuth: true,
-					title: "作者",
+					title: "用户管理",
 					key: "/author"
 				},
 				children: [
@@ -28,8 +28,16 @@ const columnRouter: Array<RouteObject> = [
 						path: "/author/zsxqlist/index",
 						element: lazyLoad(React.lazy(() => import("@/views/author/zsxqlist/index"))),
 						meta: {
-							title: "作者白名单",
+							title: "星球白名单",
 							key: "/author/zsxqlist/index"
+						}
+					},
+					{
+						path: "/author/login-audit/index",
+						element: lazyLoad(React.lazy(() => import("@/views/author/loginAudit/index"))),
+						meta: {
+							title: "登录审计",
+							key: "/author/login-audit/index"
 						}
 					}
 				]

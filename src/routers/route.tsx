@@ -42,7 +42,8 @@ export const currentMenuList = [
 		icon: <UserOutlined />,
 		children: [
 			{ key: "/author/whitelist/index", icon: <SmileOutlined />, children: undefined, label: "作者白名单" },
-			{ key: "/author/zsxqlist/index", icon: <SmileOutlined />, children: undefined, label: "星球白名单" }
+			{ key: "/author/zsxqlist/index", icon: <SmileOutlined />, children: undefined, label: "星球白名单" },
+			{ key: "/author/login-audit/index", icon: <SmileOutlined />, children: undefined, label: "登录审计" }
 		],
 		label: "用户管理"
 	},

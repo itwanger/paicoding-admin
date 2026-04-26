@@ -17,11 +17,9 @@ import "./index.scss";
 interface IProps {}
 
 const Statistics: FC<IProps> = props => {
-	// 折线图
 	const chartRef = useRef<HTMLDivElement>(null);
-  const myChartRef = useRef<echarts.ECharts>();
+	const myChartRef = useRef<echarts.ECharts>();
 
-	// 饼状图
 	const pieChartRef = useRef<HTMLDivElement>(null);
 	const myPieChartRef = useRef<echarts.ECharts>();
 
@@ -41,25 +39,19 @@ const Statistics: FC<IProps> = props => {
 		{ value: "7", label: "7天" },
 		{ value: "30", label: "30天" },
 		{ value: "90", label: "90天" },
-		{ value: "180", label: "180天" },
+		{ value: "180", label: "180天" }
 	];
 
 	const resizeChart = useCallback(() => {
-    myChartRef.current?.resize();
+		myChartRef.current?.resize();
 		myPieChartRef.current?.resize();
-  }, []);
+	}, []);
 
-	// 导出数据为 Excel 文件
-  const exportToExcel = async () => {
-    // 通过 dayLimitList 获取对应的天数
+	const exportToExcel = async () => {
 		const day = dayLimitList.find(item => item.value === pvUvDay)?.value;
 		if (!day) return;
-	
-		console.log("导出的天数是", day);
 
-		// 调用下载接口
 		const response = await download2ExcelPvUvApi(Number(day));
-
 		const contentDisposition = response.headers["content-disposition"];
 		let fileName = "paicoding.xlsx";
 
@@ -69,34 +61,23 @@ const Statistics: FC<IProps> = props => {
 				fileName = decodeURIComponent(matches[1]);
 			}
 		}
-		console.log("文件名是", fileName);
 
-		// 将返回的 Blob 数据转换为可下载文件
 		const blob = new Blob([response.data as BlobPart], {
-			type: response.headers["content-type"],
+			type: response.headers["content-type"]
 		});
-		console.log("Blob 数据大小：", blob);
-
 		const url = window.URL.createObjectURL(blob);
 		const link = document.createElement("a");
 		link.href = url;
-		link.download = fileName; // 下载的文件名
+		link.download = fileName;
 		link.click();
-
-		// 释放 Blob URL，避免内存泄漏
 		window.URL.revokeObjectURL(url);
+	};
 
-  };
-
-	// 定义一个异步函数 getAllInfo，用于获取所有信息
 	const getAllInfo = async () => {
-	  // 调用 getAllApi 获取所有信息
-	  const { status, result } = await getAllApi();
-	  // 如果状态码为 0，表示获取成功
-	  if (status && status.code === 0) {
-	    // 将获取到的信息设置到 allInfo 状态中
-	    setAllInfo(result as MapItem[]);
-	  }
+		const { status, result } = await getAllApi();
+		if (status && status.code === 0) {
+			setAllInfo(result as MapItem[]);
+		}
 	};
 
 	useEffect(() => {
@@ -107,93 +88,85 @@ const Statistics: FC<IProps> = props => {
 		const getPvUv = async () => {
 			const { status, result } = await getPvUvApi(Number(pvUvDay));
 			if (status && status.code === 0) {
-				// 对 result 进行倒序
 				setPvUvInfo((result as any[]).reverse());
 			}
 		};
 		getPvUv();
 	}, [pvUvDay]);
 
-	// 饼状图数据加载
 	useEffect(() => {
 		const getPieRef = () => {
-		// 构建饼图
-		if (pieChartRef.current && echarts.getInstanceByDom(pieChartRef.current)) {
-			echarts.dispose(pieChartRef.current);
-		}
-		
-		let myPieChart = echarts.init(pieChartRef.current as HTMLElement,
-			isDarkTheme ? 'dark' : 'light');
-		let option = {
-			title: {
-				text: '数据统计',
-				left: 'center'
-			},
-			tooltip: {
-				trigger: 'item',
-			},
-			legend: {
-				orient: 'vertical',
-				left: 'left',
-				// 底部
-				bottom: 0,
-			},
-			series: [
-				{
-					name: '数据统计',
-					type: 'pie',
-					radius: ['60%'],
-					emphasis: {
-						itemStyle: {
-							shadowBlur: 10,
-							shadowOffsetX: 0,
-							shadowColor: 'rgba(0, 0, 0, 0.5)'
-						}
-					},
-					data: [
-						{ value: collectCount, name: '收藏总数' },
-						{ value: likeCount, name: '点赞总数' },
-						{ value: readCount, name: '阅读总数' },
-						{ value: commentCount, name: '评论总数' }
-					]
-				}
-			]
-		}
-		myPieChartRef.current = myPieChart;
-		option && myPieChart.setOption(option);
-		window.addEventListener("resize", resizeChart);
-	}
-	getPieRef();
-		return () => {
-      window.removeEventListener("resize", resizeChart);
-    };
-})
+			if (pieChartRef.current && echarts.getInstanceByDom(pieChartRef.current)) {
+				echarts.dispose(pieChartRef.current);
+			}
 
-	// 折线图数据加载
+			let myPieChart = echarts.init(pieChartRef.current as HTMLElement, isDarkTheme ? "dark" : "light");
+			let option = {
+				title: {
+					text: "数据统计",
+					left: "center"
+				},
+				tooltip: {
+					trigger: "item"
+				},
+				legend: {
+					orient: "vertical",
+					left: "left",
+					bottom: 0
+				},
+				series: [
+					{
+						name: "数据统计",
+						type: "pie",
+						radius: ["60%"],
+						emphasis: {
+							itemStyle: {
+								shadowBlur: 10,
+								shadowOffsetX: 0,
+								shadowColor: "rgba(0, 0, 0, 0.5)"
+							}
+						},
+						data: [
+							{ value: collectCount, name: "收藏总数" },
+							{ value: likeCount, name: "点赞总数" },
+							{ value: readCount, name: "阅读总数" },
+							{ value: commentCount, name: "评论总数" }
+						]
+					}
+				]
+			};
+			myPieChartRef.current = myPieChart;
+			option && myPieChart.setOption(option);
+			window.addEventListener("resize", resizeChart);
+		};
+		getPieRef();
+		return () => {
+			window.removeEventListener("resize", resizeChart);
+		};
+	});
+
 	useEffect(() => {
 		const getPvUvRef = () => {
-			console.log("当前的主题是", isDarkTheme ? "dark" : "light");
 			if (chartRef.current && echarts.getInstanceByDom(chartRef.current)) {
-					echarts.dispose(chartRef.current);
+				echarts.dispose(chartRef.current);
 			}
-			let myChart = echarts.init(chartRef.current as HTMLElement, 
-				isDarkTheme ? 'dark' : 'light');
+			let myChart = echarts.init(chartRef.current as HTMLElement, isDarkTheme ? "dark" : "light");
 
 			let option = {
 				title: {
-					text: 'PV UV数据',
-    			top: 0
+					text: "PV UV数据",
+					top: 0
 				},
 				tooltip: {
-					trigger: 'axis'
+					trigger: "axis"
 				},
 				legend: {
-					data: ['PV', 'UV']
+					data: ["PV", "UV"]
 				},
 				grid: {
-					left: '3%',
-					right: '3%',
-					bottom: '3%',
+					left: "3%",
+					right: "3%",
+					bottom: "3%",
 					containLabel: true
 				},
 				toolbox: {
@@ -203,11 +176,11 @@ const Statistics: FC<IProps> = props => {
 					},
 					feature: {
 						myDownloadExcel: {
-              show: true,
-              title: "下载 Excel",
-              icon: "path://M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 14h-3v-3h-2v3H8v-3H6v3H5v-2h3v-2H5V5h14v9h-2v3z", // 自定义图标
-              onclick: exportToExcel, // 点击按钮触发导出函数
-            },
+							show: true,
+							title: "下载 Excel",
+							icon: "path://M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 14h-3v-3h-2v3H8v-3H6v3H5v-2h3v-2H5V5h14v9h-2v3z",
+							onclick: exportToExcel
+						}
 					}
 				},
 				xAxis: {
@@ -235,20 +208,19 @@ const Statistics: FC<IProps> = props => {
 						name: "UV",
 						data: uvDateCount,
 						type: "line",
-						smooth: true,
+						smooth: true
 					}
 				]
 			};
-	
+
 			myChartRef.current = myChart;
 			option && myChart.setOption(option);
-
-			window.addEventListener('resize', resizeChart);
+			window.addEventListener("resize", resizeChart);
 		};
 		getPvUvRef();
 		return () => {
-      window.removeEventListener("resize", resizeChart);
-    };
+			window.removeEventListener("resize", resizeChart);
+		};
 	}, [pvUvDate, pvDateCount, isDarkTheme]);
 
 	return (
@@ -297,7 +269,6 @@ const Statistics: FC<IProps> = props => {
 					</div>
 				</div>
 				<div className="statistics-pv__wrap">
-					{/*居中*/}
 					<div className="statistics-setting">
 						<Switch
 							style={{ marginRight: "20px" }}
@@ -306,11 +277,7 @@ const Statistics: FC<IProps> = props => {
 							unCheckedChildren="浅色"
 						/>
 
-						<Select 
-							style={{ width: "100px" }}
-							value={pvUvDay} 
-							onChange={value => setPvUvDay(value)} 
-							options={dayLimitList} />
+						<Select style={{ width: "100px" }} value={pvUvDay} onChange={value => setPvUvDay(value)} options={dayLimitList} />
 					</div>
 					<div className="statistics-pv" ref={chartRef}></div>
 				</div>
@@ -318,4 +285,5 @@ const Statistics: FC<IProps> = props => {
 		</div>
 	);
 };
+
 export default Statistics;

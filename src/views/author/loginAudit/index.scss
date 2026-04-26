@@ -1,0 +1,40 @@
+.login-audit {
+	&__meta {
+		margin-bottom: 16px;
+	}
+
+	&__card {
+		margin-bottom: 16px;
+		border-radius: 16px;
+		box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+	}
+
+	&__filter {
+		margin-bottom: 16px;
+		padding: 16px;
+		background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+		border: 1px solid #eef3fb;
+		border-radius: 14px;
+	}
+
+	&__subtext {
+		font-size: 12px;
+		color: #8c8c8c;
+		word-break: break-all;
+	}
+
+	&__multiline {
+		white-space: normal;
+		word-break: break-word;
+		overflow-wrap: anywhere;
+		line-height: 1.6;
+	}
+
+	&__tag {
+		max-width: 100%;
+		height: auto;
+		white-space: normal;
+		word-break: break-word;
+		line-height: 1.6;
+	}
+}

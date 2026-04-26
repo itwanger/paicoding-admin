@@ -97,6 +97,18 @@ const ZHIPU_CODING_MODEL_OPTIONS = [
 	{ value: "GLM-4.5-Air", label: "GLM-4.5-Air" }
 ];
 
+const normalizeModelValue = (value?: string | string[] | null) => {
+	if (Array.isArray(value)) {
+		return value[value.length - 1] || "";
+	}
+	return value || "";
+};
+
+const modelSelectValueProps = (value?: string | string[] | null) => {
+	const model = normalizeModelValue(value);
+	return { value: model ? [model] : [] };
+};
+
 const defaultFormValues: AiConfigFormValues = {
 	sources: [],
 	zhipu: {
@@ -375,6 +387,8 @@ const AiConfigPage: FC = () => {
 									label="模型名"
 									name={["zhipu", "model"]}
 									extra="当前后端智谱配置未开放 Base URL，默认走智谱 SDK 内置地址；这里提供官方常用模型，也支持手动输入新编码。"
+									getValueProps={modelSelectValueProps}
+									getValueFromEvent={normalizeModelValue}
 								>
 									<Select
 										showSearch
@@ -383,7 +397,7 @@ const AiConfigPage: FC = () => {
 										placeholder="请选择或输入智谱模型编码，例如：glm-5"
 										filterOption={(inputValue, option) =>
 											Boolean(
-												option?.value.toUpperCase().includes(inputValue.toUpperCase()) ||
+												option?.value?.toString().toUpperCase().includes(inputValue.toUpperCase()) ||
 													option?.label?.toString().toUpperCase().includes(inputValue.toUpperCase())
 											)
 										}
@@ -399,7 +413,12 @@ const AiConfigPage: FC = () => {
 								<Form.Item label="API Host" name={["zhipuCoding", "apiHost"]} extra="这里可配置智谱 Coding 的 Base URL。">
 									<Input allowClear placeholder="例如：https://open.bigmodel.cn/api/coding/paas/v4" />
 								</Form.Item>
-								<Form.Item label="模型名" name={["zhipuCoding", "model"]}>
+								<Form.Item
+									label="模型名"
+									name={["zhipuCoding", "model"]}
+									getValueProps={modelSelectValueProps}
+									getValueFromEvent={normalizeModelValue}
+								>
 									<Select
 										showSearch
 										mode="tags"
@@ -407,7 +426,7 @@ const AiConfigPage: FC = () => {
 										placeholder="请选择或输入模型编码，例如：GLM-5"
 										filterOption={(inputValue, option) =>
 											Boolean(
-												option?.value.toUpperCase().includes(inputValue.toUpperCase()) ||
+												option?.value?.toString().toUpperCase().includes(inputValue.toUpperCase()) ||
 													option?.label?.toString().toUpperCase().includes(inputValue.toUpperCase())
 											)
 										}
