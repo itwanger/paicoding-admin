@@ -10,7 +10,7 @@ import gfm from "@bytemd/plugin-gfm";
 import highlight from "@bytemd/plugin-highlight";
 import math from "@bytemd/plugin-math";
 import { Editor } from "@bytemd/react";
-import { Button, Drawer, Form, Input, InputNumber, message, Modal, Radio, Select, Space, UploadFile } from "antd";
+import { Button, Drawer, Form, Input, InputNumber, message, Modal, Progress, Radio, Select, Space, UploadFile } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import zhHans from "bytemd/locales/zh_Hans.json";
 import { throttle } from "lodash";
@@ -355,6 +355,19 @@ interface ImportedMarkdownSource {
 	fileHandle?: any;
 }
 
+type AiInitStep = "prepare" | "seo" | "defaults" | "slug" | "apply" | "success" | "error";
+
+interface AiInitProgress {
+	step: AiInitStep;
+	text: string;
+	detail?: string;
+	completed: number;
+	total: number;
+	running: boolean;
+	startedAt: number;
+	elapsedSeconds: number;
+}
+
 export interface IFormType {
 	articleId: number; // 文章id
 	status: number; // 文章状态
@@ -395,6 +408,25 @@ const PayWayList = [
 	{ label: "个人收款码", value: "email" },
 	{ label: "统一微信支付", value: "wx_native" }
 ];
+
+const formatElapsed = (seconds: number) => {
+	const min = Math.floor(seconds / 60);
+	const sec = seconds % 60;
+	return min > 0 ? `${min}分${sec.toString().padStart(2, "0")}秒` : `${sec}秒`;
+};
+
+const getApiErrorMessage = (error: any, fallback: string) => {
+	const messageText =
+		error?.status?.msg ||
+		error?.msg ||
+		error?.response?.data?.status?.msg ||
+		error?.response?.data?.msg ||
+		error?.message;
+	if (typeof messageText === "string" && messageText.trim()) {
+		return messageText.includes("timeout") ? "AI 初始化超时，请稍后重试" : messageText;
+	}
+	return fallback;
+};
 
 const ArticleEdit: FC<IProps> = props => {
 	const [formRef] = Form.useForm();
@@ -559,6 +591,8 @@ const ArticleEdit: FC<IProps> = props => {
 	const importedMarkdownSourceRef = useRef<ImportedMarkdownSource | null>(null);
 	const [importedMarkdownFileName, setImportedMarkdownFileName] = useState<string>("");
 	const [canOverwriteMarkdown, setCanOverwriteMarkdown] = useState<boolean>(false);
+	const [aiInitProgress, setAiInitProgress] = useState<AiInitProgress | null>(null);
+	const aiInitClearTimerRef = useRef<number>();
 
 	// 抽屉
 	const [isOpenDrawerShow, setIsOpenDrawerShow] = useState<boolean>(false);
@@ -675,6 +709,30 @@ const ArticleEdit: FC<IProps> = props => {
 				autoSave.current.flush();
 			} else {
 				autoSave.current.cancel();
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!aiInitProgress?.running) return;
+
+		const timer = window.setInterval(() => {
+			setAiInitProgress(prev => {
+				if (!prev?.running) return prev;
+				return {
+					...prev,
+					elapsedSeconds: Math.floor((Date.now() - prev.startedAt) / 1000)
+				};
+			});
+		}, 1000);
+
+		return () => window.clearInterval(timer);
+	}, [aiInitProgress?.running]);
+
+	useEffect(() => {
+		return () => {
+			if (aiInitClearTimerRef.current) {
+				window.clearTimeout(aiInitClearTimerRef.current);
 			}
 		};
 	}, []);
@@ -2554,28 +2612,49 @@ const ArticleEdit: FC<IProps> = props => {
 			return;
 		}
 
-		const loadingKey = "ai-init-loading";
-		message.loading({ content: "正在 AI 初始化文章信息...", key: loadingKey, duration: 0 });
+		if (aiInitClearTimerRef.current) {
+			window.clearTimeout(aiInitClearTimerRef.current);
+		}
+
+		const startedAt = Date.now();
+		const updateProgress = (step: AiInitStep, text: string, completed: number, detail?: string, running = true) => {
+			setAiInitProgress({
+				step,
+				text,
+				detail,
+				completed,
+				total: 3,
+				running,
+				startedAt,
+				elapsedSeconds: Math.floor((Date.now() - startedAt) / 1000)
+			});
+		};
+
+		updateProgress("prepare", "准备 AI 初始化文章信息", 0, "SEO 标题、简介和 URL slug 会由一次模型请求返回。");
 
 		try {
 			// 1. 调用 AI 接口生成标题和简介
+			updateProgress("seo", "已请求模型，等待生成 SEO 标题、简介和 URL slug", 1);
 			const { status: aiStatus, result: aiResult } = await generateArticleAiApi({
 				shortTitle: shortTitle,
-				content: content.substring(0, 400)
+				content: content.substring(0, 400),
+				articleId: form.articleId || articleId
 			});
 
 			if (aiStatus?.code === 0 && aiResult) {
-				const { title, description } = aiResult as any;
-				console.log("AI 初始化成功:", { title, description });
+				const { title, description, urlSlug } = aiResult as any;
+				console.log("AI 初始化成功:", { title, description, urlSlug });
 
 				// 2. 准备回填数据
 				const updateData: MapItem = {
 					title,
 					summary: description,
-					status: 0
+					status: 0,
+					urlSlug: normalizeUrlSlug(urlSlug)
 				};
 
 				// 3. 设置分类默认值为“星球专栏”
+				updateProgress("defaults", "模型已返回，正在设置默认分类和标签", 2);
 				const planetCategory = CategoryTypeList?.find((item: any) => item.label === "星球专栏");
 				if (planetCategory) {
 					updateData.categoryId = planetCategory.value;
@@ -2590,6 +2669,8 @@ const ArticleEdit: FC<IProps> = props => {
 						tag: "",
 						pageNumber: 1,
 						pageSize: 1
+					}, {
+						headers: { noLoading: true, noProgress: true }
 					})) as any;
 
 					const { status: tagStatus, result: tagResult } = response;
@@ -2613,12 +2694,8 @@ const ArticleEdit: FC<IProps> = props => {
 					console.warn("获取默认标签失败:", tagError);
 				}
 
-				const generatedSlug = await handleGenerateUrlSlug({ title, shortTitle }, true);
-				if (generatedSlug) {
-					updateData.urlSlug = generatedSlug;
-				}
-
 				// 5. 执行回填
+				updateProgress("apply", "正在回填文章信息", 2);
 				handleChange(updateData);
 				formRef.setFieldsValue({
 					title,
@@ -2629,13 +2706,20 @@ const ArticleEdit: FC<IProps> = props => {
 					readType: updateData.readType ?? defaultInitForm.readType
 				});
 
-				message.success({ content: "AI 初始化成功", key: loadingKey });
+				updateProgress("success", "AI 初始化完成", 3, "标题、简介、默认分类、标签和 URL slug 已回填。", false);
+				message.success("AI 初始化成功");
+				aiInitClearTimerRef.current = window.setTimeout(() => {
+					setAiInitProgress(null);
+				}, 4000);
 			} else {
-				message.error({ content: aiStatus?.msg || "AI 初始化失败", key: loadingKey });
+				updateProgress("error", "AI 初始化失败", 0, aiStatus?.msg || "模型接口未返回可用结果。", false);
+				message.error(aiStatus?.msg || "AI 初始化失败");
 			}
 		} catch (error) {
 			console.error("AI 初始化出错:", error);
-			message.error({ content: "网络错误，AI 初始化失败", key: loadingKey });
+			const errorMessage = getApiErrorMessage(error, "AI 初始化失败");
+			updateProgress("error", "AI 初始化失败", 0, errorMessage, false);
+			message.error(errorMessage);
 		}
 	};
 
@@ -2827,18 +2911,44 @@ const ArticleEdit: FC<IProps> = props => {
 	}, []);
 
 	// 标题、分类、标签、封面、简介
+	const aiInitPercent = aiInitProgress ? Math.round((aiInitProgress.completed / aiInitProgress.total) * 100) : 0;
+	const aiInitStatus = aiInitProgress?.step === "error" ? "exception" : aiInitProgress?.step === "success" ? "success" : "active";
+	const aiInitElapsedText = aiInitProgress ? `已耗时 ${formatElapsed(aiInitProgress.elapsedSeconds)}` : "";
+	const aiInitSlugExtra =
+		aiInitProgress && ["seo", "defaults", "slug", "apply", "success", "error"].includes(aiInitProgress.step) ? (
+			<div className="article-url-slug-progress">
+				<span>{aiInitProgress.step === "seo" ? "URL slug 会随本次模型结果一起返回" : aiInitProgress.text}</span>
+			</div>
+		) : null;
+	const aiInitTopProgress = aiInitProgress ? (
+		<div className="article-ai-init-strip">
+			<div className="article-ai-init-strip__text">
+				<span>{aiInitProgress.text}</span>
+				<span>
+					{aiInitProgress.completed}/{aiInitProgress.total} · {aiInitElapsedText}
+				</span>
+			</div>
+			<Progress percent={aiInitPercent} showInfo={false} size="small" status={aiInitStatus} />
+			{aiInitProgress.step === "error" && aiInitProgress.detail && (
+				<div className="article-ai-init-strip__detail">{aiInitProgress.detail}</div>
+			)}
+		</div>
+	) : null;
+
 	const drawerContent = (
-		<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
-			<Form.Item label="标题" name="title" rules={[{ required: true, message: "请输入标题!" }]}>
-				<Input
-					allowClear
-					minLength={5}
-					maxLength={120}
-					onChange={e => {
-						handleChange({ title: e.target.value });
-					}}
-				/>
-			</Form.Item>
+		<>
+			{aiInitTopProgress}
+			<Form name="basic" form={formRef} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }} autoComplete="off">
+				<Form.Item label="标题" name="title" rules={[{ required: true, message: "请输入标题!" }]}>
+					<Input
+						allowClear
+						minLength={5}
+						maxLength={120}
+						onChange={e => {
+							handleChange({ title: e.target.value });
+						}}
+					/>
+				</Form.Item>
 			<Form.Item label="短标题" name="shortTitle">
 				<Input
 					allowClear
@@ -2851,7 +2961,12 @@ const ArticleEdit: FC<IProps> = props => {
 			<Form.Item
 				label="URL Slug"
 				tooltip="保存后文章访问地址为 https://xxx/{urlSlug}"
-				extra={form.urlSlug ? `访问路径：${baseDomain || ""}/${form.urlSlug}` : "导入文章后会优先根据短标题自动生成"}
+				extra={
+					<div>
+						<div>{form.urlSlug ? `访问路径：${baseDomain || ""}/${form.urlSlug}` : "导入文章后会优先根据短标题自动生成"}</div>
+						{aiInitSlugExtra}
+					</div>
+				}
 			>
 				<Space.Compact style={{ width: "100%" }}>
 					<Form.Item
@@ -2988,7 +3103,8 @@ const ArticleEdit: FC<IProps> = props => {
 					}}
 				/>
 			</Form.Item>
-		</Form>
+			</Form>
+		</>
 	);
 
 	return (
@@ -3113,7 +3229,9 @@ const ArticleEdit: FC<IProps> = props => {
 				onClose={handleClose}
 				extra={
 					<Space>
-						<Button onClick={handleAiInit}>初始</Button>
+						<Button disabled={aiInitProgress?.running} onClick={handleAiInit}>
+							初始
+						</Button>
 						<Button onClick={resetFrom}>重置</Button>
 						<Button type="primary" onClick={handleSubmit}>
 							{status === UpdateEnum.Edit ? "更新文章" : "确认保存"}

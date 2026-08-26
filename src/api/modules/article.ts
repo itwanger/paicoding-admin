@@ -47,8 +47,11 @@ export const examineArticleApi = (params: object | undefined) => {
 };
 
 // AI 生成标题和简介
-export const generateArticleAiApi = (params: { shortTitle: string; content: string }) => {
-	return http.post<Login.ResAuthButtons>(`${PORT1}/article/generate/seo`, params);
+export const generateArticleAiApi = (params: { shortTitle: string; content: string; articleId?: number | string }) => {
+	return http.post<Login.ResAuthButtons>(`${PORT1}/article/generate/seo`, params, {
+		headers: { noLoading: true, noProgress: true },
+		timeout: 500000
+	});
 };
 
 // 生成语义 URL

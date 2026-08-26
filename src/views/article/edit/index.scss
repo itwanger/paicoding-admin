@@ -2,6 +2,51 @@
   height: calc(100vh - 220px);
 }
 
+.article-ai-init-strip {
+  margin: 4px 0 22px;
+  max-width: 100%;
+}
+
+.article-ai-init-strip__text {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+
+  span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span:last-child {
+    flex: none;
+    color: #6b7280;
+    font-weight: 400;
+  }
+}
+
+.article-ai-init-strip__detail {
+  margin-top: 8px;
+  color: #d4380d;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.article-url-slug-progress {
+  margin-top: 4px;
+  color: #1677ff;
+  font-size: 12px;
+  line-height: 18px;
+}
+
 /* CustomRadioGroup.css */
 .custom-radio-group .ant-radio-button-wrapper {
   margin-right: 8px; /* 右侧空隙 */

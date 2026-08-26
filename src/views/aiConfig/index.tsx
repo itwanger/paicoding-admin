@@ -350,7 +350,9 @@ const AiConfigPage: FC = () => {
 							>
 								<Checkbox.Group className="ai-config-page__source-group" options={sourceOptions} />
 							</Form.Item>
-							<Text type="secondary">这里控制后端可参与路由和降级选择的 AI Source 列表。</Text>
+							<Text type="secondary">
+								这里控制后端可用的 AI Source 列表；具体业务只会选择一个模型源执行，不再自动切换到其他模型。
+							</Text>
 						</Card>
 
 						<div className="ai-config-page__section-grid">

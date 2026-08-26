@@ -8,8 +8,8 @@ import { IFormType } from "@/views/tag";
  */
 
 // 获取列表
-export const getTagListApi = (data: any) => {
-	return http.post(`${PORT1}/tag/list`, data);
+export const getTagListApi = (data: any, config = {}) => {
+	return http.post(`${PORT1}/tag/list`, data, config);
 };
 
 // 删除操作

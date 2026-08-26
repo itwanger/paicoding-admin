@@ -127,6 +127,12 @@ src/
 
 ## Development Notes
 
+### Local Runtime Expectations
+
+- Do not start or restart the admin dev server unless the user explicitly asks. This is a hot-reload project; the user will usually run `npm run dev` before requesting code changes, and code edits should appear in the already-running `http://127.0.0.1:3301` session.
+- Do not start or restart the backend service unless the user explicitly asks. The user will manage the paired `paicoding` backend process.
+- After frontend edits, prefer checking the already-running local page in the user's browser when verification is needed instead of launching a new dev server.
+
 ### Environment Variables
 
 - Development: `.env.development` - Backend at `http://127.0.0.1:8080`

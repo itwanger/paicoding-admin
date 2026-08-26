@@ -37,8 +37,9 @@ class RequestHttp {
 		this.service.interceptors.request.use(
 			(config: AxiosRequestConfig) => {
 				console.log("发起请求");
+				const noProgress = Boolean((config.headers as any)?.noProgress);
 				// 进度条开始
-				NProgress.start();
+				if (!noProgress) NProgress.start();
 				// 将当前请求添加到 pending 中
 				axiosCanceler.addPending(config);
 				// 如果当前请求不需要显示 loading
@@ -65,8 +66,9 @@ class RequestHttp {
 				console.log("response", response);
 
 				const { data, config } = response;
+				const noProgress = Boolean((config.headers as any)?.noProgress);
 				// 进度条结束
-				NProgress.done();
+				if (!noProgress) NProgress.done();
 				// 在请求结束后，移除本次请求(关闭loading)
 				axiosCanceler.removePending(config);
 				tryHideFullScreenLoading();
@@ -96,8 +98,9 @@ class RequestHttp {
 			},
 			async (error: AxiosError) => {
 				console.log("error", error);
-				const { response } = error;
-				NProgress.done();
+				const { response, config } = error;
+				const noProgress = Boolean((config?.headers as any)?.noProgress);
+				if (!noProgress) NProgress.done();
 				tryHideFullScreenLoading();
 				// 请求超时单独判断，请求超时没有 response
 				if (error.message.indexOf("timeout") !== -1) message.error("请求超时，请稍后再试");
